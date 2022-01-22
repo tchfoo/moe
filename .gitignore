@@ -1,0 +1,6 @@
+# Sensitive files
+config.json
+
+# Generated files
+obj
+bin
