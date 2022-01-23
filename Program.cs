@@ -59,51 +59,51 @@ client.MessageReceived += async (msg) =>
   if (msg.Channel.GetChannelType() == ChannelType.DM)
   {
     if (config.Owners.Contains(msg.Author.Id) || msg.Author.Id == config.Yaha)
+    {
+      if (msg.Content.StartsWith("!setrng"))
       {
-        if (msg.Content.StartsWith("!setrng"))
+        try
         {
-          try
-          {
-            string tempRngMsg = msg.Content.Replace("!setrng", "").Trim();
-            string[] rngMsg = tempRngMsg.Split(' ');
+          string tempRngMsg = msg.Content.Replace("!setrng", "").Trim();
+          string[] rngMsg = tempRngMsg.Split(' ');
 
-            List<string> rngMsgSelect = rngMsg
-              .Select(x => int.Parse(x))
-              .Select(x => $"({x.ToString()})")
-              .ToList();
-            string rngMsgJoin = string.Join(',', rngMsgSelect);
+          List<string> rngMsgSelect = rngMsg
+            .Select(x => int.Parse(x))
+            .Select(x => $"({x.ToString()})")
+            .ToList();
+          string rngMsgJoin = string.Join(',', rngMsgSelect);
 
 
-            var command = connection.CreateCommand();
-            command.CommandText =
-            $@"
+          var command = connection.CreateCommand();
+          command.CommandText =
+          $@"
                 INSERT INTO rngnums (num)
                 VALUES {rngMsgJoin}
             ";
 
-            command.ExecuteNonQuery();
+          command.ExecuteNonQuery();
 
-            await msg.Channel.SendMessageAsync(rngMsgJoin);
-          }
-          catch (Exception e)
-          {
-            await msg.Channel.SendMessageAsync("Nem egész számokat adtál meg! Helyes szintaktika: `!setrng 10 20 30`");
-          }
+          await msg.Channel.SendMessageAsync(rngMsgJoin);
         }
-
-        if (msg.Content.StartsWith("!clearrng"))
+        catch (Exception e)
         {
-          var command = connection.CreateCommand();
-            command.CommandText =
-            $@"
+          await msg.Channel.SendMessageAsync("Nem egész számokat adtál meg! Helyes szintaktika: `!setrng 10 20 30`");
+        }
+      }
+
+      if (msg.Content.StartsWith("!clearrng"))
+      {
+        var command = connection.CreateCommand();
+        command.CommandText =
+        $@"
                 DELETE FROM rngnums
             ";
 
-            command.ExecuteNonQuery();
+        command.ExecuteNonQuery();
 
-            await msg.Channel.SendMessageAsync("Rng számok sikeresen törölve.");
-        }
+        await msg.Channel.SendMessageAsync("Rng számok sikeresen törölve.");
       }
+    }
   }
 };
 
