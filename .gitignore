@@ -1,5 +1,7 @@
 # Sensitive files
 config.json
+token.json
+storage.db
 
 # Generated files
 obj
