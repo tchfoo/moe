@@ -1,12 +1,15 @@
 using Newtonsoft.Json;
 
-class Token
+namespace TNTBot
 {
-  public string Value { get; set; }
-
-  public static Token Load()
+  public class Token
   {
-    var json = File.ReadAllText("token.json");
-    return JsonConvert.DeserializeObject<Token>(json);
+    public string Value { get; set; }
+
+    public static Token Load()
+    {
+      var json = File.ReadAllText("token.json");
+      return JsonConvert.DeserializeObject<Token>(json);
+    }
   }
 }

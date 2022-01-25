@@ -1,68 +1,45 @@
-﻿using System.Runtime.InteropServices;
-using Discord;
-using Discord.WebSocket;
-using Microsoft.Data.Sqlite;
+﻿using Discord;
+using TNTBot;
 
-var connection = new SqliteConnection("Data Source=storage.db");
-connection.Open();
 
-var command = connection.CreateCommand();
-command.CommandText =
-@"
-    CREATE TABLE IF NOT EXISTS rngnums(id INTEGER PRIMARY KEY AUTOINCREMENT, num INTEGER)
-";
+Services.Init();
 
-command.ExecuteNonQuery();
-// using (var reader = command.ExecuteReader())
-// {
-//     while (reader.Read())
-//     {
-//         var name = reader.GetString(0);
+await Services.ExecuteSqlNonQuery("CREATE TABLE IF NOT EXISTS rngnums(id INTEGER PRIMARY KEY AUTOINCREMENT, num INTEGER)");
 
-//         Console.WriteLine($"Hello, {name}!");
-//     }
-// }
 
-var config = Config.Load();
-var token = Token.Load();
-var client = new DiscordSocketClient();
-
-client.Log += async (msg) => Console.WriteLine(msg.ToString());
-
-client.Ready += async () =>
+SlashCommandBase[] commands = new SlashCommandBase[]
 {
-  var guild = client.GetGuild(config.ServerID);
-  var ping = new SlashCommandBuilder()
-    .WithName("ping")
-    .WithDescription("Test slash command");
-  await guild.CreateApplicationCommandAsync(ping.Build());
-
-  var rng = new SlashCommandBuilder()
-    .WithName("rng")
-    .WithDescription("Generates a random number.")
-    .AddOption("max", ApplicationCommandOptionType.Integer, "The maximum number the bot generates.", isRequired: true)
-    .AddOption("min", ApplicationCommandOptionType.Integer, "The minimum number the bot generates. Defaults to 1.", isRequired: false);
-  await guild.CreateApplicationCommandAsync(rng.Build());
+  new PingCommand(),
+  new RngCommand()
 };
 
-client.SlashCommandExecuted += async (cmd) =>
+Services.Client.Log += async (msg) => Console.WriteLine(msg.ToString());
+
+Services.Client.Ready += async () =>
 {
-  switch (cmd.CommandName)
+  foreach (var command in commands)
   {
-    case "ping":
-      await cmd.RespondAsync("Pong!");
-      break;
-    case "rng":
-      await HandleRngCommand(cmd);
-      break;
+    await command.Register();
   }
 };
 
-client.MessageReceived += async (msg) =>
+Services.Client.SlashCommandExecuted += async (cmd) =>
+{
+  foreach (var command in commands)
+  {
+    if (command.CommandName == cmd.CommandName)
+    {
+      await command.Handle(cmd);
+      break;
+    }
+  }
+};
+
+Services.Client.MessageReceived += async (msg) =>
 {
   if (msg.Channel.GetChannelType() == ChannelType.DM)
   {
-    if (config.Owners.Contains(msg.Author.Id) || msg.Author.Id == config.Yaha)
+    if (Services.Config.Owners.Contains(msg.Author.Id) || msg.Author.Id == Services.Config.Yaha)
     {
       if (msg.Content.StartsWith("!setrng"))
       {
@@ -78,7 +55,7 @@ client.MessageReceived += async (msg) =>
           string rngMsgJoin = string.Join(',', rngMsgSelect);
 
 
-          var command = connection.CreateCommand();
+          var command = Services.Connection.CreateCommand();
           command.CommandText =
           $@"
                 INSERT INTO rngnums (num)
@@ -97,7 +74,7 @@ client.MessageReceived += async (msg) =>
 
       if (msg.Content.StartsWith("!clearrng"))
       {
-        var command = connection.CreateCommand();
+        var command = Services.Connection.CreateCommand();
         command.CommandText =
         $@"
           DELETE FROM rngnums
@@ -111,87 +88,9 @@ client.MessageReceived += async (msg) =>
   }
 };
 
-async Task HandleRngCommand(SocketSlashCommand cmd)
-{
-
-  long rngMax = 0, rngMin = 0;
-
-  foreach (var cmdOption in cmd.Data.Options)
-  {
-    if (cmdOption.Name == "max")
-    {
-      rngMax = (long)cmdOption.Value;
-    }
-    else if (cmdOption.Name == "min")
-    {
-      rngMin = (long)cmdOption.Value;
-    }
-  }
-
-  var command = connection.CreateCommand();
-  command.CommandText =
-  @"
-    SELECT COUNT(id) FROM rngnums;
-  ";
-
-  int checkCount = 0;
-  command.ExecuteNonQuery();
-  using (var reader = command.ExecuteReader())
-  {
-    while (reader.Read())
-    {
-      checkCount = int.Parse(reader.GetString(0));
-    }
-  }
-
-  if (checkCount > 0)
-  {
-    command = connection.CreateCommand();
-    command.CommandText =
-    @"
-      SELECT * FROM rngnums LIMIT(1);
-    ";
-
-    int selectedNum = 0;
-    command.ExecuteNonQuery();
-    using (var reader = command.ExecuteReader())
-    {
-      while (reader.Read())
-      {
-        selectedNum = int.Parse(reader.GetString(1));
-        await cmd.RespondAsync(selectedNum.ToString());
-      }
-    }
-
-    var deleteCommand = connection.CreateCommand();
-    deleteCommand.CommandText =
-    $@"
-        DELETE FROM rngnums WHERE id = (SELECT id FROM rngnums LIMIT(1));
-    ";
-
-    deleteCommand.ExecuteNonQuery();
-  }
-  else
-  {
-    if (rngMin > rngMax)
-    {
-      await cmd.RespondAsync("\u274C A minimum szám nem lehet nagyobb, mint a maximum!");
-    }
-    else if (rngMin == rngMax)
-    {
-      await cmd.RespondAsync("\u274C A két szám nem lehet ugyan az!");
-    }
-    else
-    {
-      long rngNum = Random.Shared.NextInt64(rngMin, rngMax);
-      await cmd.RespondAsync(rngNum.ToString());
-    }
-  }
-}
-
-
-await client.LoginAsync(TokenType.Bot, token.Value);
-await client.StartAsync();
+var token = Token.Load().Value;
+await Services.Client.LoginAsync(TokenType.Bot, token);
+await Services.Client.StartAsync();
 
 // Don't close the app
 await Task.Delay(-1);
