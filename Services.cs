@@ -1,4 +1,5 @@
 
+using Discord;
 using Discord.WebSocket;
 using Microsoft.Data.Sqlite;
 
@@ -14,7 +15,12 @@ namespace TNTBot
     {
       Connection = new SqliteConnection("Data Source=storage.db");
       Connection.Open();
-      Client = new DiscordSocketClient();
+      var config = new DiscordSocketConfig()
+      {
+        GatewayIntents = GatewayIntents.GuildMembers | GatewayIntents.AllUnprivileged,
+        AlwaysDownloadUsers = true
+      };
+      Client = new DiscordSocketClient(config);
       Config = Config.Load();
     }
 

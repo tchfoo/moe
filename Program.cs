@@ -10,7 +10,9 @@ await Services.ExecuteSqlNonQuery("CREATE TABLE IF NOT EXISTS rngnums(id INTEGER
 SlashCommandBase[] commands = new SlashCommandBase[]
 {
   new PingCommand(),
-  new RngCommand()
+  new RngCommand(),
+  new MuteCommand(),
+  new UnmuteCommand()
 };
 
 Services.Client.Log += async (msg) => Console.WriteLine(msg.ToString());
