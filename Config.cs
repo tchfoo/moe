@@ -4,9 +4,9 @@ namespace TNTBot
 {
   public class Config
   {
-    public ulong ServerID { get; set; }
-    public List<ulong> Owners { get; set; }
-    public ulong Yaha { get; set; }
+    public ulong ServerID { get; set; } = default!;
+    public List<ulong> Owners { get; set; } = default!;
+    public ulong Yaha { get; set; } = default!;
 
     public static Config Load()
     {
@@ -14,5 +14,4 @@ namespace TNTBot
       return JsonConvert.DeserializeObject<Config>(json)!;
     }
   }
-
 }

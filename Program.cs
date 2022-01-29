@@ -1,35 +1,37 @@
 ﻿using Discord;
-using TNTBot;
+using TNTBot.Commands;
+using TNTBot.Services;
 
+SlashCommandBase[] commands = default!;
 
-Services.Init();
-
-await Services.ExecuteSqlNonQuery("CREATE TABLE IF NOT EXISTS rngnums(id INTEGER PRIMARY KEY AUTOINCREMENT, num INTEGER)");
-
-
-SlashCommandBase[] commands = new SlashCommandBase[]
+DiscordService.Discord.Log += (msg) =>
 {
-  new PingCommand(),
-  new RngCommand(),
-  new MuteCommand(),
-  new UnmuteCommand()
+  Console.WriteLine(msg.ToString());
+  return Task.CompletedTask;
 };
 
-Services.Client.Log += async (msg) => Console.WriteLine(msg.ToString());
-
-Services.Client.Ready += async () =>
+DiscordService.Discord.Ready += async () =>
 {
+  var muteService = new MuteService();
+  commands = new SlashCommandBase[]
+  {
+    new PingCommand(),
+    new RngCommand(),
+    new MuteCommand(muteService),
+    new UnmuteCommand(muteService)
+  };
+
   foreach (var command in commands)
   {
     await command.Register();
   }
 };
 
-Services.Client.SlashCommandExecuted += async (cmd) =>
+DiscordService.Discord.SlashCommandExecuted += async (cmd) =>
 {
-  foreach (var command in commands)
+  foreach (var command in commands!)
   {
-    if (command.CommandName == cmd.CommandName)
+    if (command.Name == cmd.CommandName)
     {
       await command.Handle(cmd);
       break;
@@ -37,11 +39,11 @@ Services.Client.SlashCommandExecuted += async (cmd) =>
   }
 };
 
-Services.Client.MessageReceived += async (msg) =>
+DiscordService.Discord.MessageReceived += async (msg) =>
 {
   if (msg.Channel.GetChannelType() == ChannelType.DM)
   {
-    if (Services.Config.Owners.Contains(msg.Author.Id) || msg.Author.Id == Services.Config.Yaha)
+    if (ConfigService.Config.Owners.Contains(msg.Author.Id) || msg.Author.Id == ConfigService.Config.Yaha)
     {
       if (msg.Content.StartsWith("!setrng"))
       {
@@ -52,23 +54,16 @@ Services.Client.MessageReceived += async (msg) =>
 
           List<string> rngMsgSelect = rngMsg
             .Select(x => int.Parse(x))
-            .Select(x => $"({x.ToString()})")
+            .Select(x => $"({x})")
             .ToList();
           string rngMsgJoin = string.Join(',', rngMsgSelect);
 
-
-          var command = Services.Connection.CreateCommand();
-          command.CommandText =
-          $@"
-                INSERT INTO rngnums (num)
-                VALUES {rngMsgJoin}
-            ";
-
-          command.ExecuteNonQuery();
+          var addRngSql = $"INSERT INTO rngnums (num) VALUES {rngMsgJoin};";
+          await DatabaseService.NonQuery(addRngSql);
 
           await msg.Channel.SendMessageAsync(rngMsgJoin);
         }
-        catch (Exception e)
+        catch (FormatException)
         {
           await msg.Channel.SendMessageAsync("Nem egész számokat adtál meg! Helyes szintaktika: `!setrng 10 20 30`");
         }
@@ -76,13 +71,7 @@ Services.Client.MessageReceived += async (msg) =>
 
       if (msg.Content.StartsWith("!clearrng"))
       {
-        var command = Services.Connection.CreateCommand();
-        command.CommandText =
-        $@"
-          DELETE FROM rngnums
-        ";
-
-        command.ExecuteNonQuery();
+        await DatabaseService.NonQuery("DELETE FROM rngnums;");
 
         await msg.Channel.SendMessageAsync("Rng számok sikeresen törölve.");
       }
@@ -90,9 +79,8 @@ Services.Client.MessageReceived += async (msg) =>
   }
 };
 
-var token = Token.Load().Value;
-await Services.Client.LoginAsync(TokenType.Bot, token);
-await Services.Client.StartAsync();
+await DiscordService.Discord.LoginAsync(TokenType.Bot, ConfigService.Token.Value);
+await DiscordService.Discord.StartAsync();
 
 // Don't close the app
 await Task.Delay(-1);
