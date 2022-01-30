@@ -14,6 +14,7 @@ namespace TNTBot.Commands
         .AddOption("max", ApplicationCommandOptionType.Integer, "The minimum number the bot generates. Defaults to 1", isRequired: true);
     }
 
+    //DISCLAIMER: This command contains an unfair advantage, where you can define your own RNG pool. The bot authors are not responsible for the use/abuse of this feature, and never would use (or used) it themselves. This feature is only intended for educational purposes only.
     public override async Task OnRegister()
     {
       await DatabaseService.NonQuery(@"
