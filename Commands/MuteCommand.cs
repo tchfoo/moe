@@ -8,15 +8,16 @@ namespace TNTBot.Commands
   public class MuteCommand : SlashCommandBase
   {
     private static readonly TimeSpan DefaultMuteDuration = TimeSpan.FromMinutes(30);
-    private readonly MuteService muteService;
+    private readonly MuteService service;
 
-    public MuteCommand(MuteService service) : base("mute", "Mute a user.")
+    public MuteCommand(MuteService service) : base("mute")
     {
+      Description = "Mute a user";
       Options = new SlashCommandOptionBuilder()
-        .AddOption("user", ApplicationCommandOptionType.User, "The user to mute.", isRequired: true)
+        .AddOption("user", ApplicationCommandOptionType.User, "The user to mute", isRequired: true)
         .AddOption("time", ApplicationCommandOptionType.String, "Duration of the mute (eg. 1h 30m)", isRequired: false)
-        .AddOption("reason", ApplicationCommandOptionType.String, "Reason for the mute.", isRequired: false);
-      muteService = service;
+        .AddOption("reason", ApplicationCommandOptionType.String, "Reason for the mute", isRequired: false);
+      this.service = service;
     }
 
     public override async Task Handle(SocketSlashCommand cmd)
@@ -30,14 +31,14 @@ namespace TNTBot.Commands
       var expireAt = DateTime.Now + duration;
       var reason = cmd.GetOption("reason", "unspecified");
 
-      if (await muteService.IsMuted(user))
+      if (await service.IsMuted(user))
       {
-        await cmd.RespondAsync($"**{user}** is already muted.");
+        await cmd.RespondAsync($"**{user}** is already muted");
         return;
       }
 
-      await muteService.MuteUser(user, expireAt);
-      await cmd.RespondAsync($"Muted **{user}** for {duration}. Reason: {reason}.");
+      await service.MuteUser(user, expireAt);
+      await cmd.RespondAsync($"Muted **{user}** for {duration}. Reason: {reason}");
     }
 
     private TimeSpan ParseDuration(string s)
@@ -51,14 +52,13 @@ namespace TNTBot.Commands
 
     private int ParsePostfixedNumber(string text, string postfix)
     {
-      var match = Regex.Match(text, $@"\d+\s*{postfix}");
+      var match = Regex.Match(text, $@"(\d+)\s*{postfix}");
       if (!match.Success)
       {
         return 0;
       }
 
-      var withoutPostfix = match.Value.Replace(postfix, string.Empty);
-      return int.Parse(withoutPostfix);
+      return int.Parse(match.Groups[1].Value);
     }
   }
 }

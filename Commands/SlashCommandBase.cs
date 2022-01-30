@@ -8,14 +8,19 @@ namespace TNTBot.Commands
   public abstract class SlashCommandBase
   {
     private SocketGuild Guild { get => DiscordService.Discord.GetGuild(Config.Load().ServerID); }
+    private string? description;
+
     public string Name { get; protected set; }
-    public string Description { get; protected set; }
+    public string? Description
+    {
+      get => description ?? "No description";
+      protected set => description = value;
+    }
     public SlashCommandOptionBuilder? Options { get; protected set; }
 
-    protected SlashCommandBase(string name, string description)
+    protected SlashCommandBase(string name)
     {
       Name = name;
-      Description = description;
     }
 
     public virtual Task OnRegister() => Task.CompletedTask;
@@ -27,10 +32,11 @@ namespace TNTBot.Commands
       var builder = new SlashCommandBuilder()
         .WithName(Name)
         .WithDescription(Description);
-      if (Options != null)
+      if (Options is not null)
       {
         builder.AddOptions(Options.Options.ToArray());
       }
+
       await Guild.CreateApplicationCommandAsync(builder.Build());
       await OnRegister();
     }

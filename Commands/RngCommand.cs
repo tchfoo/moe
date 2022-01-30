@@ -6,16 +6,21 @@ namespace TNTBot.Commands
 {
   public class RngCommand : SlashCommandBase
   {
-    public RngCommand() : base("rng", "Generates a random number.")
+    public RngCommand() : base("rng")
     {
+      Description = "Generates a random number";
       Options = new SlashCommandOptionBuilder()
-        .AddOption("min", ApplicationCommandOptionType.Integer, "The maximum number the bot generates.", isRequired: true)
-        .AddOption("max", ApplicationCommandOptionType.Integer, "The minimum number the bot generates. Defaults to 1.", isRequired: true);
+        .AddOption("min", ApplicationCommandOptionType.Integer, "The maximum number the bot generates", isRequired: true)
+        .AddOption("max", ApplicationCommandOptionType.Integer, "The minimum number the bot generates. Defaults to 1", isRequired: true);
     }
 
     public override async Task OnRegister()
     {
-      await DatabaseService.NonQuery("CREATE TABLE IF NOT EXISTS rngnums(id INTEGER PRIMARY KEY AUTOINCREMENT, num INTEGER)");
+      await DatabaseService.NonQuery(@"
+        CREATE TABLE IF NOT EXISTS rngnums(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          num INTEGER
+        )");
     }
 
     public override async Task Handle(SocketSlashCommand cmd)
@@ -31,6 +36,59 @@ namespace TNTBot.Commands
       {
         await PrintRealRng(rngMin, rngMax, cmd);
       }
+    }
+
+    public async Task<bool> HandleDM(SocketMessage msg, string name, List<string> args)
+    {
+      if (msg.Channel.GetChannelType() != ChannelType.DM)
+      {
+        return false;
+      }
+
+      var owners = ConfigService.Config.Owners;
+      var yaha = ConfigService.Config.Yaha;
+      var author = msg.Author.Id;
+      if (!(owners.Contains(author) || author == yaha))
+      {
+        return false;
+      }
+
+      switch (name)
+      {
+        case "setrng":
+          await SetRng(msg, args);
+          return true;
+        case "clearrng":
+          await ClearRng(msg);
+          return true;
+      }
+
+      return false;
+    }
+
+    private async Task SetRng(SocketMessage msg, List<string> args)
+    {
+      try
+      {
+        List<string> numsList = args
+          .Select(int.Parse)
+          .Select(x => $"({x})")
+          .ToList();
+        string numsSql = string.Join(',', numsList);
+        var addSql = $"INSERT INTO rngnums (num) VALUES {numsSql}";
+        await DatabaseService.NonQuery(addSql);
+        await msg.Channel.SendMessageAsync(numsSql);
+      }
+      catch (FormatException)
+      {
+        await msg.Channel.SendMessageAsync("Nem egész számokat adtál meg! Helyes szintaktika: `!setrng 10 20 30`");
+      }
+    }
+
+    private async Task ClearRng(SocketMessage msg)
+    {
+      await DatabaseService.NonQuery("DELETE FROM rngnums");
+      await msg.Channel.SendMessageAsync("Rng számok sikeresen törölve");
     }
 
     private async Task<bool> IsFakeRngNumberAvailable()

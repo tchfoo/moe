@@ -1,86 +1,53 @@
-﻿using Discord;
-using TNTBot.Commands;
+﻿using TNTBot.Commands;
 using TNTBot.Services;
 
-SlashCommandBase[] commands = default!;
-
-DiscordService.Discord.Log += (msg) =>
-{
-  Console.WriteLine(msg.ToString());
-  return Task.CompletedTask;
-};
+DiscordService.Init();
 
 DiscordService.Discord.Ready += async () =>
 {
   var muteService = new MuteService();
-  commands = new SlashCommandBase[]
+  var customCommandService = new CustomCommandService();
+  var rngCommand = new RngCommand();
+  var customCommandHandlerDM = new CustomCommandHandlerDM(customCommandService);
+
+  var commands = new List<SlashCommandBase>
   {
     new PingCommand(),
-    new RngCommand(),
+    rngCommand,
     new MuteCommand(muteService),
-    new UnmuteCommand(muteService)
+    new UnmuteCommand(muteService),
+    new CustomCommandCommand(customCommandService),
   };
-
   foreach (var command in commands)
   {
     await command.Register();
   }
-};
 
-DiscordService.Discord.SlashCommandExecuted += async (cmd) =>
-{
-  foreach (var command in commands!)
+  DiscordService.Discord.SlashCommandExecuted += async (cmd) =>
   {
-    if (command.Name == cmd.CommandName)
-    {
-      await command.Handle(cmd);
-      break;
-    }
-  }
-};
+    var command = commands.First(x => cmd.CommandName == x.Name);
+    await command.Handle(cmd);
+  };
 
-DiscordService.Discord.MessageReceived += async (msg) =>
-{
-  if (msg.Channel.GetChannelType() == ChannelType.DM)
+  DiscordService.Discord.MessageReceived += async (msg) =>
   {
-    if (ConfigService.Config.Owners.Contains(msg.Author.Id) || msg.Author.Id == ConfigService.Config.Yaha)
+    var prefix = ConfigService.Config.CommandPrefix;
+    if (!msg.Content.StartsWith(prefix) || msg.Author.IsBot)
     {
-      if (msg.Content.StartsWith("!setrng"))
-      {
-        try
-        {
-          string tempRngMsg = msg.Content.Replace("!setrng", "").Trim();
-          string[] rngMsg = tempRngMsg.Split(' ');
-
-          List<string> rngMsgSelect = rngMsg
-            .Select(x => int.Parse(x))
-            .Select(x => $"({x})")
-            .ToList();
-          string rngMsgJoin = string.Join(',', rngMsgSelect);
-
-          var addRngSql = $"INSERT INTO rngnums (num) VALUES {rngMsgJoin};";
-          await DatabaseService.NonQuery(addRngSql);
-
-          await msg.Channel.SendMessageAsync(rngMsgJoin);
-        }
-        catch (FormatException)
-        {
-          await msg.Channel.SendMessageAsync("Nem egész számokat adtál meg! Helyes szintaktika: `!setrng 10 20 30`");
-        }
-      }
-
-      if (msg.Content.StartsWith("!clearrng"))
-      {
-        await DatabaseService.NonQuery("DELETE FROM rngnums;");
-
-        await msg.Channel.SendMessageAsync("Rng számok sikeresen törölve.");
-      }
+      return;
     }
-  }
+
+    var tokens = msg.Content.Split(' ');
+    var name = customCommandService.CleanCommandName(tokens[0]);
+    var args = tokens.Skip(1).ToList();
+
+    if (await rngCommand.HandleDM(msg, name, args))
+    {
+      return;
+    }
+
+    await customCommandHandlerDM.TryHandleCommand(msg, name, args);
+  };
 };
 
-await DiscordService.Discord.LoginAsync(TokenType.Bot, ConfigService.Token.Value);
-await DiscordService.Discord.StartAsync();
-
-// Don't close the app
-await Task.Delay(-1);
+await DiscordService.Start();

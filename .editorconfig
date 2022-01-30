@@ -1,0 +1,8 @@
+[*.cs]
+# Disable "Mark local variable as const."
+dotnet_diagnostic.rcs1118.severity = none
+# Disable "Use explicit type instead of 'var'."
+dotnet_diagnostic.IDE0008.severity = none
+# Enable "Using directive is unnecessary."
+dotnet_diagnostic.IDE0005.severity = suggestion
+

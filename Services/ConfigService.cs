@@ -1,7 +1,3 @@
-
-using Discord;
-using Discord.WebSocket;
-
 namespace TNTBot.Services
 {
   public static class ConfigService

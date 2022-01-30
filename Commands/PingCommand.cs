@@ -4,7 +4,10 @@ namespace TNTBot.Commands
 {
   public class PingCommand : SlashCommandBase
   {
-    public PingCommand() : base("ping", "Test slash command") { }
+    public PingCommand() : base("ping")
+    {
+      Description = "Test slash command";
+    }
 
     public override async Task Handle(SocketSlashCommand cmd)
     {
