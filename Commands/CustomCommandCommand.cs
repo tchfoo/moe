@@ -91,13 +91,19 @@ namespace TNTBot.Commands
       }
 
       var commands = await service.GetCommands(guild);
-      var response = "Custom commands:\n";
+
+      var embed = new EmbedBuilder()
+        .WithTitle("Custom commands");
+
       foreach (var command in commands)
       {
-        response += $"**{service.PrefixCommandName(command.Name)}**: {command.Description}\n";
+        var field = new EmbedFieldBuilder()
+          .WithName(service.PrefixCommandName(command.Name))
+          .WithValue(command.Description);
+        embed.AddField(field);
       }
 
-      await cmd.RespondAsync(response);
+      await cmd.RespondAsync(embed: embed.Build());
     }
 
     private bool ValidateResponse(string response, out string? error)
