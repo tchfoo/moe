@@ -7,6 +7,7 @@ DiscordService.Discord.Ready += async () =>
 {
   var muteService = new MuteService();
   var customCommandService = new CustomCommandService();
+  var roleService = new RoleService();
   var rngCommand = new RngCommand();
   var customCommandHandlerDM = new CustomCommandHandlerDM(customCommandService);
 
@@ -17,6 +18,7 @@ DiscordService.Discord.Ready += async () =>
     new MuteCommand(muteService),
     new UnmuteCommand(muteService),
     new CustomCommandCommand(customCommandService),
+    new SetRoleCommand(roleService),
   };
   foreach (var command in commands)
   {
