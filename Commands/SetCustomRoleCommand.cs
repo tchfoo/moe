@@ -4,11 +4,11 @@ using TNTBot.Services;
 
 namespace TNTBot.Commands
 {
-  public class SetRoleCommand : SlashCommandBase
+  public class SetCustomRoleCommand : SlashCommandBase
   {
-    private readonly RoleService service;
+    private readonly CustomRoleService service;
 
-    public SetRoleCommand(RoleService service) : base("setrole")
+    public SetCustomRoleCommand(CustomRoleService service) : base("setrole")
     {
       Options = new SlashCommandOptionBuilder()
         .AddOption(new SlashCommandOptionBuilder()
