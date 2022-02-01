@@ -20,9 +20,15 @@ DiscordService.Discord.Ready += async () =>
     new CustomCommandCommand(customCommandService),
     new SetRoleCommand(roleService),
   };
-  foreach (var command in commands)
+
+  if (args.Contains("--register-commands"))
   {
-    await command.Register();
+    var guild = DiscordService.Discord.GetGuild(ConfigService.Config.ServerID);
+    await guild.DeleteApplicationCommandsAsync();
+    foreach (var command in commands)
+    {
+      await command.Register();
+    }
   }
 
   DiscordService.Discord.SlashCommandExecuted += async (cmd) =>
