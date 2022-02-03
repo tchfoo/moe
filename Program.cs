@@ -1,5 +1,9 @@
-﻿using TNTBot.Commands;
+﻿using System.Net.NetworkInformation;
+using System.ComponentModel.Design;
+using TNTBot.Commands;
 using TNTBot.Services;
+using Discord;
+using Discord.WebSocket;
 
 DiscordService.Init();
 
@@ -58,6 +62,32 @@ DiscordService.Discord.Ready += async () =>
 
     await customCommandHandlerDM.TryHandleCommand(msg, name, args);
   };
+
+  var guild2 = DiscordService.Discord.GetGuild(ConfigService.Config.ServerID);
+  var guildMessageCommand = new MessageCommandBuilder();
+  guildMessageCommand.WithName("Pin to pin channel");
+  await guild2.CreateApplicationCommandAsync(guildMessageCommand.Build());
 };
+
+DiscordService.Discord.MessageCommandExecuted += MessageCommandHandler;
+
+static async Task MessageCommandHandler(SocketMessageCommand arg)
+{
+  if (arg.CommandName == "Pin to pin channel")
+  {
+    var pinChannel = (SocketTextChannel)DiscordService.Discord.GetChannel(938860776591089674);
+
+    await arg.RespondAsync("Message successfully pinned.", ephemeral: true);
+    var roles = ((SocketGuildUser)arg.Data.Message.Author).Roles.ToList()
+      .OrderBy(x => x.Position);
+
+    var embed = new EmbedBuilder()
+      .WithAuthor(arg.Data.Message.Author)
+      .WithDescription($"{arg.Data.Message}\n\n[Jump to message]({arg.Data.Message.GetJumpUrl()})")
+      .WithFooter($"{arg.Data.Message.Timestamp.DateTime.ToString("yyyy-MM-dd • H:m")}")
+      .WithColor(roles.Last().Color);
+    await pinChannel.SendMessageAsync(embed: embed.Build());
+  }
+}
 
 await DiscordService.Start();
