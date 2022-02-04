@@ -1,4 +1,5 @@
-﻿using System.Net.NetworkInformation;
+﻿using System.Runtime.InteropServices;
+using System.Net.NetworkInformation;
 using System.ComponentModel.Design;
 using TNTBot.Commands;
 using TNTBot.Services;
@@ -25,7 +26,7 @@ DiscordService.Discord.Ready += async () =>
     new SetCustomRoleCommand(customRoleService),
     new CustomRoleCommand(customRoleService),
     new ListCustomRolesCommand(customRoleService),
-  };
+};
 
   if (args.Contains("--register-commands"))
   {
@@ -78,15 +79,31 @@ static async Task MessageCommandHandler(SocketMessageCommand arg)
     var pinChannel = (SocketTextChannel)DiscordService.Discord.GetChannel(938860776591089674);
 
     await arg.RespondAsync("Message successfully pinned.", ephemeral: true);
-    var roles = ((SocketGuildUser)arg.Data.Message.Author).Roles.ToList()
+    var roles = ((SocketGuildUser)arg.Data.Message.Author).Roles
+      .Where(x => x.Color != Color.Default)
       .OrderBy(x => x.Position);
 
-    var embed = new EmbedBuilder()
+    if (arg.Data.Message.Attachments.Any())
+    {
+      var embed = new EmbedBuilder()
+      .WithAuthor(arg.Data.Message.Author)
+      .WithImageUrl(arg.Data.Message.Attachments.First().Url)
+      .WithDescription($"{arg.Data.Message}\n\n[Jump to message]({arg.Data.Message.GetJumpUrl()})")
+      .WithFooter($"{arg.Data.Message.Timestamp.DateTime.ToString("yyyy-MM-dd • H:m")}")
+      .WithColor(roles.Last().Color);
+
+      await pinChannel.SendMessageAsync(embed: embed.Build());
+    }
+    else
+    {
+      var embed = new EmbedBuilder()
       .WithAuthor(arg.Data.Message.Author)
       .WithDescription($"{arg.Data.Message}\n\n[Jump to message]({arg.Data.Message.GetJumpUrl()})")
       .WithFooter($"{arg.Data.Message.Timestamp.DateTime.ToString("yyyy-MM-dd • H:m")}")
       .WithColor(roles.Last().Color);
-    await pinChannel.SendMessageAsync(embed: embed.Build());
+
+      await pinChannel.SendMessageAsync(embed: embed.Build());
+    }
   }
 }
 
