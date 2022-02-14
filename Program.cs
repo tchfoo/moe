@@ -27,6 +27,8 @@ DiscordService.Discord.Ready += async () =>
     new SetCustomRoleCommand(customRoleService),
     new CustomRoleCommand(customRoleService),
     new ListCustomRolesCommand(customRoleService),
+    new RankCommand(levelService),
+    new LevelsCommand(levelService),
 };
 
   if (args.Contains("--register-commands"))

@@ -10,19 +10,38 @@ namespace TNTBot.Models
 
     public int Id { get; set; }
     public SocketGuildUser User { get; set; }
-    public int XP { get; set; }
-    public int LevelNumber
-    {
-      get => (int)Math.Pow(XP / AverageXPPerMessage, 1 / 2.38) + 1;
-    }
+    public int TotalXP { get; set; }
     public DateTime LastUpdated { get; set; }
+    public double PercentageToNextLevel { get => XPToLevel(TotalXP) % 1; }
+    public int LevelNumber { get => (int)XPToLevel(TotalXP); }
+    public int TotalLevelXP
+    {
+      get
+      {
+        var currentLevelXP = LevelToXP(LevelNumber);
+        var nextLevelXP = LevelToXP(LevelNumber + 1);
+        return nextLevelXP - currentLevelXP;
+      }
+    }
+    public int XPFromThisLevel { get => TotalXP - LevelToXP(LevelNumber); }
+    public int XPToNextLevel { get => TotalLevelXP - XPFromThisLevel; }
 
     public Level(int id, SocketGuildUser user, int xp, DateTime lastUpdated)
     {
       Id = id;
       User = user;
-      XP = xp;
+      TotalXP = xp;
       LastUpdated = lastUpdated;
+    }
+
+    private int LevelToXP(double level)
+    {
+      return (int)(Math.Pow(level - 1, 2.38) * AverageXPPerMessage);
+    }
+
+    private double XPToLevel(int xp)
+    {
+      return Math.Pow(xp / AverageXPPerMessage, 1 / 2.38) + 1;
     }
   }
 }

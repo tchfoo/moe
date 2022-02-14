@@ -32,7 +32,35 @@ namespace TNTBot.Services
       }
     }
 
-    private async Task EnsureLevelExists(SocketGuildUser user)
+    public async Task<Level> GetLevel(SocketGuildUser user)
+    {
+      var sql = "SELECT id, xp, last_updated FROM levels WHERE guild_id = $0 AND user_id = $1";
+      var result = (await DatabaseService.Query<int, int, DateTime>(sql, user.Guild.Id, user.Id))[0];
+      return new Level(result.Item1, user, result.Item2, result.Item3);
+    }
+
+    public async Task<List<Level>> GetLeaderboard(SocketGuild guild)
+    {
+      var sql = "SELECT id, user_id, xp, last_updated FROM levels WHERE guild_id = $0 ORDER BY xp DESC";
+      var results = await DatabaseService.Query<int, ulong, int, DateTime>(sql, guild.Id);
+      return results.ConvertAll(x => new Level(x.Item1, guild.GetUser(x.Item2), x.Item3, x.Item4));
+    }
+
+    public async Task<int> GetRank(SocketGuildUser user)
+    {
+      var sql = "SELECT user_id FROM levels WHERE guild_id = $0 ORDER BY xp DESC";
+      var ids = await DatabaseService.Query<ulong>(sql, user.Guild.Id);
+      for (int i = 0; i < ids.Count; i++)
+      {
+        if (ids[i] == user.Id)
+        {
+          return i + 1;
+        }
+      }
+      return -1;
+    }
+
+    public async Task EnsureLevelExists(SocketGuildUser user)
     {
       if (!await HasLevel(user))
       {
@@ -60,7 +88,7 @@ namespace TNTBot.Services
     private async Task AddXP(SocketGuildUser user, int xp)
     {
       var level = await GetLevel(user);
-      await UpdateLevel(user, level.XP + xp);
+      await UpdateLevel(user, level.TotalXP + xp);
     }
 
     private async Task<bool> HasLevel(SocketGuildUser user)
@@ -76,17 +104,10 @@ namespace TNTBot.Services
       await DatabaseService.NonQuery(sql, user.Guild.Id, user.Id);
     }
 
-    private async Task<Level> GetLevel(SocketGuildUser user)
-    {
-      var sql = "SELECT id, xp, last_updated FROM levels WHERE guild_id = $0 AND user_id = $1";
-      var result = (await DatabaseService.Query<int, int, DateTime>(sql, user.Guild.Id, user.Id))[0];
-      return new Level(result.Item1, user, result.Item2, result.Item3);
-    }
-
     private async Task UpdateLevel(SocketGuildUser user, int xp)
     {
-      var sql = "UPDATE levels SET xp = $0 WHERE guild_id = $1 AND user_id = $2";
-      await DatabaseService.NonQuery(sql, xp, user.Guild.Id, user.Id);
+      var sql = "UPDATE levels SET xp = $0, last_updated = $1 WHERE guild_id = $2 AND user_id = $3";
+      await DatabaseService.NonQuery(sql, xp, DateTime.Now, user.Guild.Id, user.Id);
     }
 
     private async Task CreateLevelsTable()
