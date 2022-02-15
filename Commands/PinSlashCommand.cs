@@ -65,6 +65,11 @@ namespace TNTBot.Commands
         return;
       }
 
+      if (!await service.EnsurePinnable(cmd, message))
+      {
+        return;
+      }
+
       var pinChannel = service.GetPinChannel();
 
       await cmd.RespondAsync("Message successfully pinned.");

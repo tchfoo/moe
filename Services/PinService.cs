@@ -33,5 +33,16 @@ namespace TNTBot.Services
 
       return embed.Build();
     }
+
+    public async Task<bool> EnsurePinnable(SocketCommandBase cmd, IMessage msg)
+    {
+      if (msg.Author.IsBot)
+      {
+        await cmd.RespondAsync("I'm not allowed to respond to bots");
+        return false;
+      }
+
+      return true;
+    }
   }
 }
