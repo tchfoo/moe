@@ -22,7 +22,7 @@ namespace TNTBot.Commands
 
     public async Task Register()
     {
-      var builder = new SlashCommandBuilder().WithName(Name);
+      var builder = new MessageCommandBuilder().WithName(Name);
       await Guild.CreateApplicationCommandAsync(builder.Build());
       await OnRegister();
     }
