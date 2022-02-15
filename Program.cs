@@ -26,6 +26,7 @@ DiscordService.Discord.Ready += async () =>
     new SetCustomRoleCommand(customRoleService),
     new CustomRoleCommand(customRoleService),
     new ListCustomRolesCommand(customRoleService),
+    new PinCommand(),
 };
 
   if (args.Contains("--register-commands"))
@@ -78,7 +79,7 @@ static async Task MessageCommandHandler(SocketMessageCommand arg)
   {
     var pinChannel = (SocketTextChannel)DiscordService.Discord.GetChannel(938860776591089674);
 
-    await arg.RespondAsync("Message successfully pinned.", ephemeral: true);
+    await arg.RespondAsync("Message successfully pinned.");
     var roles = ((SocketGuildUser)arg.Data.Message.Author).Roles
       .Where(x => x.Color != Color.Default)
       .OrderBy(x => x.Position);
