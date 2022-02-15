@@ -1,4 +1,3 @@
-using System;
 using Discord;
 using Discord.WebSocket;
 using TNTBot.Services;
@@ -8,11 +7,13 @@ namespace TNTBot.Commands
 {
   public class PinCommand : SlashCommandBase
   {
-    public PinCommand() : base("pin")
+    private readonly PinService service;
+    public PinCommand(PinService service) : base("pin")
     {
       Description = "Pin an existing message using a message link.";
       Options = new SlashCommandOptionBuilder()
         .AddOption("link", ApplicationCommandOptionType.String, "The link of a message", isRequired: true);
+      this.service = service;
     }
 
     public override async Task Handle(SocketSlashCommand cmd)
@@ -27,59 +28,47 @@ namespace TNTBot.Commands
         return;
       }
 
+      var guildId = ((SocketGuildUser)cmd.User).Guild.Id;
+      var channelId = cmd.Channel.Id;
+
+      var groups = formattedMessageUrl.Groups;
+
+      ulong inputGuildId;
+      ulong inputChannelId;
+      ulong inputMessageId;
+
       try
       {
-        if (ulong.Parse(formattedMessageUrl.Groups[1].Value) == ((SocketGuildUser)cmd.User).Guild.Id && ulong.Parse(formattedMessageUrl.Groups[2].Value) == cmd.Channel.Id)
-        {
-          var message = await ((SocketTextChannel)cmd.Channel).GetMessageAsync(ulong.Parse(formattedMessageUrl.Groups[3].Value));
-
-          if (message == null)
-          {
-            await cmd.RespondAsync("Invalid message link.", ephemeral: true);
-            return;
-          }
-
-          var pinChannel = (SocketTextChannel)DiscordService.Discord.GetChannel(938860776591089674);
-
-          await cmd.RespondAsync("Message successfully pinned.");
-          var roles = ((SocketGuildUser)message.Author).Roles
-            .Where(x => x.Color != Color.Default)
-            .OrderBy(x => x.Position);
-
-          if (message.Attachments.Any())
-          {
-            var embed = new EmbedBuilder()
-            .WithAuthor(message.Author)
-            .WithImageUrl(message.Attachments.First().Url)
-            .WithDescription($"{message.Content}\n\n[Jump to message]({message.GetJumpUrl()})")
-            .WithFooter($"{message.Timestamp.DateTime:yyyy-MM-dd • H:m}")
-            .WithColor(roles.Last().Color);
-
-            await pinChannel.SendMessageAsync(embed: embed.Build());
-          }
-          else
-          {
-            var embed = new EmbedBuilder()
-              .WithAuthor(message.Author)
-              .WithDescription($"{message.Content}\n\n[Jump to message]({message.GetJumpUrl()})")
-              .WithFooter($"{message.Timestamp.DateTime:yyyy-MM-dd • H:m}")
-              .WithColor(roles.Last().Color);
-
-            await pinChannel.SendMessageAsync(embed: embed.Build());
-          }
-
-        }
-        else
-        {
-          await cmd.RespondAsync("You can only pin messages from this channel.", ephemeral: true);
-          return;
-        }
+        inputGuildId = ulong.Parse(groups[1].Value);
+        inputChannelId = ulong.Parse(groups[2].Value);
+        inputMessageId = ulong.Parse(groups[3].Value);
       }
       catch (Exception)
       {
         await cmd.RespondAsync("Invalid message link.", ephemeral: true);
         return;
       }
+
+      if (inputGuildId != guildId || inputChannelId != channelId)
+      {
+        await cmd.RespondAsync("You can only pin messages from this channel.", ephemeral: true);
+        return;
+      }
+
+      var channel = (SocketTextChannel)cmd.Channel;
+
+      var message = await channel.GetMessageAsync(inputMessageId);
+
+      if (message == null)
+      {
+        await cmd.RespondAsync("Invalid message link.", ephemeral: true);
+        return;
+      }
+
+      var pinChannel = service.GetPinChannel();
+
+      await cmd.RespondAsync("Message successfully pinned.");
+      await pinChannel.SendMessageAsync(embed: service.PinMessageEmbed(message));
     }
   }
 }
