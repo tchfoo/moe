@@ -7,14 +7,6 @@ namespace TNTBot.Services
   {
     private const long pinChannelId = 938860776591089674;
 
-    public async Task MessageCommandHandler(SocketMessageCommand arg)
-    {
-      SocketTextChannel pinChannel = GetPinChannel();
-
-      await arg.RespondAsync("Message successfully pinned.");
-      await pinChannel.SendMessageAsync(embed: PinMessageEmbed(arg.Data.Message));
-    }
-
     public SocketTextChannel GetPinChannel()
     {
       //TODO: Change this after settings

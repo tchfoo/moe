@@ -5,10 +5,10 @@ using System.Text.RegularExpressions;
 
 namespace TNTBot.Commands
 {
-  public class PinCommand : SlashCommandBase
+  public class PinSlashCommand : SlashCommandBase
   {
     private readonly PinService service;
-    public PinCommand(PinService service) : base("pin")
+    public PinSlashCommand(PinService service) : base("pin")
     {
       Description = "Pin an existing message using a message link.";
       Options = new SlashCommandOptionBuilder()

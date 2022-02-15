@@ -1,6 +1,5 @@
 ﻿using TNTBot.Commands;
 using TNTBot.Services;
-using Discord;
 
 DiscordService.Init();
 
@@ -13,7 +12,7 @@ DiscordService.Discord.Ready += async () =>
   var customCommandHandlerDM = new CustomCommandHandlerDM(customCommandService);
   var pinService = new PinService();
 
-  var commands = new List<SlashCommandBase>
+  var slashCommands = new List<SlashCommandBase>
   {
     new PingCommand(),
     rngCommand,
@@ -23,7 +22,11 @@ DiscordService.Discord.Ready += async () =>
     new SetCustomRoleCommand(customRoleService),
     new CustomRoleCommand(customRoleService),
     new ListCustomRolesCommand(customRoleService),
-    new PinCommand(pinService),
+    new PinSlashCommand(pinService),
+  };
+  var messageCommands = new List<MessageCommandBase>
+  {
+    new PinMessageCommand(pinService),
   };
 
   var guild = DiscordService.Discord.GetGuild(ConfigService.Config.ServerID);
@@ -31,7 +34,11 @@ DiscordService.Discord.Ready += async () =>
   if (args.Contains("--register-commands"))
   {
     await guild.DeleteApplicationCommandsAsync();
-    foreach (var command in commands)
+    foreach (var command in slashCommands)
+    {
+      await command.Register();
+    }
+    foreach (var command in messageCommands)
     {
       await command.Register();
     }
@@ -39,7 +46,13 @@ DiscordService.Discord.Ready += async () =>
 
   DiscordService.Discord.SlashCommandExecuted += async (cmd) =>
   {
-    var command = commands.First(x => cmd.CommandName == x.Name);
+    var command = slashCommands.First(x => cmd.CommandName == x.Name);
+    await command.Handle(cmd);
+  };
+
+  DiscordService.Discord.MessageCommandExecuted += async (cmd) =>
+  {
+    var command = messageCommands.First(x => cmd.CommandName == x.Name);
     await command.Handle(cmd);
   };
 
@@ -61,18 +74,6 @@ DiscordService.Discord.Ready += async () =>
     }
 
     await customCommandHandlerDM.TryHandleCommand(msg, name, args);
-  };
-
-  var guildMessageCommand = new MessageCommandBuilder();
-  guildMessageCommand.WithName("Pin to pin channel");
-  await guild.CreateApplicationCommandAsync(guildMessageCommand.Build());
-
-  DiscordService.Discord.MessageCommandExecuted += async (arg) =>
-  {
-    if (arg.CommandName == "Pin to pin channel")
-    {
-      await pinService.MessageCommandHandler(arg);
-    }
   };
 };
 
