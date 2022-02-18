@@ -14,6 +14,7 @@ DiscordService.Discord.Ready += async () =>
   var muteService = new MuteService(settingsService);
   var customCommandService = new CustomCommandService();
   var customRoleService = new CustomRoleService();
+  var levelService = new LevelService();
   var rngCommand = new RngCommand();
   var customCommandHandlerDM = new CustomCommandHandlerDM(customCommandService);
 
@@ -28,6 +29,8 @@ DiscordService.Discord.Ready += async () =>
     new CustomRoleCommand(customRoleService),
     new ListCustomRolesCommand(customRoleService),
     new SettingsCommand(settingsService),
+    new RankCommand(levelService),
+    new LevelsCommand(levelService),
 };
 
   if (args.Contains("--register-commands"))
@@ -48,8 +51,15 @@ DiscordService.Discord.Ready += async () =>
 
   DiscordService.Discord.MessageReceived += async (msg) =>
   {
+    if (msg.Author.IsBot)
+    {
+      return;
+    }
+
+    await levelService.HandleMessage(msg);
+
     var prefix = ConfigService.Config.CommandPrefix;
-    if (!msg.Content.StartsWith(prefix) || msg.Author.IsBot)
+    if (!msg.Content.StartsWith(prefix))
     {
       return;
     }
