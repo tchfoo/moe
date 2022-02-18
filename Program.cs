@@ -1,10 +1,5 @@
-﻿using System.Runtime.InteropServices;
-using System.Net.NetworkInformation;
-using System.ComponentModel.Design;
-using TNTBot.Commands;
+﻿using TNTBot.Commands;
 using TNTBot.Services;
-using Discord;
-using Discord.WebSocket;
 
 DiscordService.Init();
 
@@ -17,8 +12,9 @@ DiscordService.Discord.Ready += async () =>
   var levelService = new LevelService();
   var rngCommand = new RngCommand();
   var customCommandHandlerDM = new CustomCommandHandlerDM(customCommandService);
+  var pinService = new PinService();
 
-  var commands = new List<SlashCommandBase>
+  var slashCommands = new List<SlashCommandBase>
   {
     new PingCommand(),
     rngCommand,
@@ -31,13 +27,23 @@ DiscordService.Discord.Ready += async () =>
     new SettingsCommand(settingsService),
     new RankCommand(levelService),
     new LevelsCommand(levelService),
-};
+    new PinSlashCommand(pinService),
+  };
+  var messageCommands = new List<MessageCommandBase>
+  {
+    new PinMessageCommand(pinService),
+  };
+
+  var guild = DiscordService.Discord.GetGuild(ConfigService.Config.ServerID);
 
   if (args.Contains("--register-commands"))
   {
-    var guild = DiscordService.Discord.GetGuild(ConfigService.Config.ServerID);
     await guild.DeleteApplicationCommandsAsync();
-    foreach (var command in commands)
+    foreach (var command in slashCommands)
+    {
+      await command.Register();
+    }
+    foreach (var command in messageCommands)
     {
       await command.Register();
     }
@@ -45,7 +51,13 @@ DiscordService.Discord.Ready += async () =>
 
   DiscordService.Discord.SlashCommandExecuted += async (cmd) =>
   {
-    var command = commands.First(x => cmd.CommandName == x.Name);
+    var command = slashCommands.First(x => cmd.CommandName == x.Name);
+    await command.Handle(cmd);
+  };
+
+  DiscordService.Discord.MessageCommandExecuted += async (cmd) =>
+  {
+    var command = messageCommands.First(x => cmd.CommandName == x.Name);
     await command.Handle(cmd);
   };
 
@@ -75,48 +87,6 @@ DiscordService.Discord.Ready += async () =>
 
     await customCommandHandlerDM.TryHandleCommand(msg, name, args);
   };
-
-  var guild2 = DiscordService.Discord.GetGuild(ConfigService.Config.ServerID);
-  var guildMessageCommand = new MessageCommandBuilder();
-  guildMessageCommand.WithName("Pin to pin channel");
-  await guild2.CreateApplicationCommandAsync(guildMessageCommand.Build());
 };
-
-DiscordService.Discord.MessageCommandExecuted += MessageCommandHandler;
-
-static async Task MessageCommandHandler(SocketMessageCommand arg)
-{
-  if (arg.CommandName == "Pin to pin channel")
-  {
-    var pinChannel = (SocketTextChannel)DiscordService.Discord.GetChannel(938860776591089674);
-
-    await arg.RespondAsync("Message successfully pinned.", ephemeral: true);
-    var roles = ((SocketGuildUser)arg.Data.Message.Author).Roles
-      .Where(x => x.Color != Color.Default)
-      .OrderBy(x => x.Position);
-
-    if (arg.Data.Message.Attachments.Any())
-    {
-      var embed = new EmbedBuilder()
-      .WithAuthor(arg.Data.Message.Author)
-      .WithImageUrl(arg.Data.Message.Attachments.First().Url)
-      .WithDescription($"{arg.Data.Message}\n\n[Jump to message]({arg.Data.Message.GetJumpUrl()})")
-      .WithFooter($"{arg.Data.Message.Timestamp.DateTime.ToString("yyyy-MM-dd • H:m")}")
-      .WithColor(roles.Last().Color);
-
-      await pinChannel.SendMessageAsync(embed: embed.Build());
-    }
-    else
-    {
-      var embed = new EmbedBuilder()
-      .WithAuthor(arg.Data.Message.Author)
-      .WithDescription($"{arg.Data.Message}\n\n[Jump to message]({arg.Data.Message.GetJumpUrl()})")
-      .WithFooter($"{arg.Data.Message.Timestamp.DateTime.ToString("yyyy-MM-dd • H:m")}")
-      .WithColor(roles.Last().Color);
-
-      await pinChannel.SendMessageAsync(embed: embed.Build());
-    }
-  }
-}
 
 await DiscordService.Start();
