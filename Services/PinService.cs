@@ -5,16 +5,19 @@ namespace TNTBot.Services
 {
   public class PinService
   {
-    private const long pinChannelId = 938860776591089674;
+    private readonly SettingsService settingsService;
 
-    public SocketTextChannel GetPinChannel()
+    public PinService(SettingsService settingsService)
     {
-      //TODO: Change this after settings
-      DiscordSocketClient discord = DiscordService.Discord;
-      return (SocketTextChannel)discord.GetChannel(pinChannelId);
+      this.settingsService = settingsService;
     }
 
-    public Embed PinMessageEmbed(IMessage message)
+    private async Task<SocketTextChannel?> GetPinChannel(SocketGuild guild)
+    {
+      return await settingsService.GetPinChannel(guild);
+    }
+
+    private Embed PinMessageEmbed(IMessage message)
     {
       var roles = ((SocketGuildUser)message.Author).Roles
         .Where(x => x.Color != Color.Default)
@@ -34,7 +37,7 @@ namespace TNTBot.Services
       return embed.Build();
     }
 
-    public async Task<bool> EnsurePinnable(SocketCommandBase cmd, IMessage msg)
+    private async Task<bool> EnsurePinnable(SocketCommandBase cmd, IMessage msg)
     {
       if (msg.Author.IsBot)
       {
@@ -42,6 +45,38 @@ namespace TNTBot.Services
         return false;
       }
 
+      return true;
+    }
+
+    private async Task<bool> EnsurePinChannelSet(SocketCommandBase cmd, SocketTextChannel? pinChannel)
+    {
+      if (pinChannel is null)
+      {
+        await cmd.RespondAsync("No pin channel was set. Set it using /settings pinchannel");
+        return false;
+      }
+
+      return true;
+    }
+
+    public async Task<bool> TryPinningMessage(SocketCommandBase cmd, IMessage msg)
+    {
+      var guild = (cmd.Channel as SocketGuildChannel)!.Guild;
+
+      if (!await EnsurePinnable(cmd, msg))
+      {
+        return false;
+      }
+
+      var pinChannel = await GetPinChannel(guild);
+      if (!await EnsurePinChannelSet(cmd, pinChannel))
+      {
+        return false;
+      }
+
+      var pinEmbed = PinMessageEmbed(msg);
+      await pinChannel!.SendMessageAsync(embed: pinEmbed);
+      await cmd.RespondAsync("Message successfully pinned.");
       return true;
     }
   }

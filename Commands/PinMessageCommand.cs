@@ -14,16 +14,7 @@ namespace TNTBot.Commands
 
     public override async Task Handle(SocketMessageCommand cmd)
     {
-      if (!await service.EnsurePinnable(cmd, cmd.Data.Message))
-      {
-        return;
-      }
-
-      var pinChannel = service.GetPinChannel();
-      var pinEmbed = service.PinMessageEmbed(cmd.Data.Message);
-
-      await pinChannel.SendMessageAsync(embed: pinEmbed);
-      await cmd.RespondAsync("Message successfully pinned.");
+      await service.TryPinningMessage(cmd, cmd.Data.Message);
     }
   }
 }

@@ -5,14 +5,14 @@ DiscordService.Init();
 
 DiscordService.Discord.Ready += async () =>
 {
-  var settingsService = new SettingsService(); // TODO: apply settings for pin channel
+  var settingsService = new SettingsService();
   var muteService = new MuteService(settingsService);
   var customCommandService = new CustomCommandService();
   var customRoleService = new CustomRoleService();
   var levelService = new LevelService();
   var rngCommand = new RngCommand();
   var customCommandHandlerDM = new CustomCommandHandlerDM(customCommandService);
-  var pinService = new PinService();
+  var pinService = new PinService(settingsService);
 
   var slashCommands = new List<SlashCommandBase>
   {
