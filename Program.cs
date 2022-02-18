@@ -10,7 +10,8 @@ DiscordService.Init();
 
 DiscordService.Discord.Ready += async () =>
 {
-  var muteService = new MuteService();
+  var settingsService = new SettingsService(); // TODO: apply settings for pin channel
+  var muteService = new MuteService(settingsService);
   var customCommandService = new CustomCommandService();
   var customRoleService = new CustomRoleService();
   var rngCommand = new RngCommand();
@@ -26,6 +27,7 @@ DiscordService.Discord.Ready += async () =>
     new SetCustomRoleCommand(customRoleService),
     new CustomRoleCommand(customRoleService),
     new ListCustomRolesCommand(customRoleService),
+    new SettingsCommand(settingsService),
 };
 
   if (args.Contains("--register-commands"))

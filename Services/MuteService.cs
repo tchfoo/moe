@@ -7,12 +7,14 @@ namespace TNTBot.Services
   {
     private const string MutedRoleName = "muted-by-tntbot";
     private readonly Dictionary<int, CancellationTokenSource> unmuteTasks;
+    private readonly SettingsService settingsService;
 
-    public MuteService()
+    public MuteService(SettingsService settingsService)
     {
       unmuteTasks = new Dictionary<int, CancellationTokenSource>();
       CreateMutesTable().Wait();
       LoadMutes().Wait();
+      this.settingsService = settingsService;
     }
 
     public async Task MuteUser(SocketGuildUser user, DateTime expireAt)
@@ -36,6 +38,11 @@ namespace TNTBot.Services
 
       var unmuteSql = "DELETE FROM mutes WHERE guild_id = $0 AND user_id = $1";
       await DatabaseService.NonQuery(unmuteSql, user.Guild.Id, user.Id);
+    }
+
+    public async Task<TimeSpan> GetDefaultMuteLength(SocketGuild guild)
+    {
+      return await settingsService.GetMuteLength(guild);
     }
 
     private async Task CreateMutesTable()

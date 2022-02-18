@@ -24,6 +24,10 @@ namespace TNTBot.Services
     public static async Task<string?> QueryFirst(string sql, params object[] @params)
     {
       var query = await Query(sql, @params);
+      if (query.Count == 0)
+      {
+        return null;
+      }
       return query[0][0];
     }
 

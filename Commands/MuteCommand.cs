@@ -7,7 +7,6 @@ namespace TNTBot.Commands
 {
   public class MuteCommand : SlashCommandBase
   {
-    private static readonly TimeSpan DefaultMuteDuration = TimeSpan.FromMinutes(30);
     private readonly MuteService service;
 
     public MuteCommand(MuteService service) : base("mute")
@@ -23,10 +22,12 @@ namespace TNTBot.Commands
     public override async Task Handle(SocketSlashCommand cmd)
     {
       var user = cmd.GetOption<SocketGuildUser>("user")!;
-      TimeSpan duration = DefaultMuteDuration;
+      var guild = (cmd.Channel as SocketGuildChannel)!.Guild;
+      TimeSpan duration = await service.GetDefaultMuteLength(guild);
       if (cmd.HasOption("time"))
       {
-        duration = ParseDuration(cmd.GetOption<string>("time")!);
+        var time = cmd.GetOption<string>("time")!;
+        duration = DurationParser.Parse(time);
       }
       var expireAt = DateTime.Now + duration;
       var reason = cmd.GetOption("reason", "unspecified");
@@ -39,26 +40,6 @@ namespace TNTBot.Commands
 
       await service.MuteUser(user, expireAt);
       await cmd.RespondAsync($"Muted **{user}** for {duration}. Reason: {reason}");
-    }
-
-    private TimeSpan ParseDuration(string s)
-    {
-      var days = ParsePostfixedNumber(s, "d");
-      var hours = ParsePostfixedNumber(s, "h");
-      var minutes = ParsePostfixedNumber(s, "m");
-      var seconds = ParsePostfixedNumber(s, "s");
-      return new TimeSpan(days, hours, minutes, seconds);
-    }
-
-    private int ParsePostfixedNumber(string text, string postfix)
-    {
-      var match = Regex.Match(text, $@"(\d+)\s*{postfix}");
-      if (!match.Success)
-      {
-        return 0;
-      }
-
-      return int.Parse(match.Groups[1].Value);
     }
   }
 }
