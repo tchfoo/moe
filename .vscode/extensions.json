@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "fudge.auto-using",
+        "jchannon.csharpextensions",
+        "jmrog.vscode-nuget-package-manager",
+        "josefpihrt-vscode.roslynator",
+        "ms-dotnettools.csharp"
+    ]
+}
