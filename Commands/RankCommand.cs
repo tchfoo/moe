@@ -26,8 +26,12 @@ namespace TNTBot.Commands
       var percentageOut = Math.Round(level.PercentageToNextLevel * 100);
       var progressBar = GetProgressBar(level.PercentageToNextLevel);
 
-      await cmd.RespondAsync($"**{user}** is ranked #{rank} and is level {level.LevelNumber}\n" +
-        $"Next level progression: {level.XPFromThisLevel} XP / {level.TotalLevelXP} XP {progressBar} {percentageOut}%");
+      var embed = new EmbedBuilder()
+          .WithAuthor(user)
+          .WithDescription($"Rank: {rank}#, Level: {level.LevelNumber}\nNext level progression: {level.XPFromThisLevel} XP / {level.TotalLevelXP} XP {progressBar} {percentageOut}%")
+          .WithColor(user.Roles.Last().Color);
+
+      await cmd.RespondAsync(embed: embed.Build());
     }
 
     private string GetProgressBar(double percentage)
