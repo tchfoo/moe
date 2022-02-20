@@ -1,5 +1,6 @@
 using Discord;
 using Discord.WebSocket;
+using System.Drawing;
 
 namespace TNTBot.Services
 {
@@ -43,20 +44,35 @@ namespace TNTBot.Services
     {
       var channel = (SocketTextChannel)cachedChannel.Value;
       var message = cachedMessage.Value;
-      string messageOut;
+
+      System.Drawing.Color red = ColorTranslator.FromHtml("#cc6d64");
+      var embed = new EmbedBuilder();
+
       if (cachedMessage.HasValue)
       {
-        messageOut = "The message:\n" +
-          $"{message.Author.Mention} {message.CreatedAt.ToLocalTime()}\n" +
-          $"{message.Content}\n" +
-          $"{AttachmentsToString(message.Attachments)}";
+        embed
+          .WithAuthor(message.Author)
+          .WithTitle($"Message deleted in #{channel.Name}")
+          .WithDescription(message.Content)
+          .WithColor((Discord.Color)red)
+          .WithFooter($"ID: {message.Author.Id} • {message.CreatedAt.ToLocalTime():yyyy-MM-dd H:m}");
+
+        if (message.Attachments.Count > 0)
+        {
+          embed
+            .AddField("Attachments", AttachmentsToString(message.Attachments));
+        }
       }
       else
       {
-        messageOut = "The message is unkown";
+        embed
+          .WithTitle($"Unknown message deleted in #{channel.Name}")
+          .WithDescription("Unknown message.")
+          .WithColor((Discord.Color)red)
+          .WithFooter($"{message.CreatedAt.ToLocalTime():yyyy-MM-dd H:m}");
       }
 
-      await LogService.Instance.LogToDiscord(channel.Guild, $"A message was deleted in {channel.Mention}. {messageOut}");
+      await LogService.Instance.LogToDiscord(channel.Guild, embed: embed.Build());
     }
 
     private async Task OnMessageUpdated(Cacheable<IMessage, ulong> oldCachedMessage,
@@ -67,56 +83,127 @@ namespace TNTBot.Services
       var oldMessageOut = oldMessage?.Content ?? "The message is unkown";
       var newMessageOut = newMessage.Content;
 
-      await LogService.Instance.LogToDiscord(channel.Guild, $"A message was edited in {channel.Mention}.\n" +
-        $"{newMessage.Author.Mention} {newMessage.CreatedAt.ToLocalTime()}\n" +
-        $"Jump to message: {newMessage.GetJumpUrl()}\n" +
-        $"Before: {oldMessageOut}\n" +
-        $"After: {newMessageOut}");
+      System.Drawing.Color blurple = ColorTranslator.FromHtml("#7289DA");
+
+      var embed = new EmbedBuilder()
+          .WithAuthor(newMessage.Author)
+          .WithTitle($"Message edited in #{channel.Name}")
+          .WithDescription($"**Before:** {oldMessageOut}\n" +
+          $"**After:** {newMessageOut}\n\n" +
+          $"[Jump to message]({newMessage.GetJumpUrl()})")
+          .WithColor((Discord.Color)blurple)
+          .WithFooter($"ID: {newMessage.Author.Id} • {newMessage.CreatedAt.ToLocalTime():yyyy-MM-dd H:m}");
+
+      await LogService.Instance.LogToDiscord(channel.Guild, embed: embed.Build());
     }
 
     private async Task OnUserJoined(SocketGuildUser user)
     {
-      await LogService.Instance.LogToDiscord(user.Guild, "Member joined\n" +
-         $"{user.Mention}\n" +
-         $"Created at {user.CreatedAt.ToLocalTime()}");
+      System.Drawing.Color green = ColorTranslator.FromHtml("#64cca8");
+
+      var embed = new EmbedBuilder()
+          .WithAuthor(user)
+          .WithTitle("Member joined")
+          .WithDescription($"{user.Mention}\n" +
+          $"Created at {user.CreatedAt.ToLocalTime():yyyy-MM-dd H:m}")
+          .WithColor((Discord.Color)green)
+          .WithFooter($"ID: {user.Id} • {DateTime.Now.ToLocalTime():yyyy-MM-dd H:m}");
+
+      await LogService.Instance.LogToDiscord(user.Guild, embed: embed.Build());
     }
 
     private async Task OnUserLeft(SocketGuild guild, SocketUser user)
     {
       var guildUser = (SocketGuildUser)user;
-      await LogService.Instance.LogToDiscord(guild, "Member left\n" +
-         $"{user.Mention} joined {guildUser.JoinedAt!.Value.ToLocalTime()}\n" +
-         $"{RolesToString(guildUser.Roles)}");
+
+      System.Drawing.Color yellow = ColorTranslator.FromHtml("#f5eeb9");
+
+      var embedDescription = $"{user.Mention} joined {guildUser.JoinedAt!.Value.ToLocalTime():yyyy-MM-dd H:m}";
+
+      if (guildUser.Roles.Count > 0)
+      {
+        embedDescription += $"\n**Roles**: {RolesToString(guildUser.Roles)}";
+      }
+
+      var embed = new EmbedBuilder()
+          .WithAuthor(user)
+          .WithTitle("Member left")
+          .WithDescription(embedDescription)
+          .WithColor((Discord.Color)yellow)
+          .WithFooter($"ID: {user.Id} • {DateTime.Now.ToLocalTime():yyyy-MM-dd H:m}");
+
+      await LogService.Instance.LogToDiscord(guild, embed: embed.Build());
     }
 
     private async Task OnUserJoinedVoice(SocketGuildUser user, SocketVoiceChannel channel)
     {
-      await LogService.Instance.LogToDiscord(user.Guild, "Voice channel join\n" +
-        $"{user.Mention} joined {channel.Mention}");
+      System.Drawing.Color green = ColorTranslator.FromHtml("#64cca8");
+
+      var embed = new EmbedBuilder()
+        .WithAuthor(user)
+        .WithTitle("Member joined voice channel")
+        .WithDescription($"{user.Mention} joined {channel.Mention}")
+        .WithColor((Discord.Color)green)
+        .WithFooter($"ID: {user.Id} • {DateTime.Now.ToLocalTime():yyyy-MM-dd H:m}");
+
+      await LogService.Instance.LogToDiscord(user.Guild, embed: embed.Build());
     }
 
     private async Task OnUserLeftVoice(SocketGuildUser user, SocketVoiceChannel channel)
     {
-      await LogService.Instance.LogToDiscord(user.Guild, "Voice channel leave\n" +
-        $"{user.Mention} left {channel.Mention}");
+      System.Drawing.Color red = ColorTranslator.FromHtml("#cc6d64");
+
+      var embed = new EmbedBuilder()
+        .WithAuthor(user)
+        .WithTitle("Member left voice channel")
+        .WithDescription($"{user.Mention} left {channel.Mention}")
+        .WithColor((Discord.Color)red)
+        .WithFooter($"ID: {user.Id} • {DateTime.Now.ToLocalTime():yyyy-MM-dd H:m}");
+
+      await LogService.Instance.LogToDiscord(user.Guild, embed: embed.Build());
     }
 
     private async Task OnUserChangeVoice(SocketGuildUser user, SocketVoiceChannel oldChannel, SocketVoiceChannel newChannel)
     {
-      await LogService.Instance.LogToDiscord(user.Guild, "Voice channel change\n" +
-        $"{user.Mention} changed voice channel from {oldChannel.Mention} to {newChannel.Mention}");
+      System.Drawing.Color blurple = ColorTranslator.FromHtml("#7289DA");
+
+      var embed = new EmbedBuilder()
+        .WithAuthor(user)
+        .WithTitle("Member changed voice channel")
+        .WithDescription($"**Before:** {oldChannel.Mention}\n" +
+        $"**After:** {newChannel.Mention}")
+        .WithColor((Discord.Color)blurple)
+        .WithFooter($"ID: {user.Id} • {DateTime.Now.ToLocalTime():yyyy-MM-dd H:m}");
+
+      await LogService.Instance.LogToDiscord(user.Guild, embed: embed.Build());
     }
 
     private async Task OnUserBanned(SocketUser user, SocketGuild guild)
     {
-      await LogService.Instance.LogToDiscord(guild, "Member banned\n" +
-        $"{user.Mention}");
+      System.Drawing.Color red = ColorTranslator.FromHtml("#cc6d64");
+
+      var embed = new EmbedBuilder()
+        .WithAuthor(user)
+        .WithTitle("Member banned")
+        .WithDescription($"{user.Mention}")
+        .WithColor((Discord.Color)red)
+        .WithFooter($"ID: {user.Id} • {DateTime.Now.ToLocalTime():yyyy-MM-dd H:m}");
+
+      await LogService.Instance.LogToDiscord(guild, embed: embed.Build());
     }
 
     private async Task OnUserUnbanned(SocketUser user, SocketGuild guild)
     {
-      await LogService.Instance.LogToDiscord(guild, "Member unbanned\n" +
-        $"{user.Mention}");
+      System.Drawing.Color lightBlue = ColorTranslator.FromHtml("#6bd1ea");
+
+      var embed = new EmbedBuilder()
+        .WithAuthor(user)
+        .WithTitle("Member unbanned")
+        .WithDescription($"{user.Mention}")
+        .WithColor((Discord.Color)lightBlue)
+        .WithFooter($"ID: {user.Id} • {DateTime.Now.ToLocalTime():yyyy-MM-dd H:m}");
+
+      await LogService.Instance.LogToDiscord(guild, embed: embed.Build());
     }
 
     private string AttachmentsToString(IReadOnlyCollection<IAttachment> attachments)
@@ -124,10 +211,9 @@ namespace TNTBot.Services
       string attachmentsOut = "";
       if (attachments.Count > 0)
       {
-        attachmentsOut += $"{attachments.Count} attachments:\n";
         foreach (var attachment in attachments)
         {
-          attachmentsOut += $" - {attachment.Url}\n";
+          attachmentsOut += $"{attachment.Filename}\n";
         }
       }
       return attachmentsOut;
@@ -139,7 +225,6 @@ namespace TNTBot.Services
       string rolesOut = "";
       if (roles.Count > 0)
       {
-        rolesOut += $"{roles.Count} roles:";
         foreach (var role in roles)
         {
           rolesOut += $" {role.Mention}";
