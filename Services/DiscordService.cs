@@ -12,7 +12,8 @@ namespace TNTBot.Services
       var config = new DiscordSocketConfig()
       {
         GatewayIntents = GatewayIntents.GuildMembers | GatewayIntents.AllUnprivileged,
-        AlwaysDownloadUsers = true
+        AlwaysDownloadUsers = true,
+        MessageCacheSize = 10_000,
       };
       Discord = new DiscordSocketClient(config);
 
