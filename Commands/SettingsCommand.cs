@@ -1,6 +1,7 @@
 using Discord;
 using Discord.WebSocket;
 using TNTBot.Services;
+using System.Drawing;
 
 namespace TNTBot.Commands
 {
@@ -58,11 +59,17 @@ namespace TNTBot.Commands
       var pinChannel = await service.GetPinChannel(guild);
       var logChannel = await service.GetLogChannel(guild);
 
-      await cmd.RespondAsync(
-        $"Mute length: {muteLength}\n" +
-        $"Pin channel: {pinChannel?.Mention ?? "None"}\n" +
-        $"Log channel: {logChannel?.Mention ?? "None"}"
-      );
+      System.Drawing.Color blurple = ColorTranslator.FromHtml("#7289DA");
+
+      var embed = new EmbedBuilder()
+        .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
+        .WithTitle("Bot Settings")
+        .AddField("Mute length", muteLength, inline: true)
+        .AddField("Pin chanel", pinChannel?.Mention ?? "None", inline: true)
+        .AddField("Log channel", logChannel?.Mention ?? "None", inline: true)
+        .WithColor((Discord.Color)blurple);
+
+      await cmd.RespondAsync(embed: embed.Build());
     }
 
     private async Task SetMuteLength(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
