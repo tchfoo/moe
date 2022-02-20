@@ -1,3 +1,5 @@
+using System.Drawing;
+using Discord;
 using Discord.WebSocket;
 using TNTBot.Services;
 
@@ -23,10 +25,17 @@ namespace TNTBot.Commands
       {
         var level = leaderboard[i];
         var rank = i + 1;
-        response += $"#{rank} - **{level.User}** with {level.LevelNumber} levels which is {level.TotalXP} XP\n";
+        response += $"**{rank}.** {level.User.Mention} • Level: {level.LevelNumber} • XP: {level.TotalXP}\n";
       }
 
-      await cmd.RespondAsync(response);
+      System.Drawing.Color blurple = ColorTranslator.FromHtml("#7289DA");
+
+      var embed = new EmbedBuilder()
+        .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
+        .WithDescription(response)
+        .WithColor((Discord.Color)blurple);
+
+      await cmd.RespondAsync(embed: embed.Build());
     }
   }
 }
