@@ -28,7 +28,9 @@ namespace TNTBot.Commands
 
       var embed = new EmbedBuilder()
           .WithAuthor(user)
-          .WithDescription($"Rank: {rank}#, Level: {level.LevelNumber}\nNext level progression: {level.XPFromThisLevel} XP / {level.TotalLevelXP} XP {progressBar} {percentageOut}%")
+          .AddField("Rank", $"#{rank}", inline: true)
+          .AddField("Level", $"{level.LevelNumber}", inline: true)
+          .AddField("Progress", $"{level.XPFromThisLevel} XP / {level.TotalLevelXP} XP {progressBar} {percentageOut}%")
           .WithColor(user.Roles.Last().Color);
 
       await cmd.RespondAsync(embed: embed.Build());
