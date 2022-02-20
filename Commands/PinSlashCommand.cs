@@ -10,7 +10,7 @@ namespace TNTBot.Commands
     private readonly PinService service;
     public PinSlashCommand(PinService service) : base("pin")
     {
-      Description = "Pin an existing message using a message link.";
+      Description = "Pin an existing message using a message link";
       Options = new SlashCommandOptionBuilder()
         .AddOption("link", ApplicationCommandOptionType.String, "The link of a message", isRequired: true);
       this.service = service;
@@ -20,11 +20,11 @@ namespace TNTBot.Commands
     {
       var messageUrl = cmd.GetOption<string>("link")!;
 
-      var formattedMessageUrl = Regex.Match(messageUrl, @"^https:\/\/discord\.com\/channels\/(\d+)\/(\d+)\/(\d+)");
+      var formattedMessageUrl = Regex.Match(messageUrl, @"^https:\/\/(canary\.|ptb\.)?discord\.com\/channels\/(\d+)\/(\d+)\/(\d+)");
 
       if (!formattedMessageUrl.Success)
       {
-        await cmd.RespondAsync("Invalid message link.", ephemeral: true);
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Invalid message link", ephemeral: true);
         return;
       }
 
@@ -45,13 +45,13 @@ namespace TNTBot.Commands
       }
       catch (Exception)
       {
-        await cmd.RespondAsync("Invalid message link.", ephemeral: true);
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Invalid message link", ephemeral: true);
         return;
       }
 
       if (inputGuildId != guildId || inputChannelId != channelId)
       {
-        await cmd.RespondAsync("You can only pin messages from this channel.", ephemeral: true);
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} You can only pin messages from this channel", ephemeral: true);
         return;
       }
 
@@ -61,7 +61,7 @@ namespace TNTBot.Commands
 
       if (message == null)
       {
-        await cmd.RespondAsync("Invalid message link.", ephemeral: true);
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Invalid message link", ephemeral: true);
         return;
       }
 

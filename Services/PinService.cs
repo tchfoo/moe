@@ -41,7 +41,7 @@ namespace TNTBot.Services
     {
       if (msg.Author.IsBot)
       {
-        await cmd.RespondAsync("I'm not allowed to respond to bots");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Bot messages cannot be pinned");
         return false;
       }
 
@@ -76,7 +76,7 @@ namespace TNTBot.Services
 
       var pinEmbed = PinMessageEmbed(msg);
       await pinChannel!.SendMessageAsync(embed: pinEmbed);
-      await cmd.RespondAsync("Message successfully pinned.");
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Message successfully pinned");
       return true;
     }
   }
