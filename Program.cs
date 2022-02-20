@@ -13,6 +13,9 @@ DiscordService.Discord.Ready += async () =>
   var rngCommand = new RngCommand();
   var customCommandHandlerDM = new CustomCommandHandlerDM(customCommandService);
   var pinService = new PinService(settingsService);
+  LogService.Instance = new LogService(settingsService);
+  var discordLogService = new DiscordLogService();
+  discordLogService.Register();
 
   var slashCommands = new List<SlashCommandBase>
   {

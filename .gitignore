@@ -2,6 +2,7 @@
 config.json
 token.json
 storage.db
+logs
 
 # Generated files
 obj
