@@ -1,6 +1,5 @@
 using Discord;
 using Discord.WebSocket;
-using System.Drawing;
 
 namespace TNTBot.Services
 {
@@ -45,7 +44,6 @@ namespace TNTBot.Services
       var channel = (SocketTextChannel)cachedChannel.Value;
       var message = cachedMessage.Value;
 
-      System.Drawing.Color red = ColorTranslator.FromHtml("#cc6d64");
       var embed = new EmbedBuilder();
 
       if (cachedMessage.HasValue)
@@ -54,13 +52,12 @@ namespace TNTBot.Services
           .WithAuthor(message.Author)
           .WithTitle($"Message deleted in #{channel.Name}")
           .WithDescription(message.Content)
-          .WithColor((Discord.Color)red)
-          .WithFooter($"ID: {message.Author.Id} • {message.CreatedAt.ToLocalTime():yyyy-MM-dd H:m}");
+          .WithColor(Colors.Red)
+          .WithFooter(GenerateFooter(message.Author));
 
         if (message.Attachments.Count > 0)
         {
-          embed
-            .AddField("Attachments", AttachmentsToString(message.Attachments));
+          embed.AddField("Attachments", AttachmentsToString(message.Attachments));
         }
       }
       else
@@ -68,8 +65,8 @@ namespace TNTBot.Services
         embed
           .WithTitle($"Unknown message deleted in #{channel.Name}")
           .WithDescription("Unknown message.")
-          .WithColor((Discord.Color)red)
-          .WithFooter($"{message.CreatedAt.ToLocalTime():yyyy-MM-dd H:m}");
+          .WithColor(Colors.Red)
+          .WithFooter(DateTimeToString(message.CreatedAt));
       }
 
       await LogService.Instance.LogToDiscord(channel.Guild, embed: embed.Build());
@@ -83,31 +80,29 @@ namespace TNTBot.Services
       var oldMessageOut = oldMessage?.Content ?? "The message is unkown";
       var newMessageOut = newMessage.Content;
 
-      System.Drawing.Color blurple = ColorTranslator.FromHtml("#7289DA");
-
       var embed = new EmbedBuilder()
           .WithAuthor(newMessage.Author)
           .WithTitle($"Message edited in #{channel.Name}")
-          .WithDescription($"**Before:** {oldMessageOut}\n" +
-          $"**After:** {newMessageOut}\n\n" +
-          $"[Jump to message]({newMessage.GetJumpUrl()})")
-          .WithColor((Discord.Color)blurple)
-          .WithFooter($"ID: {newMessage.Author.Id} • {newMessage.CreatedAt.ToLocalTime():yyyy-MM-dd H:m}");
+          .WithDescription(
+            $"**Before:** {oldMessageOut}\n" +
+            $"**After:** {newMessageOut}\n\n" +
+            $"[Jump to message]({newMessage.GetJumpUrl()})")
+          .WithColor(Colors.Blurple)
+          .WithFooter(GenerateFooter(newMessage.Author));
 
       await LogService.Instance.LogToDiscord(channel.Guild, embed: embed.Build());
     }
 
     private async Task OnUserJoined(SocketGuildUser user)
     {
-      System.Drawing.Color green = ColorTranslator.FromHtml("#64cca8");
-
       var embed = new EmbedBuilder()
           .WithAuthor(user)
           .WithTitle("Member joined")
-          .WithDescription($"{user.Mention}\n" +
-          $"Created at {user.CreatedAt.ToLocalTime():yyyy-MM-dd H:m}")
-          .WithColor((Discord.Color)green)
-          .WithFooter($"ID: {user.Id} • {DateTime.Now.ToLocalTime():yyyy-MM-dd H:m}");
+          .WithDescription(
+            $"{user.Mention}\n" +
+            $"Created at {DateTimeToString(user.CreatedAt)}")
+          .WithColor(Colors.Green)
+          .WithFooter(GenerateFooter(user));
 
       await LogService.Instance.LogToDiscord(user.Guild, embed: embed.Build());
     }
@@ -116,9 +111,7 @@ namespace TNTBot.Services
     {
       var guildUser = (SocketGuildUser)user;
 
-      System.Drawing.Color yellow = ColorTranslator.FromHtml("#f5eeb9");
-
-      var embedDescription = $"{user.Mention} joined {guildUser.JoinedAt!.Value.ToLocalTime():yyyy-MM-dd H:m}";
+      var embedDescription = $"{user.Mention} joined {DateTimeToString(guildUser.JoinedAt!.Value)}";
 
       if (guildUser.Roles.Count > 0)
       {
@@ -129,79 +122,70 @@ namespace TNTBot.Services
           .WithAuthor(user)
           .WithTitle("Member left")
           .WithDescription(embedDescription)
-          .WithColor((Discord.Color)yellow)
-          .WithFooter($"ID: {user.Id} • {DateTime.Now.ToLocalTime():yyyy-MM-dd H:m}");
+          .WithColor(Colors.Yellow)
+          .WithFooter(GenerateFooter(user));
 
       await LogService.Instance.LogToDiscord(guild, embed: embed.Build());
     }
 
     private async Task OnUserJoinedVoice(SocketGuildUser user, SocketVoiceChannel channel)
     {
-      System.Drawing.Color green = ColorTranslator.FromHtml("#64cca8");
-
       var embed = new EmbedBuilder()
         .WithAuthor(user)
         .WithTitle("Member joined voice channel")
         .WithDescription($"{user.Mention} joined {channel.Mention}")
-        .WithColor((Discord.Color)green)
-        .WithFooter($"ID: {user.Id} • {DateTime.Now.ToLocalTime():yyyy-MM-dd H:m}");
+        .WithColor(Colors.Green)
+        .WithFooter(GenerateFooter(user));
 
       await LogService.Instance.LogToDiscord(user.Guild, embed: embed.Build());
     }
 
     private async Task OnUserLeftVoice(SocketGuildUser user, SocketVoiceChannel channel)
     {
-      System.Drawing.Color red = ColorTranslator.FromHtml("#cc6d64");
-
       var embed = new EmbedBuilder()
         .WithAuthor(user)
         .WithTitle("Member left voice channel")
         .WithDescription($"{user.Mention} left {channel.Mention}")
-        .WithColor((Discord.Color)red)
-        .WithFooter($"ID: {user.Id} • {DateTime.Now.ToLocalTime():yyyy-MM-dd H:m}");
+        .WithColor(Colors.Red)
+        .WithFooter(GenerateFooter(user));
 
       await LogService.Instance.LogToDiscord(user.Guild, embed: embed.Build());
     }
 
     private async Task OnUserChangeVoice(SocketGuildUser user, SocketVoiceChannel oldChannel, SocketVoiceChannel newChannel)
     {
-      System.Drawing.Color blurple = ColorTranslator.FromHtml("#7289DA");
-
       var embed = new EmbedBuilder()
         .WithAuthor(user)
         .WithTitle("Member changed voice channel")
-        .WithDescription($"**Before:** {oldChannel.Mention}\n" +
-        $"**After:** {newChannel.Mention}")
-        .WithColor((Discord.Color)blurple)
-        .WithFooter($"ID: {user.Id} • {DateTime.Now.ToLocalTime():yyyy-MM-dd H:m}");
+        .WithDescription(
+          $"**Before:** {oldChannel.Mention}\n" +
+          $"**After:** {newChannel.Mention}")
+        .WithColor(Colors.Blurple)
+        .WithFooter(GenerateFooter(user));
 
       await LogService.Instance.LogToDiscord(user.Guild, embed: embed.Build());
     }
 
     private async Task OnUserBanned(SocketUser user, SocketGuild guild)
     {
-      System.Drawing.Color red = ColorTranslator.FromHtml("#cc6d64");
-
       var embed = new EmbedBuilder()
         .WithAuthor(user)
         .WithTitle("Member banned")
         .WithDescription($"{user.Mention}")
-        .WithColor((Discord.Color)red)
-        .WithFooter($"ID: {user.Id} • {DateTime.Now.ToLocalTime():yyyy-MM-dd H:m}");
+        .WithColor(Colors.Red)
+        .WithFooter(GenerateFooter(user));
 
       await LogService.Instance.LogToDiscord(guild, embed: embed.Build());
     }
 
     private async Task OnUserUnbanned(SocketUser user, SocketGuild guild)
     {
-      System.Drawing.Color lightBlue = ColorTranslator.FromHtml("#6bd1ea");
-
       var embed = new EmbedBuilder()
         .WithAuthor(user)
         .WithTitle("Member unbanned")
         .WithDescription($"{user.Mention}")
-        .WithColor((Discord.Color)lightBlue)
-        .WithFooter($"ID: {user.Id} • {DateTime.Now.ToLocalTime():yyyy-MM-dd H:m}");
+        .WithColor(Colors.LightBlue)
+        .WithFooter(GenerateFooter(user));
 
       await LogService.Instance.LogToDiscord(guild, embed: embed.Build());
     }
@@ -231,6 +215,28 @@ namespace TNTBot.Services
         }
       }
       return rolesOut;
+    }
+
+    private readonly string DateTimeFormatString = "yyyy-MM-dd HH:mm";
+
+    private string DateTimeToString(DateTimeOffset dateTimeOffset)
+    {
+      return dateTimeOffset.ToLocalTime().ToString(DateTimeFormatString);
+    }
+
+    private string DateTimeToString(DateTime dateTime)
+    {
+      return dateTime.ToLocalTime().ToString(DateTimeFormatString);
+    }
+
+    private string NowToString()
+    {
+      return DateTimeToString(DateTime.Now);
+    }
+
+    private string GenerateFooter(IUser user)
+    {
+      return $"ID: {user.Id} • {NowToString()}";
     }
   }
 }
