@@ -1,4 +1,3 @@
-using System.Drawing;
 using Discord;
 using Discord.WebSocket;
 using TNTBot.Services;
@@ -28,12 +27,10 @@ namespace TNTBot.Commands
         response += $"**{rank}.** {level.User.Mention} • Level: {level.LevelNumber} • XP: {level.TotalXP}\n";
       }
 
-      System.Drawing.Color blurple = ColorTranslator.FromHtml("#7289DA");
-
       var embed = new EmbedBuilder()
         .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
         .WithDescription(response)
-        .WithColor((Discord.Color)blurple);
+        .WithColor(Colors.Blurple);
 
       await cmd.RespondAsync(embed: embed.Build());
     }
