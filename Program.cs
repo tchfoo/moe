@@ -31,6 +31,7 @@ DiscordService.Discord.Ready += async () =>
     new RankCommand(levelService),
     new LevelsCommand(levelService),
     new PinSlashCommand(pinService),
+    new LevelupMessage(levelService),
   };
   var messageCommands = new List<MessageCommandBase>
   {

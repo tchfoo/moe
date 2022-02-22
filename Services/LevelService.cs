@@ -28,7 +28,10 @@ namespace TNTBot.Services
       var levelAfter = await GetLevel(user);
       for (int i = levelBefore.LevelNumber; i < levelAfter.LevelNumber; i++)
       {
-        await msg.Channel.SendMessageAsync($"{user.Mention} leveled up to level {i}!");
+        if (await IsLevelupMessageEnabled(user))
+        {
+          await msg.Channel.SendMessageAsync($"{user.Mention} has leveled up to level {i}!");
+        }
       }
     }
 
@@ -66,6 +69,24 @@ namespace TNTBot.Services
       {
         await InsertLevel(user);
       }
+    }
+
+    public async Task ToggleLevelupMessage(SocketGuildUser user)
+    {
+      var enabled = await IsLevelupMessageEnabled(user);
+      await SetLevelupMessageEnabled(user, !enabled);
+    }
+
+    public async Task<bool> IsLevelupMessageEnabled(SocketGuildUser user)
+    {
+      var sql = "SELECT levelup_message FROM levels WHERE guild_id = $0 AND user_id = $1";
+      return await DatabaseService.QueryFirst<int>(sql, user.Guild.Id, user.Id) > 0;
+    }
+
+    private async Task SetLevelupMessageEnabled(SocketGuildUser user, bool enabled)
+    {
+      var sql = "UPDATE levels SET levelup_message = $0 WHERE guild_id = $1 AND user_id = $2";
+      await DatabaseService.NonQuery(sql, enabled, user.Guild.Id, user.Id);
     }
 
     private async Task TryAddingXP(SocketGuildUser user)
@@ -118,6 +139,7 @@ namespace TNTBot.Services
           guild_id INTEGER NOT NULL,
           user_id INTEGER NOT NULL,
           xp INTEGER NOT NULL DEFAULT 0,
+          levelup_message INTEGER NOT NULL DEFAULT 1,
           last_updated TEXT NOT NULL DEFAULT '{DateTime.MinValue}'
         )";
       await DatabaseService.NonQuery(sql);
