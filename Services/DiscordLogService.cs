@@ -41,32 +41,24 @@ namespace TNTBot.Services
     private async Task OnMessageDeleted(Cacheable<IMessage, ulong> cachedMessage,
       Cacheable<IMessageChannel, ulong> cachedChannel)
     {
+      if (!cachedMessage.HasValue)
+      {
+        return;
+      }
+
       var channel = (SocketTextChannel)cachedChannel.Value;
       var message = cachedMessage.Value;
 
-      var embed = new EmbedBuilder();
+      var embed = new EmbedBuilder()
+        .WithAuthor(message.Author)
+        .WithTitle($"Message deleted in #{channel.Name}")
+        .WithDescription(message.Content)
+        .WithColor(Colors.Red)
+        .WithFooter(GenerateFooter(message.Author));
 
-      if (cachedMessage.HasValue)
+      if (message.Attachments.Count > 0)
       {
-        embed
-          .WithAuthor(message.Author)
-          .WithTitle($"Message deleted in #{channel.Name}")
-          .WithDescription(message.Content)
-          .WithColor(Colors.Red)
-          .WithFooter(GenerateFooter(message.Author));
-
-        if (message.Attachments.Count > 0)
-        {
-          embed.AddField("Attachments", AttachmentsToString(message.Attachments));
-        }
-      }
-      else
-      {
-        embed
-          .WithTitle($"Unknown message deleted in #{channel.Name}")
-          .WithDescription("Unknown message.")
-          .WithColor(Colors.Red)
-          .WithFooter(DateTimeToString(message.CreatedAt));
+        embed.AddField("Attachments", AttachmentsToString(message.Attachments));
       }
 
       await LogService.Instance.LogToDiscord(channel.Guild, embed: embed.Build());
@@ -75,17 +67,20 @@ namespace TNTBot.Services
     private async Task OnMessageUpdated(Cacheable<IMessage, ulong> oldCachedMessage,
       SocketMessage newMessage, ISocketMessageChannel genericChannel)
     {
+      if (!oldCachedMessage.HasValue)
+      {
+        return;
+      }
+
       var channel = (SocketTextChannel)genericChannel;
       var oldMessage = oldCachedMessage.Value;
-      var oldMessageOut = oldMessage?.Content ?? "The message is unkown";
-      var newMessageOut = newMessage.Content;
 
       var embed = new EmbedBuilder()
           .WithAuthor(newMessage.Author)
           .WithTitle($"Message edited in #{channel.Name}")
           .WithDescription(
-            $"**Before:** {oldMessageOut}\n" +
-            $"**After:** {newMessageOut}\n\n" +
+            $"**Before:** {oldMessage.Content}\n" +
+            $"**After:** {newMessage.Content}\n\n" +
             $"[Jump to message]({newMessage.GetJumpUrl()})")
           .WithColor(Colors.Blurple)
           .WithFooter(GenerateFooter(newMessage.Author));
