@@ -22,6 +22,9 @@ namespace TNTBot.Services
 
     public async Task SetPinChannel(SocketGuild guild, SocketTextChannel channel)
     {
+      await LogService.LogToFileAndConsole(
+        $"Setting pin channel to {channel}", guild);
+
       var deleteSql = "DELETE FROM settings WHERE guild_id = $0 AND name = 'pin_channel'";
       await DatabaseService.NonQuery(deleteSql, guild.Id);
       var insertSql = "INSERT INTO settings(guild_id, name, value) VALUES($0, 'pin_channel', $1)";
@@ -46,6 +49,9 @@ namespace TNTBot.Services
 
     public async Task SetLogChannel(SocketGuild guild, SocketTextChannel channel)
     {
+      await LogService.LogToFileAndConsole(
+        $"Setting log channel to {channel}", guild);
+
       var deleteSql = "DELETE FROM settings WHERE guild_id = $0 AND name = 'log_channel'";
       await DatabaseService.NonQuery(deleteSql, guild.Id);
       var insertSql = "INSERT INTO settings(guild_id, name, value) VALUES($0, 'log_channel', $1)";
@@ -70,6 +76,9 @@ namespace TNTBot.Services
 
     public async Task SetMuteLength(SocketGuild guild, TimeSpan length)
     {
+      await LogService.LogToFileAndConsole(
+        $"Setting mute length to {length}", guild);
+
       var deleteSql = "DELETE FROM settings WHERE guild_id = $0 AND name = 'mute_length'";
       await DatabaseService.NonQuery(deleteSql, guild.Id);
       var insertSql = "INSERT INTO settings(guild_id, name, value) VALUES($0, 'mute_length', $1)";

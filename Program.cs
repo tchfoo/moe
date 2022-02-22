@@ -1,4 +1,5 @@
-﻿using TNTBot.Commands;
+﻿using Discord.WebSocket;
+using TNTBot.Commands;
 using TNTBot.Services;
 
 DiscordService.Init();
@@ -55,12 +56,22 @@ DiscordService.Discord.Ready += async () =>
 
   DiscordService.Discord.SlashCommandExecuted += async (cmd) =>
   {
+    var guild = ((SocketGuildChannel)cmd.Channel).Guild;
+    var optionsString = cmd.Data.Options.Select(x => $"{x.Name}:{x.Value}");
+    var commandString = $"/{cmd.CommandName} {string.Join(" ", optionsString)}";
+    await LogService.LogToFileAndConsole(
+      $"{cmd.User} executed slash command {commandString}", guild);
+
     var command = slashCommands.First(x => cmd.CommandName == x.Name);
     await command.Handle(cmd);
   };
 
   DiscordService.Discord.MessageCommandExecuted += async (cmd) =>
   {
+    var guild = ((SocketGuildChannel)cmd.Channel).Guild;
+    await LogService.LogToFileAndConsole(
+      $"{cmd.User} executed message command {cmd.CommandName} on message {cmd.Data.Message}", guild);
+
     var command = messageCommands.First(x => cmd.CommandName == x.Name);
     await command.Handle(cmd);
   };

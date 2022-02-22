@@ -103,6 +103,10 @@ namespace TNTBot.Commands
       var selectedNum = await DatabaseService.QueryFirst<int>("SELECT num FROM rngnums LIMIT(1);");
       await cmd.RespondAsync(selectedNum.ToString());
 
+      var user = (SocketGuildUser)cmd.User;
+      await LogService.LogToFileAndConsole(
+        $"User {user} is getting a fake rng number: {selectedNum}");
+
       await DatabaseService.NonQuery("DELETE FROM rngnums WHERE id = (SELECT id FROM rngnums LIMIT(1));");
     }
 

@@ -19,6 +19,9 @@ namespace TNTBot.Services
 
     public async Task MuteUser(SocketGuildUser user, DateTime expireAt)
     {
+      await LogService.LogToFileAndConsole(
+        $"Muting user {user}, expires at {expireAt}", user.Guild);
+
       var mutedRole = await GetMutedRole(user.Guild);
       await user.AddRoleAsync(mutedRole);
 
@@ -31,6 +34,9 @@ namespace TNTBot.Services
 
     public async Task UnmuteUser(SocketGuildUser user)
     {
+      await LogService.LogToFileAndConsole(
+        $"Unmuted user {user}", user.Guild);
+
       var mutedRole = await GetMutedRole(user.Guild);
       await user.RemoveRoleAsync(mutedRole);
 
@@ -126,6 +132,9 @@ namespace TNTBot.Services
       {
         await Task.Delay((int)duration.TotalMilliseconds);
       }
+
+      await LogService.LogToFileAndConsole(
+        $"Mute is expired for user {user}", user.Guild);
       await UnmuteUser(user);
     }
   }

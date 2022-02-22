@@ -49,6 +49,9 @@ namespace TNTBot.Services
     public async Task AddCommand(SocketGuild guild, string name, string response, string? description)
     {
       name = CleanCommandName(name);
+      await LogService.LogToFileAndConsole(
+        $"Adding custom command {name} response: {response}, description: {description}", guild);
+
       var sql = "INSERT INTO custom_commands(guild_id, name, response, description) VALUES($0, $1, $2, $3)";
       await DatabaseService.NonQuery(sql, guild.Id, name, response, description);
     }
@@ -56,6 +59,9 @@ namespace TNTBot.Services
     public async Task RemoveCommand(SocketGuild guild, string name)
     {
       name = CleanCommandName(name);
+      await LogService.LogToFileAndConsole(
+        $"Removing custom command {name}", guild);
+
       var sql = "DELETE FROM custom_commands WHERE guild_id = $0 AND name = $1";
       await DatabaseService.NonQuery(sql, guild.Id, name);
     }

@@ -1,5 +1,6 @@
 using Discord;
 using Discord.WebSocket;
+using TNTBot.Models;
 
 namespace TNTBot.Services
 {
@@ -52,6 +53,10 @@ namespace TNTBot.Services
     {
       if (pinChannel is null)
       {
+        var guild = ((SocketGuildChannel)cmd.Channel).Guild;
+        await LogService.LogToFileAndConsole(
+          "No pin channel was set", guild, LogLevel.Warning);
+
         await cmd.RespondAsync("No pin channel was set. Set it using /settings pinchannel");
         return false;
       }
@@ -73,6 +78,9 @@ namespace TNTBot.Services
       {
         return false;
       }
+
+      await LogService.LogToFileAndConsole(
+        $"Pinning message {msg.Id} from {cmd.Channel}", guild);
 
       var pinEmbed = PinMessageEmbed(msg);
       await pinChannel!.SendMessageAsync(embed: pinEmbed);

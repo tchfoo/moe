@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
 using TNTBot.Services;

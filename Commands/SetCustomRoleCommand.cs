@@ -67,7 +67,7 @@ namespace TNTBot.Commands
       }
 
       await service.AddRole(guild, name, role);
-      await cmd.RespondAsync($"Added role **{role.Name}** to the list of assignable roles");
+      await cmd.RespondAsync($"Added role **{name}** to the list of assignable roles");
     }
 
     private async Task RemoveRole(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)

@@ -20,28 +20,29 @@ namespace TNTBot.Services
       var logChannel = await settingsService.GetLogChannel(guild);
       if (logChannel is null)
       {
+        await LogToFileAndConsole("No log channel was set", guild, LogLevel.Warning);
         return;
       }
 
       await logChannel.SendMessageAsync(text: text, embed: embed);
     }
 
-    public async Task LogToFileAndConsole(string message, SocketGuild? guild, LogLevel level = LogLevel.Info)
+    public static async Task LogToFileAndConsole(string message, SocketGuild? guild = null, LogLevel level = LogLevel.Info)
     {
       var formattedMessage = FormatMessage(message, guild, level);
       Console.WriteLine(formattedMessage);
       await WriteToLogFile(formattedMessage);
     }
 
-    private string FormatMessage(string message, SocketGuild? guild, LogLevel level)
+    private static string FormatMessage(string message, SocketGuild? guild, LogLevel level)
     {
-      var timePart = $"[{DateTime.Now}] ";
+      var timePart = $"[{DateTime.Now:yyyy-MM-dd HH:mm}] ";
       var levelPart = $"[{level.ToString().ToUpper()}] ";
       var guildPart = guild is null ? string.Empty : $"[{guild.Name}#{guild.Id}] ";
       return timePart + levelPart + guildPart + message;
     }
 
-    private async Task WriteToLogFile(string message)
+    private static async Task WriteToLogFile(string message)
     {
       var logsDirPath = "logs";
       Directory.CreateDirectory(logsDirPath);

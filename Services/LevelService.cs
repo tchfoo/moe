@@ -74,6 +74,10 @@ namespace TNTBot.Services
     public async Task ToggleLevelupMessage(SocketGuildUser user)
     {
       var enabled = await IsLevelupMessageEnabled(user);
+      var enabledString = enabled ? "disabling" : "enabling";
+      await LogService.LogToFileAndConsole(
+        $"User {user} is {enabledString} their levelup messages", user.Guild);
+
       await SetLevelupMessageEnabled(user, !enabled);
     }
 

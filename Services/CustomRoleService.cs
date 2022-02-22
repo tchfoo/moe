@@ -45,12 +45,18 @@ namespace TNTBot.Services
 
     public async Task AddRole(SocketGuild guild, string name, SocketRole role)
     {
+      await LogService.LogToFileAndConsole(
+        $"Adding custom role {name}, discord role: {role}", guild);
+
       var sql = "INSERT INTO custom_roles(guild_id, name, role_id) VALUES($0, $1, $2)";
       await DatabaseService.NonQuery(sql, guild.Id, name, role.Id);
     }
 
     public async Task RemoveRole(SocketGuild guild, string name)
     {
+      await LogService.LogToFileAndConsole(
+        $"Removing custom role {name}", guild);
+
       var sql = "DELETE FROM custom_roles WHERE guild_id = $0 AND name = $1";
       await DatabaseService.NonQuery(sql, guild.Id, name);
     }
@@ -63,12 +69,18 @@ namespace TNTBot.Services
 
     public async Task SubscribeToRole(SocketGuildUser user, string name)
     {
+      await LogService.LogToFileAndConsole(
+        $"Subscribing user {user} to custom role {name}", user.Guild);
+
       var customRole = (await GetRole(user.Guild, name))!;
       await user.AddRoleAsync(customRole.DiscordRole);
     }
 
     public async Task UnsubscribeFromRole(SocketGuildUser user, string name)
     {
+      await LogService.LogToFileAndConsole(
+        $"Unsubscribing user {user} from custom role {name}", user.Guild);
+
       var customRole = (await GetRole(user.Guild, name))!;
       await user.RemoveRoleAsync(customRole.DiscordRole);
     }
