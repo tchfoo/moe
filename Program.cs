@@ -40,6 +40,7 @@ DiscordService.Discord.Ready += async () =>
     new PurgeCommand(purgeService),
     new SayCommand(sayService),
     new UserinfoCommand(),
+    new ServerinfoCommand(),
   };
 
   var messageCommands = new List<MessageCommandBase>
