@@ -39,7 +39,9 @@ DiscordService.Discord.Ready += async () =>
     new LevelupMessage(levelService),
     new PurgeCommand(purgeService),
     new SayCommand(sayService),
-};
+    new UserinfoCommand(),
+  };
+
   var messageCommands = new List<MessageCommandBase>
   {
     new PinMessageCommand(pinService),
