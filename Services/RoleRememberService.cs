@@ -20,7 +20,9 @@ namespace TNTBot.Services
 
     private async Task OnUserJoined(SocketGuildUser user)
     {
-      var roles = await LoadRoles(user);
+      var availableRoles = user.Guild.Roles.Select(x => x.Id);
+      var roles = (await LoadRoles(user))
+        .Where(x => availableRoles.Contains(x));
       await user.AddRolesAsync(roles);
       await DeleteRoles(user);
     }
