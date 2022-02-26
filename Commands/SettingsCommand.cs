@@ -31,6 +31,12 @@ namespace TNTBot.Commands
           .WithDescription("Set the default mute duration")
           .AddOption("time", ApplicationCommandOptionType.String, "Duration of the mute (eg. 1h 30m)", isRequired: true)
           .WithType(ApplicationCommandOptionType.SubCommand)
+        ).AddOption(new SlashCommandOptionBuilder()
+          .WithName("modrank")
+          .WithDescription("Change which discord roles are considered mods and admins by this bot. Server admins are bot admins")
+          .AddOption("role", ApplicationCommandOptionType.Role, "The role", isRequired: true)
+          .AddOption("level", ApplicationCommandOptionType.Integer, "Level of the modrank (0 = None, 1 = Moderator, 2 = Administrator)", isRequired: true)
+          .WithType(ApplicationCommandOptionType.SubCommand)
         ).WithType(ApplicationCommandOptionType.SubCommandGroup);
       this.service = service;
     }
@@ -46,6 +52,7 @@ namespace TNTBot.Commands
         "mutelength" => SetMuteLength(cmd, subcommand, guild),
         "pinchannel" => SetPinChannel(cmd, subcommand, guild),
         "logchannel" => SetLogChannel(cmd, subcommand, guild),
+        "modrank" => SetModrank(cmd, subcommand),
         _ => throw new InvalidOperationException($"Unknown subcommand {subcommand.Name}")
       };
 
@@ -57,6 +64,7 @@ namespace TNTBot.Commands
       var muteLength = await service.GetMuteLength(guild);
       var pinChannel = await service.GetPinChannel(guild);
       var logChannel = await service.GetLogChannel(guild);
+      var modranks = await service.GetModranks(guild);
 
       var embed = new EmbedBuilder()
         .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
@@ -66,7 +74,14 @@ namespace TNTBot.Commands
         .AddField("Log channel", logChannel?.Mention ?? "None", inline: true)
         .WithColor(Colors.Blurple);
 
-      await cmd.RespondAsync(embed: embed.Build());
+      string modranksString = "Modranks:";
+      foreach (var modrank in modranks)
+      {
+        var level = service.ConvertModrankLevelToString(modrank.Level);
+        modranksString += $"\n - {level} - {modrank.Role.Mention}";
+      }
+
+      await cmd.RespondAsync(text: modranksString, embed: embed.Build());
     }
 
     private async Task SetMuteLength(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
@@ -89,6 +104,21 @@ namespace TNTBot.Commands
       var channel = subcommand.GetOption<SocketTextChannel>("channel")!;
       await service.SetLogChannel(guild, channel);
       await cmd.RespondAsync("Log channel set to " + channel.Mention);
+    }
+
+    private async Task SetModrank(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand)
+    {
+      var role = subcommand.GetOption<SocketRole>("role")!;
+      var level = (int)subcommand.GetOption<long>("level")!;
+      if (level < 0 || level > 2)
+      {
+        await cmd.RespondAsync("Level must be 0, 1 or 2");
+        return;
+      }
+
+      await service.SetModrank(role, level);
+      var levelOut = service.ConvertModrankLevelToString(level);
+      await cmd.RespondAsync($"Modrank is now {levelOut} for role {role.Mention}");
     }
   }
 }
