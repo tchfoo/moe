@@ -23,6 +23,10 @@ namespace TNTBot.Services
       var availableRoles = user.Guild.Roles.Select(x => x.Id);
       var roles = (await LoadRoles(user))
         .Where(x => availableRoles.Contains(x));
+
+      await LogService.LogToFileAndConsole(
+        $"User rejoined, adding roles {string.Join(", ", roles)} to {user}", user.Guild);
+
       await user.AddRolesAsync(roles);
       await DeleteRoles(user);
     }
@@ -39,8 +43,7 @@ namespace TNTBot.Services
     private async Task<List<ulong>> LoadRoles(SocketGuildUser user)
     {
       var sql = "SELECT role_id FROM remember_roles WHERE guild_id = $0 AND user_id = $1";
-      var roles = await DatabaseService.Query<ulong>(sql, user.Guild.Id, user.Id);
-      return roles;
+      return await DatabaseService.Query<ulong>(sql, user.Guild.Id, user.Id);
     }
 
     private async Task DeleteRoles(SocketGuildUser user)
