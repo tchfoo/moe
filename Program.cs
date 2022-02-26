@@ -17,6 +17,8 @@ DiscordService.Discord.Ready += async () =>
   LogService.Instance = new LogService(settingsService);
   var discordLogService = new DiscordLogService();
   discordLogService.Register();
+  var roleRememberService = new RoleRememberService();
+  await roleRememberService.Register();
 
   var slashCommands = new List<SlashCommandBase>
   {
