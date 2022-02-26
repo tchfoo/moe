@@ -1,5 +1,6 @@
 using Discord;
 using Discord.WebSocket;
+using TNTBot.Models;
 using TNTBot.Services;
 
 namespace TNTBot.Commands
@@ -77,8 +78,7 @@ namespace TNTBot.Commands
       string modranksString = "Modranks:";
       foreach (var modrank in modranks)
       {
-        var level = service.ConvertModrankLevelToString(modrank.Level);
-        modranksString += $"\n - {level} - {modrank.Role.Mention}";
+        modranksString += $"\n - {modrank.Level} - {modrank.Role.Mention}";
       }
 
       await cmd.RespondAsync(text: modranksString, embed: embed.Build());
@@ -109,16 +109,16 @@ namespace TNTBot.Commands
     private async Task SetModrank(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand)
     {
       var role = subcommand.GetOption<SocketRole>("role")!;
-      var level = (int)subcommand.GetOption<long>("level")!;
+      var level = subcommand.GetOption<long>("level")!;
       if (level < 0 || level > 2)
       {
         await cmd.RespondAsync("Level must be 0, 1 or 2");
         return;
       }
 
-      await service.SetModrank(role, level);
-      var levelOut = service.ConvertModrankLevelToString(level);
-      await cmd.RespondAsync($"Modrank is now {levelOut} for role {role.Mention}");
+      var modrankLevel = (ModrankLevel)level;
+      await service.SetModrank(role, modrankLevel);
+      await cmd.RespondAsync($"Modrank is now {modrankLevel} for role {role.Mention}");
     }
   }
 }
