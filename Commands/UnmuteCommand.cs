@@ -1,5 +1,6 @@
 using Discord;
 using Discord.WebSocket;
+using TNTBot.Models;
 using TNTBot.Services;
 
 namespace TNTBot.Commands
@@ -19,6 +20,13 @@ namespace TNTBot.Commands
     public override async Task Handle(SocketSlashCommand cmd)
     {
       var user = cmd.GetOption<SocketGuildUser>("user")!;
+
+      var commandUser = (SocketGuildUser)cmd.User;
+      if (!service.IsAuthorized(commandUser, ModrankLevel.Moderator, out var error))
+      {
+        await cmd.RespondAsync(error);
+        return;
+      }
 
       if (!await service.IsMuted(user))
       {

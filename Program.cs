@@ -8,8 +8,8 @@ DiscordService.Discord.Ready += async () =>
 {
   var settingsService = new SettingsService();
   var muteService = new MuteService(settingsService);
-  var customCommandService = new CustomCommandService();
-  var customRoleService = new CustomRoleService();
+  var customCommandService = new CustomCommandService(settingsService);
+  var customRoleService = new CustomRoleService(settingsService);
   var levelService = new LevelService();
   var rngCommand = new RngCommand();
   var customCommandHandlerDM = new CustomCommandHandlerDM(customCommandService);

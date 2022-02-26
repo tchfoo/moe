@@ -6,9 +6,17 @@ namespace TNTBot.Services
 {
   public class CustomCommandService
   {
-    public CustomCommandService()
+    private readonly SettingsService settingsService;
+
+    public CustomCommandService(SettingsService settingsService)
     {
       CreateCustomCommandsTable().Wait();
+      this.settingsService = settingsService;
+    }
+
+    public bool IsAuthorized(SocketGuildUser user, ModrankLevel requiredLevel, out string? error)
+    {
+      return settingsService.IsAuthorized(user, requiredLevel, out error);
     }
 
     public async Task<bool> HasCommands(SocketGuild guild)

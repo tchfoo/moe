@@ -44,8 +44,15 @@ namespace TNTBot.Commands
 
     public override async Task Handle(SocketSlashCommand cmd)
     {
-      var guild = (cmd.Channel as SocketGuildChannel)!.Guild;
+      var user = (SocketGuildUser)cmd.User;
+      var guild = user.Guild;
       var subcommand = cmd.GetSubcommand();
+
+      if (!Authorize(user, subcommand.Name, out var error))
+      {
+        await cmd.RespondAsync(error);
+        return;
+      }
 
       var handle = subcommand.Name switch
       {
@@ -58,6 +65,26 @@ namespace TNTBot.Commands
       };
 
       await handle;
+    }
+
+    private bool Authorize(SocketGuildUser user, string subcommand, out string? error)
+    {
+      if (subcommand == "list")
+      {
+        if (!service.IsAuthorized(user, ModrankLevel.Moderator, out error))
+        {
+          return false;
+        }
+      }
+      else
+      {
+        if (!service.IsAuthorized(user, ModrankLevel.Administrator, out error))
+        {
+          return false;
+        }
+      }
+
+      return true;
     }
 
     private async Task ListSettings(SocketSlashCommand cmd, SocketGuild guild)

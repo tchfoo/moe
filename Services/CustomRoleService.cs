@@ -5,9 +5,17 @@ namespace TNTBot.Services
 {
   public class CustomRoleService
   {
-    public CustomRoleService()
+    private readonly SettingsService settingsService;
+
+    public CustomRoleService(SettingsService settingsService)
     {
       CreateRolesTable().Wait();
+      this.settingsService = settingsService;
+    }
+
+    public bool IsAuthorized(SocketGuildUser user, ModrankLevel requiredLevel, out string? error)
+    {
+      return settingsService.IsAuthorized(user, requiredLevel, out error);
     }
 
     public async Task<bool> HasRoles(SocketGuild guild)

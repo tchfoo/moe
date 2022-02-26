@@ -1,5 +1,6 @@
 using Discord;
 using Discord.WebSocket;
+using TNTBot.Models;
 using TNTBot.Services;
 
 namespace TNTBot.Commands
@@ -29,14 +30,15 @@ namespace TNTBot.Commands
 
     public override async Task Handle(SocketSlashCommand cmd)
     {
-      if (!HasPermission(cmd.User))
+      var user = (SocketGuildUser)cmd.User;
+      var guild = user.Guild;
+      var subcommand = cmd.GetSubcommand();
+
+      if (!service.IsAuthorized(user, ModrankLevel.Administrator, out var error))
       {
-        await cmd.RespondAsync("You are not allowed to use this command");
+        await cmd.RespondAsync(error);
         return;
       }
-
-      var guild = (cmd.Channel as SocketGuildChannel)!.Guild;
-      var subcommand = cmd.GetSubcommand();
 
       var handle = subcommand.Name switch
       {
@@ -46,13 +48,6 @@ namespace TNTBot.Commands
       };
 
       await handle;
-    }
-
-    private bool HasPermission(SocketUser user)
-    {
-      var allowedUsers = new List<ulong>(ConfigService.Config.Owners)
-        .Append(ConfigService.Config.Yaha);
-      return allowedUsers.Contains(user.Id);
     }
 
     private async Task AddRole(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)

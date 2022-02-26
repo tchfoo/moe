@@ -1,5 +1,6 @@
 using Discord;
 using Discord.WebSocket;
+using TNTBot.Models;
 using TNTBot.Services;
 
 namespace TNTBot.Commands
@@ -35,8 +36,15 @@ namespace TNTBot.Commands
 
     public override async Task Handle(SocketSlashCommand cmd)
     {
-      var guild = (cmd.Channel as SocketGuildChannel)!.Guild;
+      var user = (SocketGuildUser)cmd.User;
+      var guild = user.Guild;
       var subcommand = cmd.GetSubcommand();
+
+      if (!Authorize(user, subcommand.Name, out var error))
+      {
+        await cmd.RespondAsync(error);
+        return;
+      }
 
       var handle = subcommand.Name switch
       {
@@ -68,6 +76,17 @@ namespace TNTBot.Commands
 
       await service.AddCommand(guild, name, response, description);
       await cmd.RespondAsync($"Added command **{service.PrefixCommandName(name)}**");
+    }
+
+    private bool Authorize(SocketGuildUser user, string subcommand, out string? error)
+    {
+      error = null;
+      if (subcommand == "list")
+      {
+        return true;
+      }
+
+      return service.IsAuthorized(user, ModrankLevel.Moderator, out error);
     }
 
     private async Task RemoveCommand(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)

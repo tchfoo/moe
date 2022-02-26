@@ -1,5 +1,6 @@
 using Discord;
 using Discord.WebSocket;
+using TNTBot.Models;
 
 namespace TNTBot.Services
 {
@@ -15,6 +16,11 @@ namespace TNTBot.Services
       CreateMutesTable().Wait();
       LoadMutes().Wait();
       this.settingsService = settingsService;
+    }
+
+    public bool IsAuthorized(SocketGuildUser user, ModrankLevel requiredLevel, out string? error)
+    {
+      return settingsService.IsAuthorized(user, requiredLevel, out error);
     }
 
     public async Task MuteUser(SocketGuildUser user, DateTime expireAt)
