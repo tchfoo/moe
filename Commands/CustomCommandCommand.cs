@@ -106,13 +106,15 @@ namespace TNTBot.Commands
     {
       if (!await service.HasCommands(guild))
       {
-        await cmd.RespondAsync("There are no custom commands");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} There are no custom commands");
       }
 
       var commands = await service.GetCommands(guild);
 
       var embed = new EmbedBuilder()
-        .WithTitle("Custom commands");
+        .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
+        .WithTitle("Custom commands")
+        .WithColor(Colors.Blurple);
 
       foreach (var command in commands)
       {
