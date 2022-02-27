@@ -36,8 +36,15 @@ namespace TNTBot.Commands
           .WithName("modrank")
           .WithDescription("Change which discord roles are considered mods and admins by this bot. Server admins are bot admins")
           .AddOption("role", ApplicationCommandOptionType.Role, "The role", isRequired: true)
-          .AddOption("level", ApplicationCommandOptionType.Integer, "Level of the modrank (0 = None, 1 = Moderator, 2 = Administrator)", isRequired: true)
-          .WithType(ApplicationCommandOptionType.SubCommand)
+          .AddOption(new SlashCommandOptionBuilder()
+            .WithName("level")
+            .WithDescription("Level of the modrank")
+            .WithRequired(true)
+            .WithType(ApplicationCommandOptionType.Integer)
+            .AddChoice(nameof(ModrankLevel.None), (int)ModrankLevel.None)
+            .AddChoice(nameof(ModrankLevel.Moderator), (int)ModrankLevel.Moderator)
+            .AddChoice(nameof(ModrankLevel.Administrator), (int)ModrankLevel.Administrator)
+          ).WithType(ApplicationCommandOptionType.SubCommand)
         ).WithType(ApplicationCommandOptionType.SubCommandGroup);
       this.service = service;
     }
@@ -136,16 +143,9 @@ namespace TNTBot.Commands
     private async Task SetModrank(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand)
     {
       var role = subcommand.GetOption<SocketRole>("role")!;
-      var level = subcommand.GetOption<long>("level")!;
-      if (level < 0 || level > 2)
-      {
-        await cmd.RespondAsync("Level must be 0, 1 or 2");
-        return;
-      }
-
-      var modrankLevel = (ModrankLevel)level;
-      await service.SetModrank(role, modrankLevel);
-      await cmd.RespondAsync($"Modrank is now {modrankLevel} for role {role.Mention}");
+      var level = (ModrankLevel)subcommand.GetOption<long>("level")!;
+      await service.SetModrank(role, level);
+      await cmd.RespondAsync($"Modrank is now {level} for role {role.Mention}");
     }
   }
 }

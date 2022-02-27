@@ -20,7 +20,7 @@ namespace TNTBot.Services
 
       Discord.Log += async (msg) =>
         await LogService.LogToFileAndConsole(
-          $"[{msg.Severity}] {msg.Message}", level: LogLevel.Discord);
+          $"[{msg.Severity}] {msg.Message} {msg.Exception}", level: LogLevel.Discord);
     }
 
     public static async Task Start()
