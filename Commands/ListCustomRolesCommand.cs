@@ -1,3 +1,4 @@
+using Discord;
 using Discord.WebSocket;
 using TNTBot.Services;
 
@@ -19,18 +20,25 @@ namespace TNTBot.Commands
 
       if (!await service.HasRoles(guild))
       {
-        await cmd.RespondAsync("There are no custom roles");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} There are no custom roles");
         return;
       }
 
-      var response = "Roles:\n";
+      var embed = new EmbedBuilder()
+        .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
+        .WithTitle("Applicable roles")
+        .WithColor(Colors.Blurple);
+
       var roles = await service.GetRoles(guild);
       foreach (var role in roles)
       {
-        response += $" - **{role.Name}**: {role.DiscordRole.Mention}\n";
+        var field = new EmbedFieldBuilder()
+          .WithName(role.Name)
+          .WithValue(role.DiscordRole.Mention);
+        embed.AddField(field);
       }
 
-      await cmd.RespondAsync(response);
+      await cmd.RespondAsync(embed: embed.Build());
     }
   }
 }
