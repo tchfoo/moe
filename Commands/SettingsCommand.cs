@@ -101,21 +101,30 @@ namespace TNTBot.Commands
       var logChannel = await service.GetLogChannel(guild);
       var modranks = await service.GetModranks(guild);
 
+      string modrankAdminString = "", modrankModString = "";
+      foreach (var modrank in modranks)
+      {
+        if (modrank.Level.ToString() == "Administrator")
+        {
+          modrankAdminString += $" {modrank.Role.Mention}";
+        }
+        else if (modrank.Level.ToString() == "Moderator")
+        {
+          modrankModString += $"{modrank.Role.Mention}";
+        }
+      }
+
       var embed = new EmbedBuilder()
         .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
         .WithTitle("Bot Settings")
         .AddField("Mute length", muteLength, inline: true)
         .AddField("Pin chanel", pinChannel?.Mention ?? "None", inline: true)
         .AddField("Log channel", logChannel?.Mention ?? "None", inline: true)
+        .AddField("Bot Administrator ranks", string.IsNullOrEmpty(modrankAdminString) ? "None" : modrankAdminString, inline: true)
+        .AddField("Moderator ranks", string.IsNullOrEmpty(modrankModString) ? "None" : modrankModString, inline: true)
         .WithColor(Colors.Blurple);
 
-      string modranksString = "Modranks:";
-      foreach (var modrank in modranks)
-      {
-        modranksString += $"\n - {modrank.Level} - {modrank.Role.Mention}";
-      }
-
-      await cmd.RespondAsync(text: modranksString, embed: embed.Build());
+      await cmd.RespondAsync(embed: embed.Build());
     }
 
     private async Task SetMuteLength(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
