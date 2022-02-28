@@ -20,6 +20,7 @@ DiscordService.Discord.Ready += async () =>
   var roleRememberService = new RoleRememberService();
   await roleRememberService.Register();
   var purgeService = new PurgeService(settingsService);
+  var sayService = new SayService(settingsService);
 
   var slashCommands = new List<SlashCommandBase>
   {
@@ -37,7 +38,8 @@ DiscordService.Discord.Ready += async () =>
     new PinSlashCommand(pinService),
     new LevelupMessage(levelService),
     new PurgeCommand(purgeService),
-  };
+    new SayCommand(sayService),
+};
   var messageCommands = new List<MessageCommandBase>
   {
     new PinMessageCommand(pinService),
