@@ -1,23 +1,28 @@
 using Discord;
 using Discord.WebSocket;
+using TNTBot.Services;
 
 namespace TNTBot.Commands
 {
   public class UserinfoCommand : SlashCommandBase
   {
-    public UserinfoCommand() : base("userinfo")
+    private readonly UserInfoService service;
+
+    public UserinfoCommand(UserInfoService service) : base("userinfo")
     {
       Description = "Get the info of the given user";
       Options = new SlashCommandOptionBuilder()
         .AddOption("user", ApplicationCommandOptionType.User, "The user to get the information of", isRequired: false);
+      this.service = service;
     }
 
     public override async Task Handle(SocketSlashCommand cmd)
     {
       var user = cmd.GetOption<SocketGuildUser>("user") ?? (SocketGuildUser)cmd.User;
 
-      var roles = "No roles";
-      if (user.Roles.Count > 0)
+      var firstJoined = await service.FirstJoined(user);
+      var roles = "None";
+      if (user.Roles.Count > 1)
       {
         roles = RolesToString(user.Roles);
       }
@@ -26,9 +31,9 @@ namespace TNTBot.Commands
         .WithAuthor(user)
         .WithDescription($"[Avatar]({user.GetAvatarUrl()})")
         .AddField("Roles", $"{roles}", inline: true)
-        .AddField("Created at", $"{user.CreatedAt: yyyy-MM-dd HH:mm}", inline: true)
-        .AddField("First joined at", "FirstJoin", inline: true)
-        .AddField("Last joined at", $"{user.JoinedAt: yyyy-MM-dd HH:mm}", inline: true)
+        .AddField("Created at", $"{user.CreatedAt:yyyy-MM-dd HH:mm}", inline: true)
+        .AddField("First joined at", firstJoined?.ToString("yyyy-MM-dd HH:mm") ?? "Unkown", inline: true)
+        .AddField("Last joined at", $"{user.JoinedAt:yyyy-MM-dd HH:mm}", inline: true)
         .WithColor(user.Roles.Last().Color)
         .WithFooter($"ID: {user.Id}");
 
