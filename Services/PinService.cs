@@ -20,15 +20,13 @@ namespace TNTBot.Services
 
     private Embed PinMessageEmbed(IMessage message)
     {
-      var roles = ((SocketGuildUser)message.Author).Roles
-        .Where(x => x.Color != Color.Default)
-        .OrderBy(x => x.Position);
+      var user = (SocketGuildUser)message.Author;
 
       var embed = new EmbedBuilder()
         .WithAuthor(message.Author)
         .WithDescription($"{message.Content}\n\n[Jump to message]({message.GetJumpUrl()})")
         .WithFooter($"{message.Timestamp.DateTime: yyyy-MM-dd • H:m}")
-        .WithColor(roles.Last().Color);
+        .WithColor(Colors.GetMainRoleColor(user));
 
       if (message.Attachments.Count > 0)
       {

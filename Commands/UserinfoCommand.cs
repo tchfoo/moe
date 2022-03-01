@@ -34,7 +34,7 @@ namespace TNTBot.Commands
         .AddField("Created at", $"{user.CreatedAt:yyyy-MM-dd HH:mm}", inline: true)
         .AddField("First joined at", firstJoined?.ToString("yyyy-MM-dd HH:mm") ?? "Unkown", inline: true)
         .AddField("Last joined at", $"{user.JoinedAt:yyyy-MM-dd HH:mm}", inline: true)
-        .WithColor(user.Roles.Last().Color)
+        .WithColor(Colors.GetMainRoleColor(user))
         .WithFooter($"ID: {user.Id}");
 
       await cmd.RespondAsync(embed: embed.Build());

@@ -31,7 +31,7 @@ namespace TNTBot.Commands
           .AddField("Rank", $"#{rank}", inline: true)
           .AddField("Level", $"{level.LevelNumber}", inline: true)
           .AddField("Progress", $"{level.XPFromThisLevel} XP / {level.TotalLevelXP} XP {progressBar} {percentageOut}%")
-          .WithColor(user.Roles.Last().Color);
+          .WithColor(Colors.GetMainRoleColor(user));
 
       await cmd.RespondAsync(embed: embed.Build());
     }
