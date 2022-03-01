@@ -1,4 +1,5 @@
 using Discord.WebSocket;
+using MathNet.Numerics.RootFinding;
 
 namespace TNTBot.Models
 {
@@ -6,7 +7,6 @@ namespace TNTBot.Models
   {
     public const int MinXPPerMessage = 15;
     public const int MaxXPPerMessage = 25;
-    public const double AverageXPPerMessage = (MinXPPerMessage + MaxXPPerMessage) / 2;
 
     public int Id { get; set; }
     public SocketGuildUser User { get; set; }
@@ -36,12 +36,15 @@ namespace TNTBot.Models
 
     private int LevelToXP(double level)
     {
-      return (int)(Math.Pow(level - 1, 2.38) * AverageXPPerMessage);
+      var xp = 5d / 6d * ((2 * Math.Pow(level, 3)) + (27 * Math.Pow(level, 2)) + (91 * level));
+      return (int)Math.Round(xp);
     }
 
     private double XPToLevel(int xp)
     {
-      return Math.Pow(xp / AverageXPPerMessage, 1 / 2.38) + 1;
+      var d = -6d / 5d * xp;
+      var roots = Cubic.Roots(d, 91, 27, 2);
+      return roots.Item2.Real;
     }
   }
 }
