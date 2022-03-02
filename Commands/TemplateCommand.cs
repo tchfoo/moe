@@ -34,6 +34,7 @@ namespace TNTBot.Commands
       ).WithType(ApplicationCommandOptionType.SubCommandGroup);
       this.service = service;
       pendingModals = new Dictionary<string, (SocketGuildUser creator, string name, SocketTextChannel channel, SocketRole mention, bool hidden)>();
+      DiscordService.Discord.ModalSubmitted += OnModalSubmitted;
     }
 
     public override async Task Handle(SocketSlashCommand cmd)
@@ -94,8 +95,6 @@ namespace TNTBot.Commands
         .AddTextInput("Image URL (large image)", "embed_image", placeholder: "Image URL (large image)", required: false);
 
       await cmd.RespondWithModalAsync(modal: modal.Build());
-
-      DiscordService.Discord.ModalSubmitted += OnModalSubmitted;
     }
 
     private async Task OnModalSubmitted(SocketModal modal)
@@ -122,8 +121,6 @@ namespace TNTBot.Commands
 
       await modal.RespondAsync($"Added template **{name}**");
       pendingModals.Remove(id);
-
-      DiscordService.Discord.ModalSubmitted -= OnModalSubmitted;
     }
 
     private async Task RemoveTemplate(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuildUser user)
