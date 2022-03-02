@@ -32,11 +32,11 @@ namespace TNTBot.Services
       return count > 0;
     }
 
-    public async Task<List<string>> ListTemplates(SocketGuild guild)
+    public async Task<List<(string Name, SocketGuildUser Creator)>> ListTemplates(SocketGuild guild)
     {
-      var sql = "SELECT name FROM templates WHERE guild_id = $0 AND hidden = false";
-      var templates = await DatabaseService.Query<string>(sql, guild.Id);
-      return templates.ConvertAll(x => x!);
+      var sql = "SELECT name, creator_id FROM templates WHERE guild_id = $0 AND hidden = false";
+      var templates = await DatabaseService.Query<string, ulong>(sql, guild.Id);
+      return templates.ConvertAll(x => (x.Item1!, guild.GetUser(x.Item2)));
     }
 
     public async Task<TemplateModel?> GetTemplate(SocketGuild guild, string name)
@@ -68,6 +68,10 @@ namespace TNTBot.Services
 
     public async Task AddTemplate(SocketGuildUser creator, string name, SocketTextChannel channel, SocketRole? mention, bool hidden, string title, string description, string? footer, string? thumbnailImageUrl, string? imageUrl)
     {
+      await LogService.LogToFileAndConsole(
+        $"Adding template {name} with parameters guild: {creator.Guild}, creator: {creator}, channel: {channel}, mention: {mention}, hidden: {hidden}, title: {title}, description: {description}, footer: {footer}, thumbnailImageUrl: {thumbnailImageUrl}, imageUrl: {imageUrl}",
+        creator.Guild);
+
       var sql = @"
         INSERT INTO templates(guild_id, creator_id, name, channel_id, mention_id, hidden, title, description, footer, thumbnail_image_url, image_url)
         VALUES ($0, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10)";

@@ -8,7 +8,7 @@ namespace TNTBot.Commands
   public class TemplateCommand : SlashCommandBase
   {
     private readonly TemplateService service;
-    private readonly Dictionary<string, (SocketGuildUser creator, string name, SocketTextChannel channel, SocketRole mention, bool hidden)> pendingModals;
+    private readonly Dictionary<string, (SocketGuildUser Creator, string Name, SocketTextChannel Channel, SocketRole Mention, bool Hidden)> pendingModals;
 
     public TemplateCommand(TemplateService service) : base("template")
     {
@@ -121,6 +121,7 @@ namespace TNTBot.Commands
       await service.AddTemplate(creator, name, channel, mention, hidden, title!, description!, footer, thumbnailImage, image);
 
       await modal.RespondAsync($"Added template **{name}**");
+      pendingModals.Remove(id);
 
       DiscordService.Discord.ModalSubmitted -= OnModalSubmitted;
     }
@@ -153,8 +154,12 @@ namespace TNTBot.Commands
       var embed = new EmbedBuilder()
         .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
         .WithTitle("Templates")
-        .WithColor(Colors.Blurple)
-        .WithDescription(string.Join("\n", templates));
+        .WithColor(Colors.Blurple);
+
+      foreach (var template in templates)
+      {
+        embed.AddField(template.Name, $"Creator: {template.Creator.Mention}");
+      }
 
       await cmd.RespondAsync(embed: embed.Build());
     }
