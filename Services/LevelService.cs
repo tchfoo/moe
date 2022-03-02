@@ -30,7 +30,7 @@ namespace TNTBot.Services
       {
         if (await IsLevelupMessageEnabled(user))
         {
-          await msg.Channel.SendMessageAsync($"{user.Mention} has leveled up to level {i}!");
+          await msg.Channel.SendMessageAsync($"{user.Mention} has leveled up to level {i + 1}!");
         }
       }
     }
