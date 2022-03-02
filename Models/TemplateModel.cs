@@ -11,10 +11,8 @@ namespace TNTBot.Models
     public SocketGuildUser Creator { get; set; } = default!;
     public SocketTextChannel Channel { get; set; } = default!;
     public SocketRole? MentionedRole { get; set; }
-    public string? AuthorName { get; set; }
-    public string? AuthorImageUrl { get; set; }
     public string? ThumbnailImageUrl { get; set; }
-    public string? ImageUrl { get; set; }
+    public string? ImageUrl { get; set; } = default;
     public string Title { get; set; } = default!;
     public string Description { get; set; } = default!;
     public string? Footer { get; set; }
