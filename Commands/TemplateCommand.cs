@@ -77,7 +77,7 @@ namespace TNTBot.Commands
 
       if (await service.HasTemplate(user.Guild, name))
       {
-        await cmd.RespondAsync($"A template with the name {name} already exists");
+        await cmd.RespondAsync($"Template **{name}** already exists");
         return;
       }
 
@@ -98,18 +98,45 @@ namespace TNTBot.Commands
       DiscordService.Discord.ModalSubmitted += OnModalSubmitted;
     }
 
+    private async Task OnModalSubmitted(SocketModal modal)
+    {
+      var id = modal.Data.CustomId;
+      if (!pendingModals.TryGetValue(id, out var data))
+      {
+        return;
+      }
+
+      var (creator, name, channel, mention, hidden) = data;
+      var title = modal.GetValue("embed_title")!;
+      var description = modal.GetValue("embed_description")!;
+      var footer = modal.GetValue("embed_footer");
+      var thumbnailImage = modal.GetValue("embed_thumbnail_image");
+      var image = modal.GetValue("embed_image");
+
+      if (!service.ValidateTemplateParameters(modal, title, description, footer, thumbnailImage, image))
+      {
+        return;
+      }
+
+      await service.AddTemplate(creator, name, channel, mention, hidden, title!, description!, footer, thumbnailImage, image);
+
+      await modal.RespondAsync($"Added template **{name}**");
+
+      DiscordService.Discord.ModalSubmitted -= OnModalSubmitted;
+    }
+
     private async Task RemoveTemplate(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuildUser user)
     {
       var name = subcommand.GetOption<string>("name")!;
 
       if (!await service.HasTemplate(user.Guild, name))
       {
-        await cmd.RespondAsync($"A template with the name {name} does not exist");
+        await cmd.RespondAsync($"Template **{name}** does not exist");
         return;
       }
 
       await service.RemoveTemplate(user.Guild, name);
-      await cmd.RespondAsync($"Template {name} removed");
+      await cmd.RespondAsync($"Removed template **{name}**");
     }
 
     private async Task ListTemplates(SocketSlashCommand cmd, SocketGuildUser user)
@@ -119,7 +146,7 @@ namespace TNTBot.Commands
 
       if (!await service.HasTemplates(guild))
       {
-        await cmd.RespondAsync("No templates found");
+        await cmd.RespondAsync("There are no templates");
         return;
       }
 
@@ -130,28 +157,6 @@ namespace TNTBot.Commands
         .WithDescription(string.Join("\n", templates));
 
       await cmd.RespondAsync(embed: embed.Build());
-    }
-
-    private async Task OnModalSubmitted(SocketModal modal)
-    {
-      var id = modal.Data.CustomId;
-      if (!pendingModals.TryGetValue(id, out var data))
-      {
-        return;
-      }
-
-      var (creator, name, channel, mention, hidden) = data;
-      var title = modal.GetValue("embed_title");
-      var description = modal.GetValue("embed_description");
-      var footer = modal.GetValue("embed_footer");
-      var thumbnailImage = modal.GetValue("embed_thumbnail_image");
-      var image = modal.GetValue("embed_image");
-
-      await service.AddTemplate(creator, name, channel, mention, hidden, title!, description!, footer, thumbnailImage, image);
-
-      await modal.RespondAsync("Template addd!");
-
-      DiscordService.Discord.ModalSubmitted -= OnModalSubmitted;
     }
   }
 }

@@ -83,6 +83,29 @@ namespace TNTBot.Services
       await DatabaseService.NonQuery(sql, guild.Id, name);
     }
 
+    public bool ValidateTemplateParameters(SocketModal modal, string title, string description, string? footer, string? thumbnailImage, string? image)
+    {
+      var allValues = title + description + footer + thumbnailImage + image;
+      var paramsCount = allValues.Count(x => x == '$');
+      var maxParams = 5;
+
+      if (paramsCount > maxParams)
+      {
+        var error =
+          $"Too many $ parameters, maximum is {maxParams}\n" +
+          $" - **Title**: {title}\n" +
+          $" - **Description**: {description}\n" +
+          $" - **Footer**: {footer ?? "*Not specified*"}\n" +
+          $" - **Thumbnail image URL**: {thumbnailImage ?? "*Not specified*"}\n" +
+          $" - **Image URL**: {image ?? "*Not specified*"}";
+
+        modal.RespondAsync(error);
+        return false;
+      }
+
+      return true;
+    }
+
     private async Task CreateTemplatesTable()
     {
       var sql = @"

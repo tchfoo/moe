@@ -6,11 +6,12 @@ namespace TNTBot
   {
     public static string? GetValue(this SocketModal modal, string id, string? @default = default)
     {
-      if (modal.Data.Components.Any(x => x.CustomId == id))
+      var value = modal.Data.Components.First(x => x.CustomId == id)?.Value;
+      if (string.IsNullOrEmpty(value))
       {
-        return modal.Data.Components.First(x => x.CustomId == id).Value;
+        return @default;
       }
-      return @default;
+      return value;
     }
   }
 }
