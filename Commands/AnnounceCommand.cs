@@ -8,7 +8,7 @@ namespace TNTBot.Commands
   public class AnnounceCommand : SlashCommandBase
   {
     private readonly TemplateService service;
-    private readonly Dictionary<string, TemplateModel> pendingModals;
+    private readonly Dictionary<string, (TemplateModel template, bool preview)> pendingModals;
 
     public AnnounceCommand(TemplateService service) : base("announce")
     {
@@ -17,7 +17,7 @@ namespace TNTBot.Commands
         .AddOption("name", ApplicationCommandOptionType.String, "The name of the command to add", isRequired: true)
         .AddOption("preview", ApplicationCommandOptionType.Boolean, "Whether to preview the template or actually announce it, default = false", isRequired: false);
       this.service = service;
-      pendingModals = new Dictionary<string, TemplateModel>();
+      pendingModals = new Dictionary<string, (TemplateModel template, bool preview)>();
       DiscordService.Discord.ModalSubmitted += OnModalSubmitted;
     }
 
@@ -41,30 +41,30 @@ namespace TNTBot.Commands
         return;
       }
 
-      if (preview)
+      var @params = service.GetTemplateParameters(template);
+      if (@params.Count == 0)
       {
-        await PreviewAnnouncement(cmd, template);
-      }
-      else
-      {
-        var @params = service.GetTemplateParameters(template);
-        if (@params.Count == 0)
+        if (preview)
+        {
+          await PreviewTemplate(cmd, template);
+        }
+        else
         {
           await AnnounceTemplate(template);
           await cmd.RespondAsync($"Announced template **{template.Name}**");
         }
-        else
-        {
-          var modal = BuildAnnounceModal(template, @params);
-          await cmd.RespondWithModalAsync(modal);
-        }
+      }
+      else
+      {
+        var modal = BuildAnnounceModal(template, preview, @params);
+        await cmd.RespondWithModalAsync(modal);
       }
     }
 
-    private Modal BuildAnnounceModal(TemplateModel template, List<string> @params)
+    private Modal BuildAnnounceModal(TemplateModel template, bool preview, List<string> @params)
     {
       var modalId = Guid.NewGuid().ToString();
-      pendingModals.Add(modalId, template);
+      pendingModals.Add(modalId, (template, preview));
 
       var modal = new ModalBuilder()
         .WithTitle($"Announce: {template.Name}")
@@ -81,24 +81,29 @@ namespace TNTBot.Commands
     private async Task OnModalSubmitted(SocketModal modal)
     {
       var id = modal.Data.CustomId;
-      if (!pendingModals.TryGetValue(id, out var template))
+      if (!pendingModals.TryGetValue(id, out var data))
       {
         return;
       }
 
+      var (template, preview) = data;
       var paramNames = service.GetTemplateParameters(template);
-      var @params = new Dictionary<string, string>();
-      foreach (var paramName in paramNames)
-      {
-        @params.Add(paramName, modal.GetValue(paramName) ?? "*unspecified*");
-      }
+      var @params = paramNames.ToDictionary(x => x, x => modal.GetValue(x) ?? "*unspecified*");
+
       template.Title = service.ReplaceTemplateParameters(template.Title, @params)!;
       template.Description = service.ReplaceTemplateParameters(template.Description, @params)!;
       template.Footer = service.ReplaceTemplateParameters(template.Footer, @params);
 
-      await AnnounceTemplate(template);
+      if (preview)
+      {
+        await PreviewTemplate(modal, template);
+      }
+      else
+      {
+        await AnnounceTemplate(template);
+        await modal.RespondAsync($"Announced template **{template.Name}**");
+      }
 
-      await modal.RespondAsync($"Announced template **{template.Name}**");
       pendingModals.Remove(id);
     }
 
@@ -110,6 +115,7 @@ namespace TNTBot.Commands
         .WithFooter(template.Footer)
         .WithThumbnailUrl(template.ThumbnailImageUrl)
         .WithImageUrl(template.LargeImageUrl)
+        .WithColor(Colors.Blurple)
         .Build();
     }
 
@@ -120,11 +126,11 @@ namespace TNTBot.Commands
       await template.Channel.SendMessageAsync(text: mention, embed: embed);
     }
 
-    private async Task PreviewAnnouncement(SocketSlashCommand cmd, TemplateModel template)
+    private async Task PreviewTemplate(SocketInteraction interaction, TemplateModel template)
     {
       var embed = BuildAnnouncmentEmbed(template);
       var mention = template.Mention?.Mention;
-      await cmd.RespondAsync(text: mention, embed: embed, ephemeral: true);
+      await interaction.RespondAsync(text: mention, embed: embed, ephemeral: true);
     }
   }
 }
