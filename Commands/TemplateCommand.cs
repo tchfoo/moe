@@ -8,7 +8,7 @@ namespace TNTBot.Commands
   public class TemplateCommand : SlashCommandBase
   {
     private readonly TemplateService service;
-    private readonly Dictionary<string, (SocketGuildUser Creator, string Name, SocketTextChannel Channel, SocketRole Mention, bool Hidden)> pendingModals;
+    private readonly Dictionary<string, TemplateModel> pendingModals;
 
     public TemplateCommand(TemplateService service) : base("template")
     {
@@ -33,7 +33,7 @@ namespace TNTBot.Commands
           .WithType(ApplicationCommandOptionType.SubCommand)
       ).WithType(ApplicationCommandOptionType.SubCommandGroup);
       this.service = service;
-      pendingModals = new Dictionary<string, (SocketGuildUser creator, string name, SocketTextChannel channel, SocketRole mention, bool hidden)>();
+      pendingModals = new Dictionary<string, TemplateModel>();
       DiscordService.Discord.ModalSubmitted += OnModalSubmitted;
     }
 
@@ -83,16 +83,24 @@ namespace TNTBot.Commands
       }
 
       var modalId = Guid.NewGuid().ToString();
-      pendingModals.Add(modalId, (user, name, channel, mention, hidden));
+      var t = new TemplateModel()
+      {
+        Name = name,
+        Channel = channel,
+        Mention = mention,
+        Hidden = hidden,
+        Creator = user,
+      };
+      pendingModals.Add(modalId, t);
 
       var modal = new ModalBuilder()
         .WithTitle("Template: Embed creator")
         .WithCustomId(modalId)
-        .AddTextInput("Title", "embed_title", placeholder: "Title of the embed, Placeholders can be used here", required: true)
-        .AddTextInput("Description", "embed_description", placeholder: "Description of the embed, Placeholders can be used here", required: true)
-        .AddTextInput("Footer", "embed_footer", placeholder: "Footer text, Placeholders can be used here", required: false)
-        .AddTextInput("Thumbnail image URL", "embed_thumbnail_image", placeholder: "Image URL of thumbnail in the embed", required: false)
-        .AddTextInput("Image URL (large image)", "embed_image", placeholder: "Image URL (large image)", required: false);
+        .AddTextInput("Title", nameof(t.Title), placeholder: "Title of the embed, Placeholders can be used here", required: true)
+        .AddTextInput("Description", nameof(t.Description), placeholder: "Description of the embed, Placeholders can be used here", required: true)
+        .AddTextInput("Footer", nameof(t.Footer), placeholder: "Footer text, Placeholders can be used here", required: false)
+        .AddTextInput("Thumbnail image URL", nameof(t.ThumbnailImageUrl), placeholder: "Image URL of thumbnail in the embed", required: false)
+        .AddTextInput("Image URL (large image)", nameof(t.LargeImageUrl), placeholder: "Image URL (large image)", required: false);
 
       await cmd.RespondWithModalAsync(modal: modal.Build());
     }
@@ -100,26 +108,25 @@ namespace TNTBot.Commands
     private async Task OnModalSubmitted(SocketModal modal)
     {
       var id = modal.Data.CustomId;
-      if (!pendingModals.TryGetValue(id, out var data))
+      if (!pendingModals.TryGetValue(id, out var t))
       {
         return;
       }
 
-      var (creator, name, channel, mention, hidden) = data;
-      var title = modal.GetValue("embed_title")!;
-      var description = modal.GetValue("embed_description")!;
-      var footer = modal.GetValue("embed_footer");
-      var thumbnailImage = modal.GetValue("embed_thumbnail_image");
-      var image = modal.GetValue("embed_image");
+      t.Title = modal.GetValue(nameof(t.Title))!;
+      t.Description = modal.GetValue(nameof(t.Description))!;
+      t.Footer = modal.GetValue(nameof(t.Footer));
+      t.ThumbnailImageUrl = modal.GetValue(nameof(t.ThumbnailImageUrl));
+      t.LargeImageUrl = modal.GetValue(nameof(t.LargeImageUrl));
 
-      if (!service.ValidateTemplateParameters(modal, title, description, footer, thumbnailImage, image))
+      if (!service.ValidateTemplateParameters(modal, t))
       {
         return;
       }
 
-      await service.AddTemplate(creator, name, channel, mention, hidden, title!, description!, footer, thumbnailImage, image);
+      await service.AddTemplate(t);
 
-      await modal.RespondAsync($"Added template **{name}**");
+      await modal.RespondAsync($"Added template **{t.Name}**");
       pendingModals.Remove(id);
     }
 

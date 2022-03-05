@@ -15,6 +15,6 @@ namespace TNTBot.Models
     public string Description { get; set; } = default!;
     public string? Footer { get; set; }
     public string? ThumbnailImageUrl { get; set; }
-    public string? ImageUrl { get; set; } = default;
+    public string? LargeImageUrl { get; set; } = default;
   }
 }

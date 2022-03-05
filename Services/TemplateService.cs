@@ -41,8 +41,8 @@ namespace TNTBot.Services
 
     public async Task<TemplateModel?> GetTemplate(SocketGuild guild, string name)
     {
-      var sql = "SELECT id, creator_id, channel_id, mention_id, hidden, title, description, footer, thumbnail_image_url, image_url FROM templates WHERE guild_id = $0 AND name = $1";
-      var template = await DatabaseService.Query<int, ulong, ulong, ulong?, bool, string, string, string?, string?, string?>(sql, guild.Id, name);
+      var sql = "SELECT id, creator_id, channel_id, mention_id, hidden, title, description, footer, thumbnail_image_url, large_image_url FROM templates WHERE guild_id = $0 AND name = $1";
+      var template = await DatabaseService.Query<int, ulong, ulong, ulong, int, string, string, string, string, string>(sql, guild.Id, name);
       if (template == null)
       {
         return null;
@@ -56,26 +56,26 @@ namespace TNTBot.Services
         Creator = guild.GetUser(t.Item2),
         Name = name,
         Channel = guild.GetTextChannel(t.Item3),
-        Mention = t.Item4.HasValue ? guild.GetRole(t.Item4.Value) : null,
-        Hidden = t.Item5,
+        Mention = t.Item4 == default ? null : guild.GetRole(t.Item4),
+        Hidden = t.Item5 > 0,
         Title = t.Item6!,
         Description = t.Item7!,
         Footer = t.Item8,
         ThumbnailImageUrl = t.Item9,
-        ImageUrl = t.Item10,
+        LargeImageUrl = t.Item10,
       };
     }
 
-    public async Task AddTemplate(SocketGuildUser creator, string name, SocketTextChannel channel, SocketRole? mention, bool hidden, string title, string description, string? footer, string? thumbnailImageUrl, string? imageUrl)
+    public async Task AddTemplate(TemplateModel t)
     {
       await LogService.LogToFileAndConsole(
-        $"Adding template {name} with parameters guild: {creator.Guild}, creator: {creator}, channel: {channel}, mention: {mention}, hidden: {hidden}, title: {title}, description: {description}, footer: {footer}, thumbnailImageUrl: {thumbnailImageUrl}, imageUrl: {imageUrl}",
-        creator.Guild);
+        $"Adding template {t.Name} with parameters guild: {t.Creator.Guild}, creator: {t.Creator}, channel: {t.Channel}, mention: {t.Mention}, hidden: {t.Hidden}, title: {t.Title}, description: {t.Description}, footer: {t.Footer}, thumbnailImageUrl: {t.ThumbnailImageUrl}, largeImageUrl: {t.LargeImageUrl}",
+        t.Creator.Guild);
 
       var sql = @"
-        INSERT INTO templates(guild_id, creator_id, name, channel_id, mention_id, hidden, title, description, footer, thumbnail_image_url, image_url)
+        INSERT INTO templates(guild_id, creator_id, name, channel_id, mention_id, hidden, title, description, footer, thumbnail_image_url, large_image_url)
         VALUES ($0, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10)";
-      await DatabaseService.NonQuery(sql, creator.Guild.Id, creator.Id, name, channel.Id, mention?.Id, hidden, title, description, footer, thumbnailImageUrl, imageUrl);
+      await DatabaseService.NonQuery(sql, t.Creator.Guild.Id, t.Creator.Id, t.Name, t.Channel.Id, t.Mention?.Id, t.Hidden, t.Title, t.Description, t.Footer, t.ThumbnailImageUrl, t.LargeImageUrl);
     }
 
     public async Task RemoveTemplate(SocketGuild guild, string name)
@@ -87,9 +87,9 @@ namespace TNTBot.Services
       await DatabaseService.NonQuery(sql, guild.Id, name);
     }
 
-    public bool ValidateTemplateParameters(SocketModal modal, string title, string description, string? footer, string? thumbnailImage, string? image)
+    public bool ValidateTemplateParameters(SocketModal modal, TemplateModel t)
     {
-      var allValues = title + description + footer + thumbnailImage + image;
+      var allValues = t.Title + t.Description + t.Footer;
       var paramsCount = allValues.Count(x => x == '$');
       var maxParams = 5;
 
@@ -97,11 +97,11 @@ namespace TNTBot.Services
       {
         var error =
           $"Too many $ parameters, maximum is {maxParams}\n" +
-          $" - **Title**: {title}\n" +
-          $" - **Description**: {description}\n" +
-          $" - **Footer**: {footer ?? "*Not specified*"}\n" +
-          $" - **Thumbnail image URL**: {thumbnailImage ?? "*Not specified*"}\n" +
-          $" - **Image URL**: {image ?? "*Not specified*"}";
+          $" - **Title**: {t.Title}\n" +
+          $" - **Description**: {t.Description}\n" +
+          $" - **Footer**: {t.Footer ?? "*Not specified*"}\n" +
+          $" - **Thumbnail Image URL**: {t.ThumbnailImageUrl ?? "*Not specified*"}\n" +
+          $" - **Large Image URL**: {t.LargeImageUrl ?? "*Not specified*"}";
 
         modal.RespondAsync(error);
         return false;
@@ -125,7 +125,7 @@ namespace TNTBot.Services
           description TEXT NOT NULL,
           footer TEXT,
           thumbnail_image_url TEXT,
-          image_url TEXT
+          large_image_url TEXT
         )";
       await DatabaseService.NonQuery(sql);
     }
