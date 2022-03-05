@@ -92,8 +92,7 @@ namespace TNTBot.Services
 
     public bool ValidateTemplateParameters(SocketModal modal, TemplateModel t)
     {
-      var allValues = t.Title + t.Description + t.Footer;
-      var paramsCount = allValues.Count(x => x == '$');
+      var paramsCount = GetTemplateParameters(t).Count;
       var maxParams = 5;
 
       if (paramsCount > maxParams)
@@ -112,16 +111,16 @@ namespace TNTBot.Services
     public string GetTemplateDump(TemplateModel t)
     {
       return
-        $" - **Title**: {t.Title}\n" +
-        $" - **Description**: {t.Description}\n" +
-        $" - **Footer**: {t.Footer ?? "*Not specified*"}\n" +
-        $" - **Thumbnail Image URL**: {t.ThumbnailImageUrl ?? "*Not specified*"}\n" +
-        $" - **Large Image URL**: {t.LargeImageUrl ?? "*Not specified*"}";
+        $" - **Title**: {HighlightParameters(t.Title)}\n" +
+        $" - **Description**: {HighlightParameters(t.Description)}\n" +
+        $" - **Footer**: {HighlightParameters(t.Footer) ?? "*Not specified*"}\n" +
+        $" - **Thumbnail Image URL**: {HighlightParameters(t.ThumbnailImageUrl) ?? "*Not specified*"}\n" +
+        $" - **Large Image URL**: {HighlightParameters(t.LargeImageUrl) ?? "*Not specified*"}";
     }
 
     public List<string> GetTemplateParameters(TemplateModel template)
     {
-      var allValues = template.Title + template.Description + template.Footer;
+      var allValues = string.Join("\n", template.Title, template.Description, template.Footer);
       return paramRegex
         .Matches(allValues)
         .Select(x => x.Groups["param"].Value)
@@ -135,6 +134,15 @@ namespace TNTBot.Services
         return null;
       }
       return paramRegex.Replace(property, match => @params[match.Groups["param"].Value]);
+    }
+
+    private string? HighlightParameters(string? text)
+    {
+      if (text == null)
+      {
+        return null;
+      }
+      return paramRegex.Replace(text, match => $"__{match.Value}__");
     }
 
     private async Task CreateTemplatesTable()
