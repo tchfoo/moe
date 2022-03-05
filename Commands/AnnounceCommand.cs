@@ -35,7 +35,7 @@ namespace TNTBot.Commands
       }
       var template = (await service.GetTemplate(guild, name))!;
 
-      if (template.Creator.Equals(user))
+      if (!Authorize(user, template))
       {
         await cmd.RespondAsync($"You are not the creator of the template {name}");
         return;
@@ -59,6 +59,15 @@ namespace TNTBot.Commands
         var modal = BuildAnnounceModal(template, preview, @params);
         await cmd.RespondWithModalAsync(modal);
       }
+    }
+    private bool Authorize(SocketGuildUser user, TemplateModel template)
+    {
+      if (template.Creator.Id == user.Id)
+      {
+        return true;
+      }
+
+      return service.IsAuthorized(user, ModrankLevel.Owner, out _);
     }
 
     private Modal BuildAnnounceModal(TemplateModel template, bool preview, List<string> @params)
