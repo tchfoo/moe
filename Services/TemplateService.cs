@@ -95,19 +95,25 @@ namespace TNTBot.Services
 
       if (paramsCount > maxParams)
       {
-        var error =
-          $"Too many $ parameters, maximum is {maxParams}\n" +
-          $" - **Title**: {t.Title}\n" +
-          $" - **Description**: {t.Description}\n" +
-          $" - **Footer**: {t.Footer ?? "*Not specified*"}\n" +
-          $" - **Thumbnail Image URL**: {t.ThumbnailImageUrl ?? "*Not specified*"}\n" +
-          $" - **Large Image URL**: {t.LargeImageUrl ?? "*Not specified*"}";
+        var dump = GetTemplateDump(t);
+        var error = $"Too many $ parameters, maximum is {maxParams}\n" +
+          $"Here is the stuff you have entered:\n{dump}";
 
         modal.RespondAsync(error);
         return false;
       }
 
       return true;
+    }
+
+    public string GetTemplateDump(TemplateModel t)
+    {
+      return
+        $" - **Title**: {t.Title}\n" +
+        $" - **Description**: {t.Description}\n" +
+        $" - **Footer**: {t.Footer ?? "*Not specified*"}\n" +
+        $" - **Thumbnail Image URL**: {t.ThumbnailImageUrl ?? "*Not specified*"}\n" +
+        $" - **Large Image URL**: {t.LargeImageUrl ?? "*Not specified*"}";
     }
 
     private async Task CreateTemplatesTable()

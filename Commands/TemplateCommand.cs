@@ -28,6 +28,11 @@ namespace TNTBot.Commands
           .AddOption("name", ApplicationCommandOptionType.String, "The name of the template to remove", isRequired: true)
           .WithType(ApplicationCommandOptionType.SubCommand)
         ).AddOption(new SlashCommandOptionBuilder()
+          .WithName("dump")
+          .WithDescription("Dump a template")
+          .AddOption("name", ApplicationCommandOptionType.String, "The name of the template to dump", isRequired: true)
+          .WithType(ApplicationCommandOptionType.SubCommand)
+        ).AddOption(new SlashCommandOptionBuilder()
           .WithName("list")
           .WithDescription("List templates")
           .WithType(ApplicationCommandOptionType.SubCommand)
@@ -52,6 +57,7 @@ namespace TNTBot.Commands
       {
         "add" => AddTemplate(cmd, subcommand, user),
         "remove" => RemoveTemplate(cmd, subcommand, user),
+        "dump" => DumpTemplate(cmd, subcommand, user),
         "list" => ListTemplates(cmd, user),
         _ => throw new InvalidOperationException($"Unknown subcommand {subcommand.Name}")
       };
@@ -142,6 +148,22 @@ namespace TNTBot.Commands
 
       await service.RemoveTemplate(user.Guild, name);
       await cmd.RespondAsync($"Removed template **{name}**");
+    }
+
+    private async Task DumpTemplate(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuildUser user)
+    {
+      var name = subcommand.GetOption<string>("name")!;
+
+      if (!await service.HasTemplate(user.Guild, name))
+      {
+        await cmd.RespondAsync($"Template **{name}** does not exist");
+        return;
+      }
+
+      var t = (await service.GetTemplate(user.Guild, name))!;
+      var dump = service.GetTemplateDump(t);
+
+      await cmd.RespondAsync($"Dump of template **{name}**:\n{dump}");
     }
 
     private async Task ListTemplates(SocketSlashCommand cmd, SocketGuildUser user)
