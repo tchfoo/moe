@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Discord.WebSocket;
 using TNTBot.Models;
 
@@ -6,11 +7,13 @@ namespace TNTBot.Services
   public class TemplateService
   {
     private readonly SettingsService settingsService;
+    private readonly Regex paramRegex;
 
     public TemplateService(SettingsService settingsService)
     {
       CreateTemplatesTable().Wait();
       this.settingsService = settingsService;
+      paramRegex = new Regex(@"\$((?<param>\w+)|\((?<param>.*)\))");
     }
 
     public bool IsAuthorized(SocketGuildUser user, ModrankLevel requiredLevel, out string? error)
@@ -114,6 +117,24 @@ namespace TNTBot.Services
         $" - **Footer**: {t.Footer ?? "*Not specified*"}\n" +
         $" - **Thumbnail Image URL**: {t.ThumbnailImageUrl ?? "*Not specified*"}\n" +
         $" - **Large Image URL**: {t.LargeImageUrl ?? "*Not specified*"}";
+    }
+
+    public List<string> GetTemplateParameters(TemplateModel template)
+    {
+      var allValues = template.Title + template.Description + template.Footer;
+      return paramRegex
+        .Matches(allValues)
+        .Select(x => x.Groups["param"].Value)
+        .ToList();
+    }
+
+    public string? ReplaceTemplateParameters(string? property, Dictionary<string, string> @params)
+    {
+      if (property == null)
+      {
+        return null;
+      }
+      return paramRegex.Replace(property, match => @params[match.Groups["param"].Value]);
     }
 
     private async Task CreateTemplatesTable()

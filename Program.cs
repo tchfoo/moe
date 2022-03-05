@@ -44,6 +44,7 @@ DiscordService.Discord.Ready += async () =>
     new UserinfoCommand(userInfoService),
     new ServerinfoCommand(),
     new TemplateCommand(templateService),
+    new AnnounceCommand(templateService),
 };
 
   var messageCommands = new List<MessageCommandBase>
