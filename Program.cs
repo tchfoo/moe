@@ -22,6 +22,7 @@ DiscordService.Discord.Ready += async () =>
   var sayService = new SayService(settingsService);
   var userInfoService = new UserInfoService();
   var templateService = new TemplateService(settingsService);
+  var snapshotService = new SnapshotService(settingsService);
 
   var slashCommands = new List<SlashCommandBase>
   {
@@ -40,6 +41,7 @@ DiscordService.Discord.Ready += async () =>
     new ServerinfoCommand(settingsService),
     new TemplateCommand(templateService),
     new AnnounceCommand(templateService),
+    new SnapshotCommand(snapshotService),
 };
 
   var messageCommands = new List<MessageCommandBase>

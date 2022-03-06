@@ -12,7 +12,7 @@ namespace TNTBot.Services
     {
       var config = new DiscordSocketConfig()
       {
-        GatewayIntents = GatewayIntents.GuildMembers | GatewayIntents.AllUnprivileged,
+        GatewayIntents = GatewayIntents.GuildMembers | GatewayIntents.Guilds | GatewayIntents.AllUnprivileged,
         AlwaysDownloadUsers = true,
         MessageCacheSize = 10_000,
       };
