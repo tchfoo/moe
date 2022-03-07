@@ -10,8 +10,8 @@ namespace TNTBot.Commands
     {
       Description = "Generates a random number";
       Options = new SlashCommandOptionBuilder()
-        .AddOption("min", ApplicationCommandOptionType.Integer, "The maximum number the bot generates", isRequired: true)
-        .AddOption("max", ApplicationCommandOptionType.Integer, "The minimum number the bot generates. Defaults to 1", isRequired: true);
+        .AddOption("min", ApplicationCommandOptionType.Integer, "The minimum number the bot generates. Defaults to 1", isRequired: false)
+        .AddOption("max", ApplicationCommandOptionType.Integer, "The maximum number the bot generates", isRequired: true);
     }
 
     //DISCLAIMER: This command contains an unfair advantage, where you can define your own RNG pool. The bot authors are not responsible for the use/abuse of this feature, and never would use (or used) it themselves. This feature is only intended for educational purposes only.
@@ -26,8 +26,8 @@ namespace TNTBot.Commands
 
     public override async Task Handle(SocketSlashCommand cmd)
     {
-      long rngMin = cmd.GetOption<long>("min", 0);
-      long rngMax = cmd.GetOption<long>("max", 0);
+      long rngMin = cmd.GetOption<long>("min", 1);
+      long rngMax = cmd.GetOption<long>("max")!;
 
       if (await IsFakeRngNumberAvailable())
       {
