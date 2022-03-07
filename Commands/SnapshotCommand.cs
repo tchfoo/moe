@@ -154,13 +154,20 @@ namespace TNTBot.Commands
       }
 
       var snapshots = await service.ListSnapshots(guild);
-      var result = "Snapshots:";
+
+      var embed = new EmbedBuilder()
+        .WithAuthor(guild.Name, guild.IconUrl)
+        .WithTitle("Snapshots");
+
+      var description = "";
       foreach (var snapshot in snapshots)
       {
-        result += $"\n - **{snapshot}**";
+        description += $"{snapshot}\n";
       }
 
-      await cmd.RespondAsync(result);
+      embed.WithDescription(description);
+
+      await cmd.RespondAsync(embed: embed.Build());
     }
   }
 }
