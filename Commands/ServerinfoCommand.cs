@@ -1,14 +1,17 @@
-using System;
 using Discord;
 using Discord.WebSocket;
+using TNTBot.Services;
 
 namespace TNTBot.Commands
 {
   public class ServerinfoCommand : SlashCommandBase
   {
-    public ServerinfoCommand() : base("serverinfo")
+    private readonly SettingsService settingsService;
+
+    public ServerinfoCommand(SettingsService settingsService) : base("serverinfo")
     {
       Description = "Get the info of the server";
+      this.settingsService = settingsService;
     }
 
     public override async Task Handle(SocketSlashCommand cmd)
@@ -17,6 +20,7 @@ namespace TNTBot.Commands
 
       var humans = guild.Users.Count(x => !x.IsBot);
       var bots = guild.Users.Count(x => x.IsBot);
+      var prefix = await settingsService.GetCommandPrefix(guild);
 
       var embed = new EmbedBuilder()
         .WithTitle($"Info for {guild.Name}")
@@ -25,6 +29,7 @@ namespace TNTBot.Commands
         .AddField("Channels", $"Text: {guild.TextChannels.Count}\nVoice: {guild.VoiceChannels.Count}", inline: true)
         .AddField("Members", $"Total: {guild.MemberCount}\nHumans: {humans}\nBots: {bots}", inline: true)
         .AddField("Roles", $"{guild.Roles.Count}", inline: true)
+        .AddField("Custom command prefix", prefix, inline: true)
         .WithColor(Colors.Blurple)
         .WithFooter($"ID: {guild.Id} • Created at {guild.CreatedAt:yyyy-MM-dd}");
 

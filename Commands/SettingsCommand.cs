@@ -105,7 +105,7 @@ namespace TNTBot.Commands
       var muteLength = await service.GetMuteLength(guild);
       var pinChannel = await service.GetPinChannel(guild);
       var logChannel = await service.GetLogChannel(guild);
-      var commandPrefix = await service.GetCommandPrefix(guild);
+      var prefix = await service.GetCommandPrefix(guild);
       var modranks = await service.GetModranks(guild);
 
       string modrankAdminString = "", modrankModString = "";
@@ -127,7 +127,7 @@ namespace TNTBot.Commands
         .AddField("Mute length", muteLength, inline: true)
         .AddField("Pin chanel", pinChannel?.Mention ?? "None", inline: true)
         .AddField("Log channel", logChannel?.Mention ?? "None", inline: true)
-        .AddField("Command prefix", commandPrefix, inline: true)
+        .AddField("Custom command prefix", prefix, inline: true)
         .AddField("Bot Administrator ranks", string.IsNullOrEmpty(modrankAdminString) ? "None" : modrankAdminString, inline: true)
         .AddField("Moderator ranks", string.IsNullOrEmpty(modrankModString) ? "None" : modrankModString, inline: true)
         .WithColor(Colors.Blurple);

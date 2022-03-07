@@ -42,7 +42,7 @@ DiscordService.Discord.Ready += async () =>
     new PurgeCommand(purgeService),
     new SayCommand(sayService),
     new UserinfoCommand(userInfoService),
-    new ServerinfoCommand(),
+    new ServerinfoCommand(settingsService),
     new TemplateCommand(templateService),
     new AnnounceCommand(templateService),
 };
