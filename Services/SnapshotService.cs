@@ -214,7 +214,6 @@ namespace TNTBot.Services
         result += " - __**Guild icon**__:\n";
       }
 
-
       return result;
     }
 

@@ -157,7 +157,8 @@ namespace TNTBot.Commands
 
       var embed = new EmbedBuilder()
         .WithAuthor(guild.Name, guild.IconUrl)
-        .WithTitle("Snapshots");
+        .WithTitle("Snapshots")
+        .WithColor(Colors.Blurple);
 
       var description = "";
       foreach (var snapshot in snapshots)
