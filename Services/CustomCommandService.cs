@@ -28,7 +28,7 @@ namespace TNTBot.Services
 
     public async Task<bool> HasCommand(SocketGuild guild, string name)
     {
-      name = CleanCommandName(name);
+      name = await CleanCommandName(guild, name);
       var sql = "SELECT COUNT(*) FROM custom_commands WHERE guild_id = $0 AND name = $1";
       var count = await DatabaseService.QueryFirst<int>(sql, guild.Id, name);
       return count > 0;
@@ -43,7 +43,7 @@ namespace TNTBot.Services
 
     public async Task<CustomCommand?> GetCommand(SocketGuild guild, string name)
     {
-      name = CleanCommandName(name);
+      name = await CleanCommandName(guild, name);
       var sql = "SELECT response, description FROM custom_commands WHERE guild_id = $0 AND name = $1";
       var command = await DatabaseService.Query<string, string>(sql, guild.Id, name);
       if (command.Count == 0)
@@ -56,7 +56,7 @@ namespace TNTBot.Services
 
     public async Task AddCommand(SocketGuild guild, string name, string response, string? description)
     {
-      name = CleanCommandName(name);
+      name = await CleanCommandName(guild, name);
       await LogService.LogToFileAndConsole(
         $"Adding custom command {name} response: {response}, description: {description}", guild);
 
@@ -66,7 +66,7 @@ namespace TNTBot.Services
 
     public async Task RemoveCommand(SocketGuild guild, string name)
     {
-      name = CleanCommandName(name);
+      name = await CleanCommandName(guild, name);
       await LogService.LogToFileAndConsole(
         $"Removing custom command {name}", guild);
 
@@ -88,15 +88,15 @@ namespace TNTBot.Services
         .ToList();
     }
 
-    public string CleanCommandName(string name)
+    public async Task<string> CleanCommandName(SocketGuild guild, string name)
     {
-      var prefix = ConfigService.Config.CommandPrefix;
+      var prefix = Regex.Escape(await settingsService.GetCommandPrefix(guild));
       return Regex.Replace(name, $"^({prefix})+", "");
     }
 
-    public string PrefixCommandName(string name)
+    public async Task<string> PrefixCommandName(SocketGuild guild, string name)
     {
-      return ConfigService.Config.CommandPrefix + CleanCommandName(name);
+      return await settingsService.GetCommandPrefix(guild) + await CleanCommandName(guild, name);
     }
 
     private async Task CreateCustomCommandsTable()

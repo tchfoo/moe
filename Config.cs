@@ -7,7 +7,6 @@ namespace TNTBot
     public ulong ServerID { get; set; } = default!;
     public List<ulong> Owners { get; set; } = default!;
     public ulong Yaha { get; set; } = default!;
-    public string CommandPrefix { get; set; } = default!;
 
     public static Config Load()
     {

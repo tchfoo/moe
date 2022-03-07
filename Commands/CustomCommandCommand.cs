@@ -65,7 +65,7 @@ namespace TNTBot.Commands
 
       if (await service.HasCommand(guild, name))
       {
-        await cmd.RespondAsync($"Command **{service.PrefixCommandName(name)}** already exists");
+        await cmd.RespondAsync($"Command **{await service.PrefixCommandName(guild, name)}** already exists");
       }
 
       if (!ValidateResponse(response, out var error))
@@ -75,7 +75,7 @@ namespace TNTBot.Commands
       }
 
       await service.AddCommand(guild, name, response, description);
-      await cmd.RespondAsync($"Added command **{service.PrefixCommandName(name)}**");
+      await cmd.RespondAsync($"Added command **{await service.PrefixCommandName(guild, name)}**");
     }
 
     private bool Authorize(SocketGuildUser user, string subcommand, out string? error)
@@ -95,11 +95,11 @@ namespace TNTBot.Commands
 
       if (!await service.HasCommand(guild, name))
       {
-        await cmd.RespondAsync($"Command **{service.PrefixCommandName(name)}** does not exist");
+        await cmd.RespondAsync($"Command **{await service.PrefixCommandName(guild, name)}** does not exist");
       }
 
       await service.RemoveCommand(guild, name);
-      await cmd.RespondAsync($"Removed command **{service.PrefixCommandName(name)}**");
+      await cmd.RespondAsync($"Removed command **{await service.PrefixCommandName(guild, name)}**");
     }
 
     private async Task ListCommands(SocketSlashCommand cmd, SocketGuild guild)
@@ -119,7 +119,7 @@ namespace TNTBot.Commands
       foreach (var command in commands)
       {
         var field = new EmbedFieldBuilder()
-          .WithName(service.PrefixCommandName(command.Name))
+          .WithName(await service.PrefixCommandName(guild, command.Name))
           .WithValue(command.Description);
         embed.AddField(field);
       }

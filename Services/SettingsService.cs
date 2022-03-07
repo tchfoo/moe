@@ -87,6 +87,28 @@ namespace TNTBot.Services
       await DatabaseService.NonQuery(insertSql, guild.Id, length);
     }
 
+    public async Task<string> GetCommandPrefix(SocketGuild guild)
+    {
+      var sql = "SELECT value FROM settings WHERE guild_id = $0 AND name = 'command_prefix'";
+      var prefix = await DatabaseService.QueryFirst<string>(sql, guild.Id);
+      if (prefix is null)
+      {
+        return "!";
+      }
+      return prefix;
+    }
+
+    public async Task SetCommandPrefix(SocketGuild guild, string prefix)
+    {
+      await LogService.LogToFileAndConsole(
+        $"Setting command prefix to {prefix}", guild);
+
+      var deleteSql = "DELETE FROM settings WHERE guild_id = $0 AND name = 'command_prefix'";
+      await DatabaseService.NonQuery(deleteSql, guild.Id);
+      var insertSql = "INSERT INTO settings(guild_id, name, value) VALUES($0, 'command_prefix', $1)";
+      await DatabaseService.NonQuery(insertSql, guild.Id, prefix);
+    }
+
     public async Task<List<(SocketRole Role, ModrankLevel Level)>> GetModranks(SocketGuild guild)
     {
       var sql = "SELECT role_id, level FROM modranks WHERE guild_id = $0";

@@ -98,14 +98,15 @@ DiscordService.Discord.Ready += async () =>
 
     await levelService.HandleMessage(msg);
 
-    var prefix = ConfigService.Config.CommandPrefix;
+    var guild = ((SocketGuildChannel)msg.Channel).Guild;
+    var prefix = await settingsService.GetCommandPrefix(guild);
     if (!msg.Content.StartsWith(prefix))
     {
       return;
     }
 
     var tokens = msg.Content.Split(' ');
-    var name = customCommandService.CleanCommandName(tokens[0]);
+    var name = await customCommandService.CleanCommandName(guild, tokens[0]);
     var args = tokens.Skip(1).ToList();
 
     if (await rngCommand.HandleDM(msg, name, args))

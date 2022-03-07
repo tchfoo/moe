@@ -33,6 +33,11 @@ namespace TNTBot.Commands
           .AddOption("time", ApplicationCommandOptionType.String, "Duration of the mute (eg. 1h 30m)", isRequired: true)
           .WithType(ApplicationCommandOptionType.SubCommand)
         ).AddOption(new SlashCommandOptionBuilder()
+          .WithName("commandprefix")
+          .WithDescription("Set the command prefix for custom commands")
+          .AddOption("prefix", ApplicationCommandOptionType.String, "The prefix", isRequired: true)
+          .WithType(ApplicationCommandOptionType.SubCommand)
+        ).AddOption(new SlashCommandOptionBuilder()
           .WithName("modrank")
           .WithDescription("Change which discord roles are considered mods and admins by this bot. Server admins are bot admins")
           .AddOption("role", ApplicationCommandOptionType.Role, "The role", isRequired: true)
@@ -67,6 +72,7 @@ namespace TNTBot.Commands
         "mutelength" => SetMuteLength(cmd, subcommand, guild),
         "pinchannel" => SetPinChannel(cmd, subcommand, guild),
         "logchannel" => SetLogChannel(cmd, subcommand, guild),
+        "commandprefix" => SetCommandPrefix(cmd, subcommand, guild),
         "modrank" => SetModrank(cmd, subcommand),
         _ => throw new InvalidOperationException($"Unknown subcommand {subcommand.Name}")
       };
@@ -99,6 +105,7 @@ namespace TNTBot.Commands
       var muteLength = await service.GetMuteLength(guild);
       var pinChannel = await service.GetPinChannel(guild);
       var logChannel = await service.GetLogChannel(guild);
+      var commandPrefix = await service.GetCommandPrefix(guild);
       var modranks = await service.GetModranks(guild);
 
       string modrankAdminString = "", modrankModString = "";
@@ -120,6 +127,7 @@ namespace TNTBot.Commands
         .AddField("Mute length", muteLength, inline: true)
         .AddField("Pin chanel", pinChannel?.Mention ?? "None", inline: true)
         .AddField("Log channel", logChannel?.Mention ?? "None", inline: true)
+        .AddField("Command prefix", commandPrefix, inline: true)
         .AddField("Bot Administrator ranks", string.IsNullOrEmpty(modrankAdminString) ? "None" : modrankAdminString, inline: true)
         .AddField("Moderator ranks", string.IsNullOrEmpty(modrankModString) ? "None" : modrankModString, inline: true)
         .WithColor(Colors.Blurple);
@@ -147,6 +155,13 @@ namespace TNTBot.Commands
       var channel = subcommand.GetOption<SocketTextChannel>("channel")!;
       await service.SetLogChannel(guild, channel);
       await cmd.RespondAsync("Log channel set to " + channel.Mention);
+    }
+
+    private async Task SetCommandPrefix(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
+    {
+      var prefix = subcommand.GetOption<string>("prefix")!;
+      await service.SetCommandPrefix(guild, prefix);
+      await cmd.RespondAsync("Command prefix set to " + prefix);
     }
 
     private async Task SetModrank(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand)
