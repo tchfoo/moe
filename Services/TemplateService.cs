@@ -39,7 +39,10 @@ namespace TNTBot.Services
     {
       var sql = "SELECT name, creator_id FROM templates WHERE guild_id = $0 AND hidden = false";
       var templates = await DatabaseService.Query<string, ulong>(sql, guild.Id);
-      return templates.ConvertAll(x => (x.Item1!, guild.GetUser(x.Item2)));
+      return templates
+        .Select(x => (x.Item1!, guild.GetUser(x.Item2)))
+        .Where(x => x.Item2 is not null)
+        .ToList();
     }
 
     public async Task<TemplateModel?> GetTemplate(SocketGuild guild, string name)

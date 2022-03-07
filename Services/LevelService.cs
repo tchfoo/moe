@@ -46,7 +46,10 @@ namespace TNTBot.Services
     {
       var sql = "SELECT id, user_id, xp, last_updated FROM levels WHERE guild_id = $0 ORDER BY xp DESC";
       var results = await DatabaseService.Query<int, ulong, int, DateTime>(sql, guild.Id);
-      return results.ConvertAll(x => new Level(x.Item1, guild.GetUser(x.Item2), x.Item3, x.Item4));
+      return results
+        .Select(x => new Level(x.Item1, guild.GetUser(x.Item2), x.Item3, x.Item4))
+        .Where(x => x.User is not null)
+        .ToList();
     }
 
     public async Task<int> GetRank(SocketGuildUser user)

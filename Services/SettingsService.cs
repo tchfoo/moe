@@ -91,7 +91,10 @@ namespace TNTBot.Services
     {
       var sql = "SELECT role_id, level FROM modranks WHERE guild_id = $0";
       var result = await DatabaseService.Query<ulong, int>(sql, guild.Id);
-      return result.ConvertAll(x => (guild.GetRole(x.Item1), (ModrankLevel)x.Item2));
+      return result
+        .Select(x => (guild.GetRole(x.Item1), (ModrankLevel)x.Item2))
+        .Where(x => x.Item1 is not null)
+        .ToList();
     }
 
     public bool IsAuthorized(SocketGuildUser user, ModrankLevel requiredLevel, out string? error)

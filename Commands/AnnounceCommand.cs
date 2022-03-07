@@ -44,15 +44,7 @@ namespace TNTBot.Commands
       var @params = service.GetTemplateParameters(template);
       if (@params.Count == 0)
       {
-        if (preview)
-        {
-          await PreviewTemplate(cmd, template);
-        }
-        else
-        {
-          await AnnounceTemplate(template);
-          await cmd.RespondAsync($"Announced template **{template.Name}**");
-        }
+        await ShowTemplate(cmd, template, preview);
       }
       else
       {
@@ -62,7 +54,7 @@ namespace TNTBot.Commands
     }
     private bool Authorize(SocketGuildUser user, TemplateModel template)
     {
-      if (template.Creator.Id == user.Id)
+      if (template.Creator?.Id == user.Id)
       {
         return true;
       }
@@ -103,29 +95,28 @@ namespace TNTBot.Commands
       template.Description = service.ReplaceTemplateParameters(template.Description, @params)!;
       template.Footer = service.ReplaceTemplateParameters(template.Footer, @params);
 
-      if (preview)
-      {
-        await PreviewTemplate(modal, template);
-      }
-      else
-      {
-        await AnnounceTemplate(template);
-        await modal.RespondAsync($"Announced template **{template.Name}**");
-      }
+      await ShowTemplate(modal, template, preview);
 
       pendingModals.Remove(id);
     }
 
-    private Embed BuildAnnouncmentEmbed(TemplateModel template)
+    private async Task ShowTemplate(SocketInteraction interaction, TemplateModel template, bool preview)
     {
-      return new EmbedBuilder()
-        .WithTitle(template.Title)
-        .WithDescription(template.Description)
-        .WithFooter(template.Footer)
-        .WithThumbnailUrl(template.ThumbnailImageUrl)
-        .WithImageUrl(template.LargeImageUrl)
-        .WithColor(Colors.Blurple)
-        .Build();
+      if (preview)
+      {
+        await PreviewTemplate(interaction, template);
+      }
+      else
+      {
+        if (template.Channel is null)
+        {
+          await interaction.RespondAsync("The channel for this template got deleted");
+          return;
+        }
+
+        await AnnounceTemplate(template);
+        await interaction.RespondAsync($"Announced template **{template.Name}**");
+      }
     }
 
     private async Task AnnounceTemplate(TemplateModel template)
@@ -140,6 +131,18 @@ namespace TNTBot.Commands
       var embed = BuildAnnouncmentEmbed(template);
       var mention = template.Mention?.Mention;
       await interaction.RespondAsync(text: mention, embed: embed, ephemeral: true);
+    }
+
+    private Embed BuildAnnouncmentEmbed(TemplateModel template)
+    {
+      return new EmbedBuilder()
+        .WithTitle(template.Title)
+        .WithDescription(template.Description)
+        .WithFooter(template.Footer)
+        .WithThumbnailUrl(template.ThumbnailImageUrl)
+        .WithImageUrl(template.LargeImageUrl)
+        .WithColor(Colors.Blurple)
+        .Build();
     }
   }
 }

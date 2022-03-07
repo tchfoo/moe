@@ -36,7 +36,10 @@ namespace TNTBot.Services
     {
       var sql = "SELECT name, role_id FROM custom_roles WHERE guild_id = $0";
       var result = await DatabaseService.Query<string, ulong>(sql, guild.Id);
-      return result.ConvertAll(x => new CustomRole(x.Item1!, guild.GetRole(x.Item2!)));
+      return result
+        .Select(x => new CustomRole(x.Item1!, guild.GetRole(x.Item2!)))
+        .Where(x => x.DiscordRole is not null)
+        .ToList();
     }
 
     public async Task<CustomRole?> GetRole(SocketGuild guild, string name)

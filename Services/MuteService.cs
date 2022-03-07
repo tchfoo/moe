@@ -1,4 +1,5 @@
 using Discord;
+using Discord.Net;
 using Discord.WebSocket;
 using TNTBot.Models;
 
@@ -23,6 +24,13 @@ namespace TNTBot.Services
       return settingsService.IsAuthorized(user, requiredLevel, out error);
     }
 
+    public async Task<bool> IsMuted(SocketGuildUser user)
+    {
+      var mutesCountSql = "SELECT COUNT(*) FROM mutes WHERE guild_id = $0 AND user_id = $1";
+      int mutesCount = await DatabaseService.QueryFirst<int>(mutesCountSql, user.Guild.Id, user.Id);
+      return mutesCount > 0;
+    }
+
     public async Task MuteUser(SocketGuildUser user, DateTime expireAt)
     {
       await LogService.LogToFileAndConsole(
@@ -41,32 +49,23 @@ namespace TNTBot.Services
     public async Task UnmuteUser(SocketGuildUser user)
     {
       await LogService.LogToFileAndConsole(
-        $"Unmuted user {user}", user.Guild);
+        $"Unmuting user {user}", user.Guild);
 
       var mutedRole = await GetMutedRole(user.Guild);
-      await user.RemoveRoleAsync(mutedRole);
+      try
+      {
+        await user.RemoveRoleAsync(mutedRole);
+        await StopUnmuteTimer(user);
 
-      await StopUnmuteTimer(user);
-
-      var unmuteSql = "DELETE FROM mutes WHERE guild_id = $0 AND user_id = $1";
-      await DatabaseService.NonQuery(unmuteSql, user.Guild.Id, user.Id);
+        var unmuteSql = "DELETE FROM mutes WHERE guild_id = $0 AND user_id = $1";
+        await DatabaseService.NonQuery(unmuteSql, user.Guild.Id, user.Id);
+      }
+      catch (HttpException) { }
     }
 
     public async Task<TimeSpan> GetDefaultMuteLength(SocketGuild guild)
     {
       return await settingsService.GetMuteLength(guild);
-    }
-
-    private async Task CreateMutesTable()
-    {
-      var sql = @"
-        CREATE TABLE IF NOT EXISTS mutes(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        guild_id INTEGER NOT NULL,
-        user_id INTEGER NOT NULL,
-        expire_at TEXT NOT NULL
-      )";
-      await DatabaseService.NonQuery(sql);
     }
 
     private async Task LoadMutes()
@@ -80,8 +79,17 @@ namespace TNTBot.Services
         var duration = expireAt - DateTime.Now;
 
         var guild = DiscordService.Discord.GetGuild(guildId);
+        if (guild is null)
+        {
+          continue;
+        }
+
         await guild.DownloadUsersAsync();
         var user = guild.GetUser(userId);
+        if (user is null)
+        {
+          continue;
+        }
 
         await StartUnmuteTimer(user, duration);
       }
@@ -102,13 +110,6 @@ namespace TNTBot.Services
       return guild.Roles.First(x => x.Name == MutedRoleName);
     }
 
-    public async Task<bool> IsMuted(SocketGuildUser user)
-    {
-      var mutesCountSql = "SELECT COUNT(*) FROM mutes WHERE guild_id = $0 AND user_id = $1";
-      int mutesCount = await DatabaseService.QueryFirst<int>(mutesCountSql, user.Guild.Id, user.Id);
-      return mutesCount > 0;
-    }
-
     private Task<int> GetMuteId(SocketGuildUser user)
     {
       var muteIdSql = "SELECT id FROM mutes WHERE guild_id = $0 AND user_id = $1";
@@ -119,7 +120,7 @@ namespace TNTBot.Services
     {
       var muteId = await GetMuteId(user);
       var tokenSource = new CancellationTokenSource();
-      var unmuteAction = async () => await UnmuteTimer(user, duration);
+      var unmuteAction = async () => await GetUnmuteTimer(user, duration);
       var _ = Task.Run(unmuteAction, tokenSource.Token);
       unmuteTasks.Add(muteId, tokenSource);
     }
@@ -127,12 +128,14 @@ namespace TNTBot.Services
     private async Task StopUnmuteTimer(SocketGuildUser user)
     {
       var muteId = await GetMuteId(user);
-      var unmuteTask = unmuteTasks[muteId];
-      unmuteTasks.Remove(muteId);
-      unmuteTask.Cancel();
+      if (unmuteTasks.TryGetValue(muteId, out var unmuteTask))
+      {
+        unmuteTask.Cancel();
+        unmuteTasks.Remove(muteId);
+      }
     }
 
-    private async Task UnmuteTimer(SocketGuildUser user, TimeSpan duration)
+    private async Task GetUnmuteTimer(SocketGuildUser user, TimeSpan duration)
     {
       if (duration.TotalMilliseconds > 0)
       {
@@ -142,6 +145,18 @@ namespace TNTBot.Services
       await LogService.LogToFileAndConsole(
         $"Mute is expired for user {user}", user.Guild);
       await UnmuteUser(user);
+    }
+
+    private async Task CreateMutesTable()
+    {
+      var sql = @"
+        CREATE TABLE IF NOT EXISTS mutes(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        guild_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        expire_at TEXT NOT NULL
+      )";
+      await DatabaseService.NonQuery(sql);
     }
   }
 }
