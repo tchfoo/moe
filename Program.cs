@@ -7,7 +7,6 @@ DiscordService.Init();
 DiscordService.Discord.Ready += async () =>
 {
   var settingsService = new SettingsService();
-  var muteService = new MuteService(settingsService);
   var customCommandService = new CustomCommandService(settingsService);
   var customRoleService = new CustomRoleService(settingsService);
   var levelService = new LevelService();
@@ -28,8 +27,6 @@ DiscordService.Discord.Ready += async () =>
   {
     new PingCommand(),
     rngCommand,
-    new MuteCommand(muteService),
-    new UnmuteCommand(muteService),
     new CustomCommandCommand(customCommandService),
     new CustomRoleCommand(customRoleService),
     new SettingsCommand(settingsService),
