@@ -8,7 +8,6 @@ namespace TNTBot.Commands
   public class AnnounceCommand : SlashCommandBase
   {
     private readonly TemplateService service;
-    private readonly Dictionary<string, (TemplateModel template, bool preview)> pendingModals;
 
     public AnnounceCommand(TemplateService service) : base("announce")
     {
@@ -17,8 +16,6 @@ namespace TNTBot.Commands
         .AddOption("name", ApplicationCommandOptionType.String, "The name of the command to add", isRequired: true)
         .AddOption("preview", ApplicationCommandOptionType.Boolean, "Whether to preview the template or actually announce it, default = false", isRequired: false);
       this.service = service;
-      pendingModals = new Dictionary<string, (TemplateModel template, bool preview)>();
-      DiscordService.Discord.ModalSubmitted += OnModalSubmitted;
     }
 
     public override async Task Handle(SocketSlashCommand cmd)
@@ -41,15 +38,17 @@ namespace TNTBot.Commands
         return;
       }
 
-      var @params = service.GetTemplateParameters(template);
-      if (@params.Count == 0)
+      var paramNames = service.GetTemplateParameters(template);
+      if (paramNames.Count == 0)
       {
         await ShowTemplate(cmd, template, preview);
       }
       else
       {
-        var modal = BuildAnnounceModal(template, preview, @params);
-        await cmd.RespondWithModalAsync(modal);
+        var modal = CreateAnnounceModal(template, paramNames);
+        await cmd.RespondWithModalAsync(modal.Build());
+
+        var _ = HandleAnnounceModalSubmission(modal, paramNames, template, preview);
       }
     }
     private bool Authorize(SocketGuildUser user, TemplateModel template)
@@ -62,42 +61,33 @@ namespace TNTBot.Commands
       return service.IsAuthorized(user, ModrankLevel.Owner, out _);
     }
 
-    private Modal BuildAnnounceModal(TemplateModel template, bool preview, List<string> @params)
+    private SubmittableModalBuilder CreateAnnounceModal(TemplateModel template, List<string> @params)
     {
-      var modalId = Guid.NewGuid().ToString();
-      pendingModals.Add(modalId, (template, preview));
-
-      var modal = new ModalBuilder()
-        .WithTitle($"Announce: {template.Name}")
-        .WithCustomId(modalId);
+      var modal = new SubmittableModalBuilder()
+        .WithTitle($"Announce: {template.Name}");
 
       foreach (var param in @params)
       {
         modal.AddTextInput(param, param, placeholder: param, required: false);
       }
 
-      return modal.Build();
+      return (SubmittableModalBuilder)modal;
     }
 
-    private async Task OnModalSubmitted(SocketModal modal)
+    private async Task HandleAnnounceModalSubmission(SubmittableModalBuilder modal, List<string> paramNames, TemplateModel template, bool preview)
     {
-      var id = modal.Data.CustomId;
-      if (!pendingModals.TryGetValue(id, out var data))
-      {
-        return;
-      }
+      var submitted = await modal.WaitForSubmission();
+      var @params = paramNames.ToDictionary(x => x, x => submitted.GetValue(x) ?? "*unspecified*");
+      SubstituteTemplateParameters(template, @params);
 
-      var (template, preview) = data;
-      var paramNames = service.GetTemplateParameters(template);
-      var @params = paramNames.ToDictionary(x => x, x => modal.GetValue(x) ?? "*unspecified*");
+      await ShowTemplate(submitted, template, preview);
+    }
 
+    private void SubstituteTemplateParameters(TemplateModel template, Dictionary<string, string> @params)
+    {
       template.Title = service.ReplaceTemplateParameters(template.Title, @params)!;
       template.Description = service.ReplaceTemplateParameters(template.Description, @params)!;
       template.Footer = service.ReplaceTemplateParameters(template.Footer, @params);
-
-      await ShowTemplate(modal, template, preview);
-
-      pendingModals.Remove(id);
     }
 
     private async Task ShowTemplate(SocketInteraction interaction, TemplateModel template, bool preview)
