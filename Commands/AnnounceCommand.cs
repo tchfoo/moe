@@ -48,7 +48,7 @@ namespace TNTBot.Commands
         var modal = CreateAnnounceModal(template, paramNames);
         await cmd.RespondWithModalAsync(modal.Build());
 
-        var _ = HandleAnnounceModalSubmission(modal, paramNames, template, preview);
+        var _ = HandleModalSubmission(modal, paramNames, template, preview);
       }
     }
     private bool Authorize(SocketGuildUser user, TemplateModel template)
@@ -74,20 +74,16 @@ namespace TNTBot.Commands
       return (SubmittableModalBuilder)modal;
     }
 
-    private async Task HandleAnnounceModalSubmission(SubmittableModalBuilder modal, List<string> paramNames, TemplateModel template, bool preview)
+    private async Task HandleModalSubmission(SubmittableModalBuilder modal, List<string> paramNames, TemplateModel template, bool preview)
     {
       var submitted = await modal.WaitForSubmission();
       var @params = paramNames.ToDictionary(x => x, x => submitted.GetValue(x) ?? "*unspecified*");
-      SubstituteTemplateParameters(template, @params);
 
-      await ShowTemplate(submitted, template, preview);
-    }
-
-    private void SubstituteTemplateParameters(TemplateModel template, Dictionary<string, string> @params)
-    {
       template.Title = service.ReplaceTemplateParameters(template.Title, @params)!;
       template.Description = service.ReplaceTemplateParameters(template.Description, @params)!;
       template.Footer = service.ReplaceTemplateParameters(template.Footer, @params);
+
+      await ShowTemplate(submitted, template, preview);
     }
 
     private async Task ShowTemplate(SocketInteraction interaction, TemplateModel template, bool preview)

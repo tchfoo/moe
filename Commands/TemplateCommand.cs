@@ -8,7 +8,6 @@ namespace TNTBot.Commands
   public class TemplateCommand : SlashCommandBase
   {
     private readonly TemplateService service;
-    private readonly Dictionary<string, TemplateModel> pendingModals;
 
     public TemplateCommand(TemplateService service) : base("template")
     {
@@ -38,8 +37,6 @@ namespace TNTBot.Commands
           .WithType(ApplicationCommandOptionType.SubCommand)
       ).WithType(ApplicationCommandOptionType.SubCommandGroup);
       this.service = service;
-      pendingModals = new Dictionary<string, TemplateModel>();
-      DiscordService.Discord.ModalSubmitted += OnModalSubmitted;
     }
 
     public override async Task Handle(SocketSlashCommand cmd)
@@ -88,7 +85,6 @@ namespace TNTBot.Commands
         return;
       }
 
-      var modalId = Guid.NewGuid().ToString();
       var t = new TemplateModel()
       {
         Name = name,
@@ -97,43 +93,41 @@ namespace TNTBot.Commands
         Hidden = hidden,
         Creator = user,
       };
-      pendingModals.Add(modalId, t);
 
-      var modal = new ModalBuilder()
-        .WithTitle("Template: Embed creator")
-        .WithCustomId(modalId)
-        .AddTextInput("Title", nameof(t.Title), placeholder: "Title of the embed, Placeholders can be used here", required: true)
-        .AddTextInput("Description", nameof(t.Description), placeholder: "Description of the embed, Placeholders can be used here", required: true)
-        .AddTextInput("Footer", nameof(t.Footer), placeholder: "Footer text, Placeholders can be used here", required: false)
-        .AddTextInput("Thumbnail image URL", nameof(t.ThumbnailImageUrl), placeholder: "Image URL of thumbnail in the embed", required: false)
-        .AddTextInput("Image URL (large image)", nameof(t.LargeImageUrl), placeholder: "Image URL (large image)", required: false);
+      var modal = CreateTemplateModal(t);
+      await cmd.RespondWithModalAsync(modal.Build());
 
-      await cmd.RespondWithModalAsync(modal: modal.Build());
+      var _ = HandleModalSubmission(modal, t);
     }
 
-    private async Task OnModalSubmitted(SocketModal modal)
+    private async Task HandleModalSubmission(SubmittableModalBuilder modal, TemplateModel t)
     {
-      var id = modal.Data.CustomId;
-      if (!pendingModals.TryGetValue(id, out var t))
-      {
-        return;
-      }
+      var submitted = await modal.WaitForSubmission();
+      t.Title = submitted.GetValue(nameof(t.Title))!;
+      t.Description = submitted.GetValue(nameof(t.Description))!;
+      t.Footer = submitted.GetValue(nameof(t.Footer));
+      t.ThumbnailImageUrl = submitted.GetValue(nameof(t.ThumbnailImageUrl));
+      t.LargeImageUrl = submitted.GetValue(nameof(t.LargeImageUrl));
 
-      t.Title = modal.GetValue(nameof(t.Title))!;
-      t.Description = modal.GetValue(nameof(t.Description))!;
-      t.Footer = modal.GetValue(nameof(t.Footer));
-      t.ThumbnailImageUrl = modal.GetValue(nameof(t.ThumbnailImageUrl));
-      t.LargeImageUrl = modal.GetValue(nameof(t.LargeImageUrl));
-
-      if (!service.ValidateTemplateParameters(modal, t))
+      if (!service.ValidateTemplateParameters(submitted, t))
       {
         return;
       }
 
       await service.AddTemplate(t);
 
-      await modal.RespondAsync($"Added template **{t.Name}**");
-      pendingModals.Remove(id);
+      await submitted.RespondAsync($"Added template **{t.Name}**");
+    }
+
+    private SubmittableModalBuilder CreateTemplateModal(TemplateModel t)
+    {
+      return (SubmittableModalBuilder)new SubmittableModalBuilder()
+        .WithTitle("Template: Embed creator")
+        .AddTextInput("Title", nameof(t.Title), placeholder: "Title of the embed, Placeholders can be used here", required: true)
+        .AddTextInput("Description", nameof(t.Description), placeholder: "Description of the embed, Placeholders can be used here", required: true)
+        .AddTextInput("Footer", nameof(t.Footer), placeholder: "Footer text, Placeholders can be used here", required: false)
+        .AddTextInput("Thumbnail image URL", nameof(t.ThumbnailImageUrl), placeholder: "Image URL of thumbnail in the embed", required: false)
+        .AddTextInput("Image URL (large image)", nameof(t.LargeImageUrl), placeholder: "Image URL (large image)", required: false);
     }
 
     private async Task RemoveTemplate(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuildUser user)
