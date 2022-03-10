@@ -48,6 +48,10 @@ namespace TNTBot.Services
 
       var channel = (SocketTextChannel)cachedChannel.Value;
       var message = cachedMessage.Value;
+      if (string.IsNullOrEmpty(message.Content))
+      {
+        return;
+      }
 
       var embed = new EmbedBuilder()
         .WithAuthor(message.Author)
@@ -74,6 +78,11 @@ namespace TNTBot.Services
 
       var channel = (SocketTextChannel)genericChannel;
       var oldMessage = oldCachedMessage.Value;
+      if (oldMessage.Content == newMessage.Content ||
+        string.IsNullOrEmpty(oldMessage.Content) || string.IsNullOrEmpty(newMessage.Content))
+      {
+        return;
+      }
 
       var embed = new EmbedBuilder()
           .WithAuthor(newMessage.Author)
