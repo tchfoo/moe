@@ -27,7 +27,8 @@ namespace TNTBot.Services
 
       var messages = (await channel.GetMessagesAsync(count + 1)
         .FlattenAsync())
-        .Where(x => x.Id != cmd.Id);
+        .Where(x => x.Interaction?.Id != cmd.Id)
+        .Take(count);
       await channel.DeleteMessagesAsync(messages);
     }
   }
