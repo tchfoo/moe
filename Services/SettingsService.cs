@@ -113,10 +113,8 @@ namespace TNTBot.Services
     {
       var sql = "SELECT role_id, level FROM modranks WHERE guild_id = $0";
       var result = await DatabaseService.Query<ulong, int>(sql, guild.Id);
-      return result
-        .Select(x => (guild.GetRole(x.Item1), (ModrankLevel)x.Item2))
-        .Where(x => x.Item1 is not null)
-        .ToList();
+      await RemoveBrokenModranks(guild, result);
+      return result.ConvertAll(x => (guild.GetRole(x.Item1), (ModrankLevel)x.Item2));
     }
 
     public bool IsAuthorized(SocketGuildUser user, ModrankLevel requiredLevel, out string? error)
@@ -137,6 +135,19 @@ namespace TNTBot.Services
       if (level > 0)
       {
         await AddModrank(role, level);
+      }
+    }
+
+    private async Task RemoveBrokenModranks(SocketGuild guild, List<(ulong RoleID, int Level)> modranks)
+    {
+      var sql = "DELETE FROM modranks WHERE guild_id = $0 AND role_id = $1";
+      foreach (var modrank in modranks)
+      {
+        if (guild.GetRole(modrank.RoleID) is null)
+        {
+          await DatabaseService.NonQuery(sql, guild.Id, modrank.RoleID);
+          modranks.Remove(modrank);
+        }
       }
     }
 
