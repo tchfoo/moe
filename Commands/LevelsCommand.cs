@@ -19,20 +19,18 @@ namespace TNTBot.Commands
       var guild = ((SocketGuildChannel)cmd.Channel).Guild;
 
       var leaderboard = await service.GetLeaderboard(guild);
-      var response = string.Empty;
-      for (int i = 0; i < leaderboard.Count; i++)
-      {
-        var level = leaderboard[i];
-        var rank = i + 1;
-        response += $"**{rank}.** {level.User.Mention} • Level: {level.LevelNumber} • XP: {level.TotalXP}\n";
-      }
 
-      var embed = new EmbedBuilder()
-        .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
-        .WithDescription(response)
-        .WithColor(Colors.Blurple);
+      var levels = leaderboard.Select((x, i) =>
+        $"**{i + 1}.** {x.User.Mention} • Level: {x.LevelNumber} • XP: {x.TotalXP})");
+      var p = new PaginatableEmbedBuilder<string>
+        (10, levels, items =>
+          new EmbedBuilder()
+            .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
+            .WithDescription(string.Join('\n', items))
+            .WithColor(Colors.Blurple)
+        );
 
-      await cmd.RespondAsync(embed: embed.Build());
+      await cmd.RespondAsync(embed: p.Embed, components: p.Components);
     }
   }
 }

@@ -171,17 +171,18 @@ namespace TNTBot.Commands
         return;
       }
 
-      var embed = new EmbedBuilder()
-        .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
-        .WithTitle("Templates")
-        .WithColor(Colors.Blurple);
+      var p = new PaginatableEmbedBuilder<(string Name, SocketGuildUser Creator)>
+        (5, templates, items =>
+          new EmbedBuilder()
+            .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
+            .WithTitle("Templates")
+            .WithFields(items.Select(x => new EmbedFieldBuilder()
+              .WithName(x.Name)
+              .WithValue($"Creator: {x.Creator.Mention}")))
+            .WithColor(Colors.Blurple)
+        );
 
-      foreach (var template in templates)
-      {
-        embed.AddField(template.Name, $"Creator: {template.Creator.Mention}");
-      }
-
-      await cmd.RespondAsync(embed: embed.Build());
+      await cmd.RespondAsync(embed: p.Embed, components: p.Components);
     }
   }
 }

@@ -111,20 +111,18 @@ namespace TNTBot.Commands
 
       var commands = await service.GetCommands(guild);
 
-      var embed = new EmbedBuilder()
-        .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
-        .WithTitle("Custom commands")
-        .WithColor(Colors.Blurple);
+      var p = new PaginatableEmbedBuilder<CustomCommand>
+        (5, commands, items =>
+          new EmbedBuilder()
+            .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
+            .WithTitle("Custom commands")
+            .WithFields(items.Select(x => new EmbedFieldBuilder()
+              .WithName(service.PrefixCommandName(guild, x.Name).Result)
+              .WithValue(x.Description)))
+            .WithColor(Colors.Blurple)
+        );
 
-      foreach (var command in commands)
-      {
-        var field = new EmbedFieldBuilder()
-          .WithName(await service.PrefixCommandName(guild, command.Name))
-          .WithValue(command.Description);
-        embed.AddField(field);
-      }
-
-      await cmd.RespondAsync(embed: embed.Build());
+      await cmd.RespondAsync(embed: p.Embed, components: p.Components);
     }
 
     private bool ValidateResponse(string response, out string? error)

@@ -155,20 +155,16 @@ namespace TNTBot.Commands
 
       var snapshots = await service.ListSnapshots(guild);
 
-      var embed = new EmbedBuilder()
-        .WithAuthor(guild.Name, guild.IconUrl)
-        .WithTitle("Snapshots")
-        .WithColor(Colors.Blurple);
+      var p = new PaginatableEmbedBuilder<string>
+        (10, snapshots, items =>
+          new EmbedBuilder()
+            .WithAuthor(guild.Name, guild.IconUrl)
+            .WithTitle("Snapshots")
+            .WithDescription(string.Join('\n', items))
+            .WithColor(Colors.Blurple)
+        );
 
-      var description = "";
-      foreach (var snapshot in snapshots)
-      {
-        description += $"{snapshot}\n";
-      }
-
-      embed.WithDescription(description);
-
-      await cmd.RespondAsync(embed: embed.Build());
+      await cmd.RespondAsync(embed: p.Embed, components: p.Components);
     }
   }
 }
