@@ -20,6 +20,7 @@ namespace TNTBot.Services
 
     public async Task<bool> HasRoles(SocketGuild guild)
     {
+      await RemoveBrokenRoles(guild);
       var sql = "SELECT COUNT(*) FROM custom_roles WHERE guild_id = $0";
       var count = await DatabaseService.QueryFirst<int>(sql, guild.Id);
       return count > 0;
@@ -27,6 +28,7 @@ namespace TNTBot.Services
 
     public async Task<bool> HasRole(SocketGuild guild, string name)
     {
+      await RemoveBrokenRoles(guild);
       var sql = "SELECT COUNT(*) FROM custom_roles WHERE guild_id = $0 AND name = $1";
       var count = await DatabaseService.QueryFirst<int>(sql, guild.Id, name);
       return count > 0;
@@ -36,22 +38,14 @@ namespace TNTBot.Services
     {
       var sql = "SELECT name, role_id FROM custom_roles WHERE guild_id = $0";
       var result = await DatabaseService.Query<string, ulong>(sql, guild.Id);
-      return result
-        .Select(x => new CustomRole(x.Item1!, guild.GetRole(x.Item2!)))
-        .Where(x => x.DiscordRole is not null)
-        .ToList();
+      return result.ConvertAll(x => new CustomRole(x.Item1!, guild.GetRole(x.Item2!)));
     }
 
     public async Task<CustomRole?> GetRole(SocketGuild guild, string name)
     {
       var sql = "SELECT role_id FROM custom_roles WHERE guild_id = $0 AND name = $1";
-      var result = await DatabaseService.Query<ulong>(sql, guild.Id, name);
-      if (result.Count == 0)
-      {
-        return null;
-      }
-
-      return new CustomRole(name, guild.GetRole(result[0]));
+      var result = await DatabaseService.QueryFirst<ulong>(sql, guild.Id, name);
+      return new CustomRole(name, guild.GetRole(result));
     }
 
     public async Task AddRole(SocketGuild guild, string name, SocketRole role)
@@ -94,6 +88,17 @@ namespace TNTBot.Services
 
       var customRole = (await GetRole(user.Guild, name))!;
       await user.RemoveRoleAsync(customRole.DiscordRole);
+    }
+
+    private async Task RemoveBrokenRoles(SocketGuild guild)
+    {
+      var brokenRoles = (await GetRoles(guild)).Where(x => x.DiscordRole == null);
+      foreach(var role in brokenRoles)
+      {
+        await LogService.LogToFileAndConsole(
+          $"Removing broken custom role {role.Name}", guild);
+        await RemoveRole(guild, role.Name);
+      }
     }
 
     private async Task CreateRolesTable()
