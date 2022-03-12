@@ -28,11 +28,6 @@ namespace TNTBot.Commands
           .AddOption("channel", ApplicationCommandOptionType.Channel, "The channel", isRequired: true)
           .WithType(ApplicationCommandOptionType.SubCommand)
         ).AddOption(new SlashCommandOptionBuilder()
-          .WithName("mutelength")
-          .WithDescription("Set the default mute duration")
-          .AddOption("time", ApplicationCommandOptionType.String, "Duration of the mute (eg. 1h 30m)", isRequired: true)
-          .WithType(ApplicationCommandOptionType.SubCommand)
-        ).AddOption(new SlashCommandOptionBuilder()
           .WithName("commandprefix")
           .WithDescription("Set the command prefix for custom commands")
           .AddOption("prefix", ApplicationCommandOptionType.String, "The prefix", isRequired: true)
@@ -69,7 +64,6 @@ namespace TNTBot.Commands
       var handle = subcommand.Name switch
       {
         "list" => ListSettings(cmd, guild),
-        "mutelength" => SetMuteLength(cmd, subcommand, guild),
         "pinchannel" => SetPinChannel(cmd, subcommand, guild),
         "logchannel" => SetLogChannel(cmd, subcommand, guild),
         "commandprefix" => SetCommandPrefix(cmd, subcommand, guild),
@@ -102,7 +96,6 @@ namespace TNTBot.Commands
 
     private async Task ListSettings(SocketSlashCommand cmd, SocketGuild guild)
     {
-      var muteLength = await service.GetMuteLength(guild);
       var pinChannel = await service.GetPinChannel(guild);
       var logChannel = await service.GetLogChannel(guild);
       var prefix = await service.GetCommandPrefix(guild);
@@ -124,7 +117,6 @@ namespace TNTBot.Commands
       var embed = new EmbedBuilder()
         .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
         .WithTitle("Bot Settings")
-        .AddField("Mute length", muteLength, inline: true)
         .AddField("Pin chanel", pinChannel?.Mention ?? "None", inline: true)
         .AddField("Log channel", logChannel?.Mention ?? "None", inline: true)
         .AddField("Custom command prefix", prefix, inline: true)
@@ -133,14 +125,6 @@ namespace TNTBot.Commands
         .WithColor(Colors.Blurple);
 
       await cmd.RespondAsync(embed: embed.Build());
-    }
-
-    private async Task SetMuteLength(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
-    {
-      var time = subcommand.GetOption<string>("time")!;
-      var muteLength = DurationParser.Parse(time);
-      await service.SetMuteLength(guild, muteLength);
-      await cmd.RespondAsync($"{Emotes.SuccessEmote} Mute length set to {muteLength}");
     }
 
     private async Task SetPinChannel(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)

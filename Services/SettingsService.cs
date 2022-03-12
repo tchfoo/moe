@@ -65,28 +65,6 @@ namespace TNTBot.Services
       return await GetLogChannel(guild) != null;
     }
 
-    public async Task<TimeSpan> GetMuteLength(SocketGuild guild)
-    {
-      var sql = "SELECT value FROM settings WHERE guild_id = $0 AND name = 'mute_length'";
-      var muteLength = await DatabaseService.QueryFirst<string>(sql, guild.Id);
-      if (muteLength is null)
-      {
-        return TimeSpan.FromMinutes(30);
-      }
-      return TimeSpan.Parse(muteLength);
-    }
-
-    public async Task SetMuteLength(SocketGuild guild, TimeSpan length)
-    {
-      await LogService.LogToFileAndConsole(
-        $"Setting mute length to {length}", guild);
-
-      var deleteSql = "DELETE FROM settings WHERE guild_id = $0 AND name = 'mute_length'";
-      await DatabaseService.NonQuery(deleteSql, guild.Id);
-      var insertSql = "INSERT INTO settings(guild_id, name, value) VALUES($0, 'mute_length', $1)";
-      await DatabaseService.NonQuery(insertSql, guild.Id, length);
-    }
-
     public async Task<string> GetCommandPrefix(SocketGuild guild)
     {
       var sql = "SELECT value FROM settings WHERE guild_id = $0 AND name = 'command_prefix'";
