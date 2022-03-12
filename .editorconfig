@@ -5,4 +5,5 @@ dotnet_diagnostic.rcs1118.severity = none
 dotnet_diagnostic.IDE0008.severity = none
 # Enable "Using directive is unnecessary."
 dotnet_diagnostic.IDE0005.severity = suggestion
-
+# Disable "Parameter can be removed; its initial value is never used."
+dotnet_diagnostic.IDE0060.severity = none
