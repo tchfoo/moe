@@ -144,9 +144,20 @@ namespace TNTBot.Services
       return errors;
     }
 
-    public string GetSnapshotDump(SnapshotModel s)
+    public EmbedBuilder GetSnapshotDump(SnapshotModel s)
     {
-      return GetChannelsDump(s) + GetRolesDump(s) + GetGuildInfoDump(s);
+      var embed = new EmbedBuilder()
+        .WithTitle(GetGuildNameDump(s))
+        .AddField("Channels", GetChannelsDump(s), inline: true)
+        .AddField("Roles", GetRolesDump(s), inline: true)
+        .WithColor(Colors.Grey);
+
+      if (s.GuildIcon != null)
+      {
+        embed.WithFooter("Attached server icon to message.");
+      }
+
+      return embed;
     }
 
     private string GetChannelsDump(SnapshotModel s)
@@ -155,20 +166,19 @@ namespace TNTBot.Services
 
       if (s.Channels.Count > 0)
       {
-        result += " - __**Channels**__:\n";
         foreach (var c in s.Channels)
         {
           var channel = s.Guild.Channels
             .FirstOrDefault(x => x.Id == c.Key);
           if (channel is null)
           {
-            result += $"   - ~~{c.Value}~~ (deleted, id: {c.Key})\n";
+            result += $"~~{c.Value}~~ (deleted, id: {c.Key}) ";
           }
           else
           {
             var mention = (channel as IMentionable)!.Mention;
             var channelName = channel.Name == c.Value ? mention : $"**{c.Value} (currently {mention})**";
-            result += $"   - {channelName}\n";
+            result += $"{channelName} ";
           }
         }
       }
@@ -182,19 +192,18 @@ namespace TNTBot.Services
 
       if (s.Roles?.Any() == true)
       {
-        result += " - __**Roles**__:\n";
         foreach (var r in s.Roles)
         {
           var role = s.Guild.Roles.FirstOrDefault(x => x.Id == r.Key);
           if (role is null)
           {
-            result += $"   - ~~{r.Value}~~ (deleted, id: {r.Key})\n";
+            result += $"~~{r.Value}~~ (deleted, id: {r.Key}) ";
           }
           else
           {
             var mention = role.Mention;
             var roleName = role.Name == r.Value ? mention : $"**{r.Value} (currently {mention})**";
-            result += $"   - {roleName}\n";
+            result += $"{roleName} ";
           }
         }
       }
@@ -202,19 +211,11 @@ namespace TNTBot.Services
       return result;
     }
 
-    private string GetGuildInfoDump(SnapshotModel s)
+    private string GetGuildNameDump(SnapshotModel s)
     {
-      var result = string.Empty;
-
       var guildName = s.GuildName == s.Guild.Name ? s.GuildName : $"**{s.GuildName}** (currently {s.Guild.Name})**";
-      result += $" - __**Guild name**__: {guildName}\n";
 
-      if (s.GuildIcon != null)
-      {
-        result += " - __**Guild icon**__:\n";
-      }
-
-      return result;
+      return guildName;
     }
 
     private async Task AddSnapshot(SnapshotModel s)

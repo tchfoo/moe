@@ -134,7 +134,7 @@ namespace TNTBot.Commands
       var s = await service.GetSnapshot(guild, name)!;
       var dump = service.GetSnapshotDump(s);
 
-      var dumpMessage = $"Dumped snapshot **{name}**:\n{dump}";
+      var dumpMessage = $"Dumped snapshot **{name}**:";
       if (s.GuildIcon == null)
       {
         await cmd.RespondAsync(dumpMessage);
@@ -142,7 +142,7 @@ namespace TNTBot.Commands
       else
       {
         var icon = new FileAttachment(s.GuildIcon.Value.Stream, "servericon.png");
-        await cmd.RespondWithFileAsync(icon, dumpMessage);
+        await cmd.RespondWithFileAsync(icon, dumpMessage, embed: dump.Build());
       }
     }
     private async Task ListSnapshots(SocketSlashCommand cmd, SocketGuild guild)
