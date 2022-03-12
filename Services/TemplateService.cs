@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Discord.WebSocket;
+using Discord;
 using TNTBot.Models;
 
 namespace TNTBot.Services
@@ -111,14 +112,21 @@ namespace TNTBot.Services
       return true;
     }
 
-    public string GetTemplateDump(TemplateModel t)
+    public EmbedBuilder GetTemplateDump(TemplateModel t)
     {
-      return
-        $" - **Title**: {HighlightParameters(t.Title)}\n" +
-        $" - **Description**: {HighlightParameters(t.Description)}\n" +
-        $" - **Footer**: {HighlightParameters(t.Footer) ?? "*Not specified*"}\n" +
-        $" - **Thumbnail Image URL**: {HighlightParameters(t.ThumbnailImageUrl) ?? "*Not specified*"}\n" +
-        $" - **Large Image URL**: {HighlightParameters(t.LargeImageUrl) ?? "*Not specified*"}";
+      var embed = new EmbedBuilder()
+        .WithAuthor($"Creator: {t.Creator}", iconUrl: t.Creator.GetAvatarUrl())
+        .WithTitle(HighlightParameters(t.Title))
+        .WithDescription(HighlightParameters(t.Description))
+        .WithFooter(HighlightParameters(t.Footer) ?? "*Not specified*")
+        .AddField("Thumbnail Image URL", HighlightParameters(t.ThumbnailImageUrl) ?? "*Not specified*")
+        .AddField("Large Image URL", HighlightParameters(t.LargeImageUrl) ?? "*Not specified*")
+        .AddField("Channel", t.Channel.Mention, inline: true)
+        .AddField("Mention", t.Mention?.Mention ?? "*None*", inline: true)
+        .AddField("Hidden?", t.Hidden.ToString(), inline: true)
+        .WithColor(Colors.Grey);
+
+      return embed;
     }
 
     public List<string> GetTemplateParameters(TemplateModel template)

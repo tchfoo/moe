@@ -157,7 +157,7 @@ namespace TNTBot.Commands
       var t = (await service.GetTemplate(user.Guild, name))!;
       var dump = service.GetTemplateDump(t);
 
-      await cmd.RespondAsync($"Dump of template **{name}**:\n{dump}");
+      await cmd.RespondAsync(text: $"Dump of template **{name}**:", embed: dump.Build());
     }
 
     private async Task ListTemplates(SocketSlashCommand cmd, SocketGuildUser user)
