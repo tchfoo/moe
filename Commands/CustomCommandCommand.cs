@@ -42,7 +42,7 @@ namespace TNTBot.Commands
 
       if (!Authorize(user, subcommand.Name, out var error))
       {
-        await cmd.RespondAsync(error);
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} " + error);
         return;
       }
 
@@ -51,7 +51,7 @@ namespace TNTBot.Commands
         "add" => AddCommand(cmd, subcommand, guild),
         "remove" => RemoveCommand(cmd, subcommand, guild),
         "list" => ListCommands(cmd, guild),
-        _ => throw new InvalidOperationException($"Unknown subcommand {subcommand.Name}")
+        _ => throw new InvalidOperationException($"{Emotes.ErrorEmote} Unknown subcommand {subcommand.Name}")
       };
 
       await handle;
@@ -65,7 +65,7 @@ namespace TNTBot.Commands
 
       if (await service.HasCommand(guild, name))
       {
-        await cmd.RespondAsync($"Command **{await service.PrefixCommandName(guild, name)}** already exists");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Command **{await service.PrefixCommandName(guild, name)}** already exists");
       }
 
       if (!ValidateResponse(response, out var error))
@@ -75,7 +75,7 @@ namespace TNTBot.Commands
       }
 
       await service.AddCommand(guild, name, response, description);
-      await cmd.RespondAsync($"Added command **{await service.PrefixCommandName(guild, name)}**");
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Added command **{await service.PrefixCommandName(guild, name)}**");
     }
 
     private bool Authorize(SocketGuildUser user, string subcommand, out string? error)
@@ -95,11 +95,11 @@ namespace TNTBot.Commands
 
       if (!await service.HasCommand(guild, name))
       {
-        await cmd.RespondAsync($"Command **{await service.PrefixCommandName(guild, name)}** does not exist");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Command **{await service.PrefixCommandName(guild, name)}** does not exist");
       }
 
       await service.RemoveCommand(guild, name);
-      await cmd.RespondAsync($"Removed command **{await service.PrefixCommandName(guild, name)}**");
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Removed command **{await service.PrefixCommandName(guild, name)}**");
     }
 
     private async Task ListCommands(SocketSlashCommand cmd, SocketGuild guild)

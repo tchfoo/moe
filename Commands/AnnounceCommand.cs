@@ -27,14 +27,14 @@ namespace TNTBot.Commands
 
       if (!await service.HasTemplate(guild, name))
       {
-        await cmd.RespondAsync($"No template named {name}");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} No template named {name}");
         return;
       }
       var template = (await service.GetTemplate(guild, name))!;
 
       if (!Authorize(user, template))
       {
-        await cmd.RespondAsync($"You are not the creator of the template {name}");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} You are not the creator of the template {name}");
         return;
       }
 
@@ -96,12 +96,12 @@ namespace TNTBot.Commands
       {
         if (template.Channel is null)
         {
-          await interaction.RespondAsync("The channel for this template got deleted");
+          await interaction.RespondAsync($"{Emotes.ErrorEmote} The channel for this template got deleted");
           return;
         }
 
         await AnnounceTemplate(template);
-        await interaction.RespondAsync($"Announced template **{template.Name}**");
+        await interaction.RespondAsync($"{Emotes.SuccessEmote} Announced template **{template.Name}**");
       }
     }
 

@@ -14,23 +14,23 @@ namespace TNTBot.Commands
       Options = new SlashCommandOptionBuilder()
         .AddOption(new SlashCommandOptionBuilder()
           .WithName("add")
-          .WithDescription("Add a role to the list of assignable roles")
-          .AddOption("name", ApplicationCommandOptionType.String, "The name of the assignable role to add", isRequired: true)
+          .WithDescription("Add a role to the list of custom roles")
+          .AddOption("name", ApplicationCommandOptionType.String, "The name of the custom role to add", isRequired: true)
           .AddOption("role", ApplicationCommandOptionType.Role, "The role to add", isRequired: true)
           .WithType(ApplicationCommandOptionType.SubCommand)
         ).AddOption(new SlashCommandOptionBuilder()
           .WithName("remove")
-          .WithDescription("Remove a role from the list of assignable roles")
-          .AddOption("name", ApplicationCommandOptionType.String, "The assignable role to remove", isRequired: true)
+          .WithDescription("Remove a role from the list of custom roles")
+          .AddOption("name", ApplicationCommandOptionType.String, "The custom role to remove", isRequired: true)
           .WithType(ApplicationCommandOptionType.SubCommand)
         ).AddOption(new SlashCommandOptionBuilder()
           .WithName("toggle")
-          .WithDescription("Apply or remove an assignable role from yourself")
-          .AddOption("name", ApplicationCommandOptionType.String, "The assignable role to toggle", isRequired: true)
+          .WithDescription("Apply or remove an custom role from yourself")
+          .AddOption("name", ApplicationCommandOptionType.String, "The custom role to toggle", isRequired: true)
           .WithType(ApplicationCommandOptionType.SubCommand)
         ).AddOption(new SlashCommandOptionBuilder()
           .WithName("list")
-          .WithDescription("List all assignable roles")
+          .WithDescription("List all custom roles")
           .WithType(ApplicationCommandOptionType.SubCommand)
         ).WithType(ApplicationCommandOptionType.SubCommandGroup);
       this.service = service;
@@ -43,7 +43,7 @@ namespace TNTBot.Commands
 
       if (!Authorize(user, subcommand.Name, out var error))
       {
-        await cmd.RespondAsync(error);
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} " + error);
         return;
       }
 
@@ -53,7 +53,7 @@ namespace TNTBot.Commands
         "remove" => RemoveRole(cmd, subcommand, user.Guild),
         "toggle" => ToggleRole(cmd, subcommand, user.Guild),
         "list" => ListRoles(cmd, user.Guild),
-        _ => throw new InvalidOperationException($"Unknown subcommand {subcommand.Name}")
+        _ => throw new InvalidOperationException($"{Emotes.ErrorEmote} Unknown subcommand {subcommand.Name}")
       };
 
       await handle;
@@ -77,12 +77,12 @@ namespace TNTBot.Commands
 
       if (await service.HasRole(guild, name))
       {
-        await cmd.RespondAsync($"Role **{name}** already exists");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Role **{name}** already exists");
         return;
       }
 
       await service.AddRole(guild, name, role);
-      await cmd.RespondAsync($"Added role **{name}** to the list of assignable roles");
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Added role **{name}** to the list of assignable roles");
     }
 
     private async Task RemoveRole(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
@@ -91,12 +91,12 @@ namespace TNTBot.Commands
 
       if (!await service.HasRole(guild, name))
       {
-        await cmd.RespondAsync($"Role **{name}** does not exist");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Role **{name}** does not exist");
         return;
       }
 
       await service.RemoveRole(guild, name);
-      await cmd.RespondAsync($"Removed role **{name}** from the list of assignable roles");
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Removed role **{name}** from the list of assignable roles");
     }
 
     private async Task ToggleRole(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
@@ -106,19 +106,19 @@ namespace TNTBot.Commands
 
       if (!await service.HasRole(guild, name))
       {
-        await cmd.RespondAsync($"Role **{name}** does not exist");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Role **{name}** does not exist");
         return;
       }
 
       if (await service.IsSubscribedToRole(user, name))
       {
         await service.UnsubscribeFromRole(user, name);
-        await cmd.RespondAsync($"Unsubscribed from role **{name}**");
+        await cmd.RespondAsync($"{Emotes.SuccessEmote} Unsubscribed from role **{name}**");
       }
       else
       {
         await service.SubscribeToRole(user, name);
-        await cmd.RespondAsync($"Subscribed to role **{name}**");
+        await cmd.RespondAsync($"{Emotes.SuccessEmote} Subscribed to role **{name}**");
       }
     }
 
@@ -136,7 +136,7 @@ namespace TNTBot.Commands
         (5, roles, items =>
           new EmbedBuilder()
             .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
-            .WithTitle("Applicable roles")
+            .WithTitle("Custom roles")
             .WithFields(items.Select(x => new EmbedFieldBuilder()
               .WithName(x.Name)
               .WithValue(x.DiscordRole.Mention)))

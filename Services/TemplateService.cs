@@ -105,7 +105,7 @@ namespace TNTBot.Services
         var error = $"Too many $ parameters, maximum is {maxParams}\n" +
           $"Here is the stuff you have entered:\n{dump}";
 
-        modal.RespondAsync(error);
+        modal.RespondAsync($"{Emotes.ErrorEmote} " + error);
         return false;
       }
 

@@ -55,7 +55,7 @@ namespace TNTBot.Services
         await LogService.LogToFileAndConsole(
           "No pin channel was set", guild, LogLevel.Warning);
 
-        await cmd.RespondAsync("No pin channel was set. Set it using /settings pinchannel");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} No pin channel was set. Set it using `/settings pinchannel`");
         return false;
       }
 

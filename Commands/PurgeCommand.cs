@@ -30,13 +30,13 @@ namespace TNTBot.Commands
 
       if (count > service.MaxPurgeCount)
       {
-        await cmd.RespondAsync($"Cannot purge more than {service.MaxPurgeCount} messages");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Cannot purge more than {service.MaxPurgeCount} messages");
         return;
       }
 
       await cmd.DeferAsync();
       await service.Purge(cmd, channel, count);
-      await cmd.FollowupAsync($"Purged {count} messages from {channel.Mention}");
+      await cmd.FollowupAsync($"{Emotes.SuccessEmote} Purged {count} messages from {channel.Mention}");
     }
   }
 }

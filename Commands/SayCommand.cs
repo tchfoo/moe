@@ -24,7 +24,7 @@ namespace TNTBot.Commands
       {
         if (!service.IsAuthorized(user, ModrankLevel.Moderator, out var error))
         {
-          await cmd.RespondAsync(error);
+          await cmd.RespondAsync($"{Emotes.ErrorEmote} " + error);
           return;
         }
       }

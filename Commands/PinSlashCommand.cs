@@ -24,7 +24,7 @@ namespace TNTBot.Commands
 
       if (!formattedMessageUrl.Success)
       {
-        await cmd.RespondAsync($"{Emotes.ErrorEmote} Invalid message link", ephemeral: true);
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Invalid message link");
         return;
       }
 
@@ -45,13 +45,13 @@ namespace TNTBot.Commands
       }
       catch (Exception)
       {
-        await cmd.RespondAsync($"{Emotes.ErrorEmote} Invalid message link", ephemeral: true);
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Invalid message link");
         return;
       }
 
       if (inputGuildId != guildId || inputChannelId != channelId)
       {
-        await cmd.RespondAsync($"{Emotes.ErrorEmote} You can only pin messages from this channel", ephemeral: true);
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} You can only pin messages from this channel");
         return;
       }
 
@@ -61,7 +61,7 @@ namespace TNTBot.Commands
 
       if (message == null)
       {
-        await cmd.RespondAsync($"{Emotes.ErrorEmote} Invalid message link", ephemeral: true);
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Invalid message link");
         return;
       }
 

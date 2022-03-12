@@ -74,7 +74,7 @@ namespace TNTBot.Commands
         "logchannel" => SetLogChannel(cmd, subcommand, guild),
         "commandprefix" => SetCommandPrefix(cmd, subcommand, guild),
         "modrank" => SetModrank(cmd, subcommand),
-        _ => throw new InvalidOperationException($"Unknown subcommand {subcommand.Name}")
+        _ => throw new InvalidOperationException($"{Emotes.ErrorEmote} Unknown subcommand {subcommand.Name}")
       };
 
       await handle;
@@ -140,28 +140,28 @@ namespace TNTBot.Commands
       var time = subcommand.GetOption<string>("time")!;
       var muteLength = DurationParser.Parse(time);
       await service.SetMuteLength(guild, muteLength);
-      await cmd.RespondAsync("Mute length set to " + muteLength);
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Mute length set to {muteLength}");
     }
 
     private async Task SetPinChannel(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
     {
       var channel = subcommand.GetOption<SocketTextChannel>("channel")!;
       await service.SetPinChannel(guild, channel);
-      await cmd.RespondAsync("Pin channel set to " + channel.Mention);
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Pin channel set to {channel.Mention}");
     }
 
     private async Task SetLogChannel(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
     {
       var channel = subcommand.GetOption<SocketTextChannel>("channel")!;
       await service.SetLogChannel(guild, channel);
-      await cmd.RespondAsync("Log channel set to " + channel.Mention);
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Log channel set to {channel.Mention}");
     }
 
     private async Task SetCommandPrefix(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
     {
       var prefix = subcommand.GetOption<string>("prefix")!;
       await service.SetCommandPrefix(guild, prefix);
-      await cmd.RespondAsync("Command prefix set to " + prefix);
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Command prefix set to {prefix}");
     }
 
     private async Task SetModrank(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand)
@@ -169,7 +169,7 @@ namespace TNTBot.Commands
       var role = subcommand.GetOption<SocketRole>("role")!;
       var level = (ModrankLevel)subcommand.GetOption<long>("level")!;
       await service.SetModrank(role, level);
-      await cmd.RespondAsync($"Modrank is now {level} for role {role.Mention}");
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Modrank is now {level} for role {role.Mention}");
     }
   }
 }

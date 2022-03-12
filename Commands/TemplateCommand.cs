@@ -56,7 +56,7 @@ namespace TNTBot.Commands
         "remove" => RemoveTemplate(cmd, subcommand, user),
         "dump" => DumpTemplate(cmd, subcommand, user),
         "list" => ListTemplates(cmd, user),
-        _ => throw new InvalidOperationException($"Unknown subcommand {subcommand.Name}")
+        _ => throw new InvalidOperationException($"{Emotes.ErrorEmote} Unknown subcommand {subcommand.Name}")
       };
 
       await handle;
@@ -81,7 +81,7 @@ namespace TNTBot.Commands
 
       if (await service.HasTemplate(user.Guild, name))
       {
-        await cmd.RespondAsync($"Template **{name}** already exists");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Template **{name}** already exists");
         return;
       }
 
@@ -116,7 +116,7 @@ namespace TNTBot.Commands
 
       await service.AddTemplate(t);
 
-      await submitted.RespondAsync($"Added template **{t.Name}**");
+      await submitted.RespondAsync($"{Emotes.SuccessEmote} Added template **{t.Name}**");
     }
 
     private SubmittableModalBuilder CreateTemplateModal(TemplateModel t)
@@ -136,12 +136,12 @@ namespace TNTBot.Commands
 
       if (!await service.HasTemplate(user.Guild, name))
       {
-        await cmd.RespondAsync($"Template **{name}** does not exist");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Template **{name}** does not exist");
         return;
       }
 
       await service.RemoveTemplate(user.Guild, name);
-      await cmd.RespondAsync($"Removed template **{name}**");
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Removed template **{name}**");
     }
 
     private async Task DumpTemplate(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuildUser user)
@@ -150,7 +150,7 @@ namespace TNTBot.Commands
 
       if (!await service.HasTemplate(user.Guild, name))
       {
-        await cmd.RespondAsync($"Template **{name}** does not exist");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Template **{name}** does not exist");
         return;
       }
 
@@ -167,7 +167,7 @@ namespace TNTBot.Commands
 
       if (!await service.HasTemplates(guild))
       {
-        await cmd.RespondAsync("There are no templates");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} There are no templates");
         return;
       }
 

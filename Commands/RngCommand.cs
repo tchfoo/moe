@@ -112,15 +112,14 @@ namespace TNTBot.Commands
 
     private async Task PrintRealRng(long rngMin, long rngMax, SocketSlashCommand cmd)
     {
-      var xEmoji = "\u274C";
       if (rngMin > rngMax)
       {
-        await cmd.RespondAsync($"{xEmoji} A minimum szám nem lehet nagyobb, mint a maximum!");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Minimum number cannot be bigger than maximum");
         return;
       }
       else if (rngMin == rngMax)
       {
-        await cmd.RespondAsync($"{xEmoji} A két szám nem lehet ugyan az!");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} The two numbers cannot be the same");
         return;
       }
 

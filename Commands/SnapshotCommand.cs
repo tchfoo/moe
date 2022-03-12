@@ -51,7 +51,7 @@ namespace TNTBot.Commands
 
       if (!service.IsAuthorized(user, ModrankLevel.Administrator, out var error))
       {
-        await cmd.RespondAsync(error);
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} " + error);
         return;
       }
 
@@ -62,7 +62,7 @@ namespace TNTBot.Commands
         "restore" => RestoreSnapshot(cmd, subcommand, guild),
         "dump" => DumpSnapshot(cmd, subcommand, guild),
         "list" => ListSnapshots(cmd, guild),
-        _ => throw new InvalidOperationException($"Unknown subcommand {subcommand.Name}")
+        _ => throw new InvalidOperationException($"{Emotes.ErrorEmote} Unknown subcommand {subcommand.Name}")
       };
 
       await handle;
@@ -77,12 +77,12 @@ namespace TNTBot.Commands
 
       if (await service.HasSnapshot(guild, name))
       {
-        await cmd.RespondAsync($"Snapshot **{name}** already exists");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Snapshot **{name}** already exists");
         return;
       }
 
       await service.AddSnapshot(guild, name, voicenames, rolenames, servericon);
-      await cmd.RespondAsync($"Added snapshot **{name}**");
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Added snapshot **{name}**");
     }
 
     private async Task RemoveSnapshot(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
@@ -91,12 +91,12 @@ namespace TNTBot.Commands
 
       if (!await service.HasSnapshot(guild, name))
       {
-        await cmd.RespondAsync($"Snapshot **{name}** does not exist");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Snapshot **{name}** does not exist");
         return;
       }
 
       await service.RemoveSnapshot(guild, name);
-      await cmd.RespondAsync($"Removed snapshot **{name}**");
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Removed snapshot **{name}**");
     }
 
     private async Task RestoreSnapshot(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
@@ -105,7 +105,7 @@ namespace TNTBot.Commands
 
       if (!await service.HasSnapshot(guild, name))
       {
-        await cmd.RespondAsync($"Snapshot **{name}** does not exist");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Snapshot **{name}** does not exist");
         return;
       }
 
@@ -127,7 +127,7 @@ namespace TNTBot.Commands
 
       if (!await service.HasSnapshot(guild, name))
       {
-        await cmd.RespondAsync($"Snapshot **{name}** does not exist");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Snapshot **{name}** does not exist");
         return;
       }
 
@@ -149,7 +149,7 @@ namespace TNTBot.Commands
     {
       if (!await service.HasSnapshots(guild))
       {
-        await cmd.RespondAsync("There are no snapshots");
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} There are no snapshots");
         return;
       }
 
