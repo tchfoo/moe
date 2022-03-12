@@ -10,6 +10,7 @@ namespace TNTBot
     public static readonly Color Green = new(0x64CCA8);
     public static readonly Color Yellow = new(0xF5EEB9);
     public static readonly Color LightBlue = new(0x6BD1EA);
+    public static readonly Color Grey = new(0x5A5A5A);
 
     public static Color GetMainRoleColor(SocketGuildUser user)
     {
