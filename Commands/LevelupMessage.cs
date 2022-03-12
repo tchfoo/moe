@@ -20,7 +20,7 @@ namespace TNTBot.Commands
       var enabled = await service.IsLevelupMessageEnabled(user);
 
       var enabledOut = enabled ? "enabled" : "disabled";
-      await cmd.RespondAsync($"Levelup message is now {enabledOut} for {user.Mention}");
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Levelup message is now {enabledOut} for {user.Mention}");
     }
   }
 }
