@@ -82,7 +82,7 @@ namespace TNTBot.Commands
       }
 
       await service.AddRole(guild, name, role);
-      await cmd.RespondAsync($"{Emotes.SuccessEmote} Added role **{name}** to the list of assignable roles");
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Added role **{name}** to the list of custom roles");
     }
 
     private async Task RemoveRole(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
@@ -96,7 +96,7 @@ namespace TNTBot.Commands
       }
 
       await service.RemoveRole(guild, name);
-      await cmd.RespondAsync($"{Emotes.SuccessEmote} Removed role **{name}** from the list of assignable roles");
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Removed role **{name}** from the list of custom roles");
     }
 
     private async Task ToggleRole(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
