@@ -21,7 +21,7 @@ namespace TNTBot.Commands
       var leaderboard = await service.GetLeaderboard(guild);
 
       var levels = leaderboard.Select((x, i) =>
-        $"**{i + 1}.** {x.User.Mention} • Level: {x.LevelNumber} • XP: {x.TotalXP})");
+        $"**{i + 1}.** {x.User.Mention} • Level: {x.LevelNumber} • XP: {x.TotalXP}");
       var p = new PaginatableEmbedBuilder<string>
         (10, levels, items =>
           new EmbedBuilder()
