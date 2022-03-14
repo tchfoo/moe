@@ -1,5 +1,4 @@
 # Sensitive files
-config.json
 token.json
 storage.db
 logs
