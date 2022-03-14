@@ -25,7 +25,7 @@ namespace TNTBot.Services
 
     public static async Task Start()
     {
-      var token = ConfigService.Token.Value;
+      var token = ConfigService.Config.Token;
       await Discord.LoginAsync(TokenType.Bot, token);
       await Discord.StartAsync();
 

@@ -1,4 +1,5 @@
 # Sensitive files
+.env
 token.json
 storage.db
 logs
