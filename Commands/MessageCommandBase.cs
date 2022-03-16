@@ -23,7 +23,8 @@ namespace TNTBot.Commands
     public async Task Register()
     {
       var builder = new MessageCommandBuilder().WithName(Name);
-      await Guild.CreateApplicationCommandAsync(builder.Build());
+      // await Guild.CreateApplicationCommandAsync(builder.Build());
+      await DiscordService.Discord.CreateGlobalApplicationCommandAsync(builder.Build());
       await OnRegister();
     }
   }

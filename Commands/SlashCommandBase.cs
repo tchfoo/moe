@@ -37,7 +37,8 @@ namespace TNTBot.Commands
         builder.AddOptions(Options.Options.ToArray());
       }
 
-      await Guild.CreateApplicationCommandAsync(builder.Build());
+      // await Guild.CreateApplicationCommandAsync(builder.Build());
+      await DiscordService.Discord.CreateGlobalApplicationCommandAsync(builder.Build());
       await OnRegister();
     }
   }
