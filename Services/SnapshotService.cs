@@ -148,9 +148,19 @@ namespace TNTBot.Services
     {
       var embed = new EmbedBuilder()
         .WithTitle(GetGuildNameDump(s))
-        .AddField("Channels", GetChannelsDump(s), inline: true)
-        .AddField("Roles", GetRolesDump(s), inline: true)
         .WithColor(Colors.Grey);
+
+      var channels = GetChannelsDump(s);
+      if (channels != string.Empty)
+      {
+        embed.AddField("Channels", channels, inline: true);
+      }
+
+      var roles = GetRolesDump(s);
+      if (roles != string.Empty)
+      {
+        embed.AddField("Roles", roles, inline: true);
+      }
 
       if (s.GuildIcon != null)
       {
@@ -237,13 +247,16 @@ namespace TNTBot.Services
 
       var id = await GetSnapshotId(s.Guild, s.Name);
 
-      var values = string.Join(",", s.Channels.Select(x => $"({id}, {x.Key}, '{x.Value}')"));
-      sql = $"INSERT INTO snapshot_channels(snapshot_id, channel_id, channel_name) VALUES {values}";
-      await DatabaseService.NonQuery(sql);
+      if (s.Channels.Count > 0)
+      {
+        var values = string.Join(",", s.Channels.Select(x => $"({id}, {x.Key}, '{x.Value}')"));
+        sql = $"INSERT INTO snapshot_channels(snapshot_id, channel_id, channel_name) VALUES {values}";
+        await DatabaseService.NonQuery(sql);
+      }
 
       if (s.Roles is not null)
       {
-        values = string.Join(",", s.Roles.Select(x => $"({id}, {x.Key}, '{x.Value}')"));
+        var values = string.Join(",", s.Roles.Select(x => $"({id}, {x.Key}, '{x.Value}')"));
         sql = $"INSERT INTO snapshot_roles(snapshot_id, role_id, role_name) VALUES {values}";
         await DatabaseService.NonQuery(sql);
       }
