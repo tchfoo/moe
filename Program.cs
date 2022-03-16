@@ -1,4 +1,4 @@
-﻿using Discord.WebSocket;
+using Discord.WebSocket;
 using TNTBot.Commands;
 using TNTBot.Services;
 
@@ -66,6 +66,12 @@ DiscordService.Discord.Ready += async () =>
 
   DiscordService.Discord.SlashCommandExecuted += async (cmd) =>
   {
+    if (cmd.Channel.GetChannelType() != ChannelType.Text)
+    {
+      await cmd.RespondAsync($"{Emotes.ErrorEmote} Slash commands are not allowed in DMs");
+      return;
+    }
+
     var guild = ((SocketGuildChannel)cmd.Channel).Guild;
     var optionsString = cmd.Data.Options.Select(x => $"{x.Name}:{x.Value}");
     var commandString = $"/{cmd.CommandName} {string.Join(" ", optionsString)}";
@@ -78,6 +84,12 @@ DiscordService.Discord.Ready += async () =>
 
   DiscordService.Discord.MessageCommandExecuted += async (cmd) =>
   {
+    if (cmd.Channel.GetChannelType() != ChannelType.Text)
+    {
+      await cmd.RespondAsync($"{Emotes.ErrorEmote} Context menu commands are not allowed in DMs");
+      return;
+    }
+
     var guild = ((SocketGuildChannel)cmd.Channel).Guild;
     await LogService.LogToFileAndConsole(
       $"{cmd.User} executed message command {cmd.CommandName} on message {cmd.Data.Message}", guild);
