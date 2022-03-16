@@ -42,6 +42,7 @@ namespace TNTBot
       this.items = items;
       this.pageBuilder = pageBuilder;
       maxPageNumber = (int)Math.Ceiling(items.Count() / (double)itemsPerPage);
+      maxPageNumber = Math.Max(1, maxPageNumber);
       DiscordService.Discord.ButtonExecuted += OnButtonExecuted;
     }
 
