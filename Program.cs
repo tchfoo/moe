@@ -1,4 +1,6 @@
+﻿using Discord;
 using Discord.WebSocket;
+using TNTBot;
 using TNTBot.Commands;
 using TNTBot.Services;
 
@@ -105,25 +107,27 @@ DiscordService.Discord.Ready += async () =>
       return;
     }
 
-    await levelService.HandleMessage(msg);
-
-    var guild = ((SocketGuildChannel)msg.Channel).Guild;
-    var prefix = await settingsService.GetCommandPrefix(guild);
-    if (!msg.Content.StartsWith(prefix))
-    {
-      return;
-    }
-
     var tokens = msg.Content.Split(' ');
-    var name = await customCommandService.CleanCommandName(guild, tokens[0]);
     var args = tokens.Skip(1).ToList();
-
-    if (await rngCommand.HandleDM(msg, name, args))
+    if (msg.Channel.GetChannelType() == ChannelType.DM)
     {
-      return;
+      var commandName = tokens[0];
+      await rngCommand.HandleDM(msg, commandName, args);
     }
+    else if (msg.Channel.GetChannelType() == ChannelType.Text)
+    {
+      var guild = ((SocketGuildChannel)msg.Channel).Guild;
+      var commandName = await customCommandService.CleanCommandName(guild, tokens[0]);
+      await levelService.HandleMessage(msg);
 
-    await customCommandHandlerDM.TryHandleCommand(msg, name, args);
+      var prefix = await settingsService.GetCommandPrefix(guild);
+      if (!msg.Content.StartsWith(prefix))
+      {
+        return;
+      }
+
+      await customCommandHandlerDM.TryHandleCommand(msg, commandName, args);
+    }
   };
 };
 
