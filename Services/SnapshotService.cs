@@ -385,7 +385,7 @@ namespace TNTBot.Services
           && bot.Roles.Select(x => x.Id).Contains(x.TargetId));
       var botOverwrites = userOverwrites.Concat(roleOverwrites);
 
-      return botOverwrites.Any(x => x.Permissions.ManageChannel == PermValue.Allow);
+      return !botOverwrites.Any(x => x.Permissions.ManageChannel == PermValue.Deny);
     }
 
     private bool CanBotManageRole(SocketRole role)

@@ -137,7 +137,7 @@ namespace TNTBot.Commands
       var dumpMessage = $"Dumped snapshot **{name}**:";
       if (s.GuildIcon == null)
       {
-        await cmd.RespondAsync(dumpMessage);
+        await cmd.RespondAsync(dumpMessage, embed: dump.Build());
       }
       else
       {
