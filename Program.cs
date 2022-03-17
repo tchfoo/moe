@@ -25,6 +25,8 @@ DiscordService.Discord.Ready += async () =>
   var userInfoService = new UserInfoService();
   var templateService = new TemplateService(settingsService);
   var snapshotService = new SnapshotService(settingsService);
+  var backupService = new BackupService();
+  backupService.Init();
 
   var slashCommands = new List<SlashCommandBase>
   {
