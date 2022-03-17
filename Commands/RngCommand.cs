@@ -12,10 +12,11 @@ namespace TNTBot.Commands
       Options = new SlashCommandOptionBuilder()
         .AddOption("min", ApplicationCommandOptionType.Integer, "The minimum number the bot generates. Defaults to 1", isRequired: false)
         .AddOption("max", ApplicationCommandOptionType.Integer, "The maximum number the bot generates", isRequired: true);
+      CreateRngnumsTable().Wait();
     }
 
     //DISCLAIMER: This command contains an unfair advantage, where you can define your own RNG pool. The bot authors are not responsible for the use/abuse of this feature, and never would use (or used) it themselves. This feature is only intended for educational purposes only.
-    public override async Task OnRegister()
+    private async Task CreateRngnumsTable()
     {
       await DatabaseService.NonQuery(@"
         CREATE TABLE IF NOT EXISTS rngnums(
