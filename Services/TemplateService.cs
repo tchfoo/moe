@@ -102,10 +102,17 @@ namespace TNTBot.Services
       if (paramsCount > maxParams)
       {
         var dump = GetTemplateDump(t);
-        var error = $"Too many $ parameters, maximum is {maxParams}\n" +
-          $"Here is the stuff you have entered:\n{dump}";
+        var error = $"Too many $ parameters, maximum is {maxParams}\n";
+        if (dump.Length > EmbedBuilder.MaxEmbedLength)
+        {
+          error += $"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the template cannot be dumped, try recreating the template but shorter";
+        }
+        else
+        {
+          error += "Here is the stuff you have entered:\n";
+        }
 
-        modal.RespondAsync($"{Emotes.ErrorEmote} " + error);
+        modal.RespondAsync($"{Emotes.ErrorEmote} " + error, embed: dump.Build());
         return false;
       }
 

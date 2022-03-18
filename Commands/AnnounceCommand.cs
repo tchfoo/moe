@@ -100,26 +100,38 @@ namespace TNTBot.Commands
           return;
         }
 
-        await AnnounceTemplate(template);
-        await interaction.RespondAsync($"{Emotes.SuccessEmote} Announced template **{template.Name}**");
+        await AnnounceTemplate(interaction, template);
       }
     }
 
-    private async Task AnnounceTemplate(TemplateModel template)
+    private async Task AnnounceTemplate(SocketInteraction interaction, TemplateModel template)
     {
-      var embed = BuildAnnouncmentEmbed(template);
+      var embed = GetAnnouncementEmbed(template);
+      if (embed.Length > EmbedBuilder.MaxEmbedLength)
+      {
+        await interaction.RespondAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the announcement cannot be displayed, try recreating the template but shorter");
+        return;
+      }
+
       var mention = template.Mention?.Mention;
-      await template.Channel.SendMessageAsync(text: mention, embed: embed);
+      await template.Channel.SendMessageAsync(text: mention, embed: embed.Build());
+      await interaction.RespondAsync($"{Emotes.SuccessEmote} Announced template **{template.Name}**");
     }
 
     private async Task PreviewTemplate(SocketInteraction interaction, TemplateModel template)
     {
-      var embed = BuildAnnouncmentEmbed(template);
+      var embed = GetAnnouncementEmbed(template);
+      if (embed.Length > EmbedBuilder.MaxEmbedLength)
+      {
+        await interaction.RespondAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the announcement cannot be displayed, try recreating the template but shorter");
+        return;
+      }
+
       var mention = template.Mention?.Mention;
-      await interaction.RespondAsync(text: mention, embed: embed, ephemeral: true);
+      await interaction.RespondAsync(text: mention, embed: embed.Build(), ephemeral: true);
     }
 
-    private Embed BuildAnnouncmentEmbed(TemplateModel template)
+    private EmbedBuilder GetAnnouncementEmbed(TemplateModel template)
     {
       return new EmbedBuilder()
         .WithTitle(template.Title)
@@ -127,8 +139,7 @@ namespace TNTBot.Commands
         .WithFooter(template.Footer)
         .WithThumbnailUrl(template.ThumbnailImageUrl)
         .WithImageUrl(template.LargeImageUrl)
-        .WithColor(Colors.Blurple)
-        .Build();
+        .WithColor(Colors.Blurple);
     }
   }
 }

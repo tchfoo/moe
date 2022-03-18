@@ -123,9 +123,9 @@ namespace TNTBot.Commands
     {
       return (SubmittableModalBuilder)new SubmittableModalBuilder()
         .WithTitle("Template: Embed creator")
-        .AddTextInput("Title", nameof(t.Title), placeholder: "Title of the embed, Placeholders can be used here", required: true)
-        .AddTextInput("Description", nameof(t.Description), placeholder: "Description of the embed, Placeholders can be used here", required: true)
-        .AddTextInput("Footer", nameof(t.Footer), placeholder: "Footer text, Placeholders can be used here", required: false)
+        .AddTextInput("Title", nameof(t.Title), placeholder: "Title of the embed, Placeholders can be used here", required: true, maxLength: EmbedBuilder.MaxTitleLength)
+        .AddTextInput("Description", nameof(t.Description), placeholder: "Description of the embed, Placeholders can be used here", required: true, maxLength: 2000)
+        .AddTextInput("Footer", nameof(t.Footer), placeholder: "Footer text, Placeholders can be used here", required: false, maxLength: 2048)
         .AddTextInput("Thumbnail image URL", nameof(t.ThumbnailImageUrl), placeholder: "Image URL of thumbnail in the embed", required: false)
         .AddTextInput("Image URL (large image)", nameof(t.LargeImageUrl), placeholder: "Image URL (large image)", required: false);
     }
@@ -156,6 +156,11 @@ namespace TNTBot.Commands
 
       var t = (await service.GetTemplate(user.Guild, name))!;
       var dump = service.GetTemplateDump(t);
+      if (dump.Length > EmbedBuilder.MaxEmbedLength)
+      {
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the template cannot be dumped, try recreating the template but shorter");
+        return;
+      }
 
       await cmd.RespondAsync(text: $"Dump of template **{name}**:", embed: dump.Build());
     }
