@@ -4,6 +4,17 @@ using TNTBot;
 using TNTBot.Commands;
 using TNTBot.Services;
 
+if (args.Contains("--dev"))
+{
+  ConfigService.Environment = "dev";
+}
+else
+{
+  ConfigService.Environment = "prod";
+}
+await LogService.LogToFileAndConsole($"Running in {ConfigService.Environment} environment");
+
+await ConfigService.Init();
 DiscordService.Init();
 
 DiscordService.Discord.Ready += async () =>
@@ -53,18 +64,23 @@ DiscordService.Discord.Ready += async () =>
     new PinMessageCommand(pinService),
   };
 
-  var guild = DiscordService.Discord.GetGuild(ConfigService.Config.ServerID);
-
   if (args.Contains("--register-commands"))
   {
-    await guild.DeleteApplicationCommandsAsync();
-    foreach (var command in slashCommands)
+    await LogService.LogToFileAndConsole("Registering commands");
+    var commandProperties = slashCommands
+      .Select(x => x.GetCommandProperties())
+      .Cast<ApplicationCommandProperties>()
+      .Concat(messageCommands.Select(x => x.GetCommandProperties()))
+      .ToArray();
+
+    if (ConfigService.IsProd())
     {
-      await command.Register();
+      await DiscordService.Discord.BulkOverwriteGlobalApplicationCommandsAsync(commandProperties);
     }
-    foreach (var command in messageCommands)
+    else
     {
-      await command.Register();
+      var guild = DiscordService.Discord.GetGuild(ConfigService.Config.ServerID!.Value);
+      await guild.BulkOverwriteApplicationCommandAsync(commandProperties);
     }
   }
 

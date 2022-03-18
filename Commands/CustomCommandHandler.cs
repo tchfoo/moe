@@ -29,7 +29,6 @@ namespace TNTBot.Commands
         return true;
       }
 
-
       var deleteTask = Task.CompletedTask;
       if (command.Delete)
       {

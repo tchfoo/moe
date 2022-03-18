@@ -1,24 +1,35 @@
 using DotNetEnv;
+using TNTBot.Services;
 
 namespace TNTBot
 {
   public class Config
   {
     public string Token { get; set; } = default!;
-    public ulong ServerID { get; set; } = default!;
+    public ulong? ServerID { get; set; } = default!;
     public List<ulong> Owners { get; set; } = default!;
     public ulong Yaha { get; set; } = default!;
     public TimeSpan BackupInterval { get; set; } = default!;
     public int BackupsToKeep { get; set; } = default!;
 
-    public static Config Load()
+    public static async Task<Config> Load()
     {
-      Env.Load();
+      string envFile = ".env";
+      if (ConfigService.IsDev())
+      {
+        envFile = "dev.env";
+      }
+      else if (ConfigService.IsProd())
+      {
+        envFile = "prod.env";
+      }
+      await LogService.LogToFileAndConsole($"Using {envFile} for environment variables");
+      Env.Load(envFile);
 
       return new Config()
       {
         Token = GetEnv("TOKEN"),
-        ServerID = ulong.Parse(GetEnv("SERVERID")),
+        ServerID = ConfigService.IsProd() ? null : ulong.Parse(GetEnv("SERVERID")),
         Owners = GetEnv("OWNERS")
           .Split(',')
           .Select(x => ulong.Parse(x))

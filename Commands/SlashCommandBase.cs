@@ -1,13 +1,11 @@
 
 using Discord;
 using Discord.WebSocket;
-using TNTBot.Services;
 
 namespace TNTBot.Commands
 {
   public abstract class SlashCommandBase
   {
-    private SocketGuild Guild { get => DiscordService.Discord.GetGuild(Config.Load().ServerID); }
     private string? description;
 
     public string Name { get; protected set; }
@@ -23,11 +21,9 @@ namespace TNTBot.Commands
       Name = name;
     }
 
-    public virtual Task OnRegister() => Task.CompletedTask;
-
     public abstract Task Handle(SocketSlashCommand cmd);
 
-    public async Task Register()
+    public SlashCommandProperties GetCommandProperties()
     {
       var builder = new SlashCommandBuilder()
         .WithName(Name)
@@ -37,9 +33,7 @@ namespace TNTBot.Commands
         builder.AddOptions(Options.Options.ToArray());
       }
 
-      // await Guild.CreateApplicationCommandAsync(builder.Build());
-      await DiscordService.Discord.CreateGlobalApplicationCommandAsync(builder.Build());
-      await OnRegister();
+      return builder.Build();
     }
   }
 }
