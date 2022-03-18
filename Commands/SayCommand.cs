@@ -32,6 +32,12 @@ namespace TNTBot.Commands
       var channel = cmd.GetOption<SocketTextChannel>("channel") ?? (SocketTextChannel)cmd.Channel;
       var message = cmd.GetOption<string>("message")!;
 
+      if (message.Length > 2000)
+      {
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} The message is too long");
+        return;
+      }
+
       await channel.SendMessageAsync(message);
       await cmd.RespondAsync($"{Emotes.SuccessEmote} Message sent", ephemeral: true);
     }
