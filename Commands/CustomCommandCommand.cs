@@ -66,6 +66,13 @@ namespace TNTBot.Commands
       if (await service.HasCommand(guild, name))
       {
         await cmd.RespondAsync($"{Emotes.ErrorEmote} Command **{await service.PrefixCommandName(guild, name)}** already exists");
+        return;
+      }
+
+      if (name.Contains(' '))
+      {
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Custom commands cannot have spaces in them");
+        return;
       }
 
       if (!ValidateResponse(response, out var error))
