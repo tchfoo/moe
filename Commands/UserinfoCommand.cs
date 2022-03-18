@@ -29,7 +29,7 @@ namespace TNTBot.Commands
 
       var embed = new EmbedBuilder()
         .WithAuthor(user)
-        .WithDescription($"[Avatar]({user.GetAvatarUrl()})")
+        .WithDescription($"[Avatar]({user.GetAvatarUrl(size: 1024)})")
         .AddField("Roles", $"{roles}", inline: true)
         .AddField("Created at", $"{user.CreatedAt:yyyy-MM-dd HH:mm}", inline: true)
         .AddField("First joined at", firstJoined?.ToString("yyyy-MM-dd HH:mm") ?? "Unkown", inline: true)
