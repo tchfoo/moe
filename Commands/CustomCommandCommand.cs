@@ -19,6 +19,7 @@ namespace TNTBot.Commands
           .AddOption("response", ApplicationCommandOptionType.String,
             @"Respond with this. Use $1, $2 for parameters, \n for newline or \m for new message", isRequired: true)
           .AddOption("description", ApplicationCommandOptionType.String, "A note on what the command does and how to use it", isRequired: false)
+          .AddOption("delete", ApplicationCommandOptionType.Boolean, "Delete the message after responding", isRequired: false)
           .WithType(ApplicationCommandOptionType.SubCommand)
         ).AddOption(new SlashCommandOptionBuilder()
           .WithName("remove")
@@ -62,6 +63,7 @@ namespace TNTBot.Commands
       var name = subcommand.GetOption<string>("name")!;
       var response = subcommand.GetOption<string>("response")!;
       var description = subcommand.GetOption<string>("description");
+      var delete = subcommand.GetOption<bool>("delete");
 
       if (await service.HasCommand(guild, name))
       {
@@ -81,7 +83,7 @@ namespace TNTBot.Commands
         return;
       }
 
-      await service.AddCommand(guild, name, response, description);
+      await service.AddCommand(guild, name, response, description, delete);
       await cmd.RespondAsync($"{Emotes.SuccessEmote} Added command **{await service.PrefixCommandName(guild, name)}**");
     }
 

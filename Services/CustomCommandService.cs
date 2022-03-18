@@ -36,32 +36,32 @@ namespace TNTBot.Services
 
     public async Task<List<CustomCommand>> GetCommands(SocketGuild guild)
     {
-      var sql = "SELECT name, response, description FROM custom_commands WHERE guild_id = $0 ORDER BY name";
-      var commands = await DatabaseService.Query<string, string, string>(sql, guild.Id);
-      return commands.ConvertAll(x => new CustomCommand(x.Item1!, x.Item2!, x.Item3));
+      var sql = "SELECT name, response, description, delete_sender FROM custom_commands WHERE guild_id = $0 ORDER BY name";
+      var commands = await DatabaseService.Query<string, string, string, int>(sql, guild.Id);
+      return commands.ConvertAll(x => new CustomCommand(x.Item1!, x.Item2!, x.Item3, x.Item4 > 0));
     }
 
     public async Task<CustomCommand?> GetCommand(SocketGuild guild, string name)
     {
       name = await CleanCommandName(guild, name);
-      var sql = "SELECT response, description FROM custom_commands WHERE guild_id = $0 AND name = $1";
-      var command = await DatabaseService.Query<string, string>(sql, guild.Id, name);
+      var sql = "SELECT response, description, delete_sender FROM custom_commands WHERE guild_id = $0 AND name = $1";
+      var command = await DatabaseService.Query<string, string, int>(sql, guild.Id, name);
       if (command.Count == 0)
       {
         return null;
       }
 
-      return new CustomCommand(name, command[0].Item1!, command[0].Item2);
+      return new CustomCommand(name, command[0].Item1!, command[0].Item2, command[0].Item3 > 0);
     }
 
-    public async Task AddCommand(SocketGuild guild, string name, string response, string? description)
+    public async Task AddCommand(SocketGuild guild, string name, string response, string? description, bool delete)
     {
       name = await CleanCommandName(guild, name);
       await LogService.LogToFileAndConsole(
-        $"Adding custom command {name} response: {response}, description: {description}", guild);
+        $"Adding custom command {name} response: {response}, description: {description}, delete: {delete}", guild);
 
-      var sql = "INSERT INTO custom_commands(guild_id, name, response, description) VALUES($0, $1, $2, $3)";
-      await DatabaseService.NonQuery(sql, guild.Id, name, response, description);
+      var sql = "INSERT INTO custom_commands(guild_id, name, response, description, delete_sender) VALUES($0, $1, $2, $3, $4)";
+      await DatabaseService.NonQuery(sql, guild.Id, name, response, description, delete);
     }
 
     public async Task RemoveCommand(SocketGuild guild, string name)
@@ -107,7 +107,8 @@ namespace TNTBot.Services
           guild_id INTEGER NOT NULL,
           name TEXT NOT NULL,
           response TEXT NOT NULL,
-          description TEXT
+          description TEXT,
+          delete_sender INTEGER NOT NULL DEFAULT 0
         )";
       await DatabaseService.NonQuery(sql);
     }

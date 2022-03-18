@@ -4,11 +4,11 @@ using TNTBot.Services;
 
 namespace TNTBot.Commands
 {
-  public class CustomCommandHandlerDM
+  public class CustomCommandHandler
   {
     private readonly CustomCommandService service;
 
-    public CustomCommandHandlerDM(CustomCommandService service)
+    public CustomCommandHandler(CustomCommandService service)
     {
       this.service = service;
     }
@@ -29,8 +29,16 @@ namespace TNTBot.Commands
         return true;
       }
 
+
+      var deleteTask = Task.CompletedTask;
+      if (command.Delete)
+      {
+        deleteTask = message.DeleteAsync();
+      }
+
       var lines = FormatResponse(command.Response, args);
       lines.ForEach(x => channel.SendMessageAsync(x));
+      await deleteTask;
       return true;
     }
 

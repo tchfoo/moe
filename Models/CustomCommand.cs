@@ -11,12 +11,14 @@ namespace TNTBot.Models
       get => description ?? "No description";
       set => description = value;
     }
+    public bool Delete { get; set; }
 
-    public CustomCommand(string name, string response, string? description)
+    public CustomCommand(string name, string response, string? description, bool delete)
     {
       Name = name;
       Response = response;
       Description = description;
+      Delete = delete;
     }
   }
 }

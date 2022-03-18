@@ -13,7 +13,7 @@ DiscordService.Discord.Ready += async () =>
   var customRoleService = new CustomRoleService(settingsService);
   var levelService = new LevelService();
   var rngCommand = new RngCommand();
-  var customCommandHandlerDM = new CustomCommandHandlerDM(customCommandService);
+  var customCommandHandler = new CustomCommandHandler(customCommandService);
   var pinService = new PinService(settingsService);
   LogService.Instance = new LogService(settingsService);
   var discordLogService = new DiscordLogService();
@@ -128,7 +128,7 @@ DiscordService.Discord.Ready += async () =>
         return;
       }
 
-      await customCommandHandlerDM.TryHandleCommand(msg, commandName, args);
+      await customCommandHandler.TryHandleCommand(msg, commandName, args);
     }
   };
 };
