@@ -38,6 +38,7 @@ DiscordService.Discord.Ready += async () =>
   var snapshotService = new SnapshotService(settingsService);
   var backupService = new BackupService();
   backupService.Init();
+  var commandLoggerService = new CommandLoggerService();
 
   var slashCommands = new List<SlashCommandBase>
   {
@@ -92,14 +93,11 @@ DiscordService.Discord.Ready += async () =>
       return;
     }
 
-    var guild = ((SocketGuildChannel)cmd.Channel).Guild;
-    var optionsString = cmd.Data.Options.Select(x => $"{x.Name}:{x.Value}");
-    var commandString = $"/{cmd.CommandName} {string.Join(" ", optionsString)}";
-    await LogService.LogToFileAndConsole(
-      $"{cmd.User} executed slash command {commandString}", guild);
+    var loggingTask = commandLoggerService.LogSlashCommand(cmd);
 
     var command = slashCommands.First(x => cmd.CommandName == x.Name);
     await command.Handle(cmd);
+    await loggingTask;
   };
 
   DiscordService.Discord.MessageCommandExecuted += async (cmd) =>
