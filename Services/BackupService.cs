@@ -9,11 +9,17 @@ namespace TNTBot.Services
     {
       Task.Run(async () =>
       {
+        var currentMs = (DateTime.Now - DateTime.MinValue).TotalMilliseconds;
+        var intervalMs = ConfigService.Config.BackupInterval.TotalMilliseconds;
+        var lastBackupSince = TimeSpan.FromMilliseconds(currentMs % intervalMs);
+        var nextBackup = ConfigService.Config.BackupInterval - lastBackupSince;
+        await Task.Delay(nextBackup);
+
         while (true)
         {
-          await Task.Delay(ConfigService.Config.BackupInterval);
           await StartMakingDatabaseBackup();
           await DeleteOldBackups();
+          await Task.Delay(ConfigService.Config.BackupInterval);
         }
       });
     }
@@ -26,7 +32,7 @@ namespace TNTBot.Services
       var backupPath = Path.Combine(BackupsDir, $"{todayDate}.db");
       var backupCommand = $"storage.db \".timeout 10000\" \".backup {backupPath}\"";
 
-      await LogService.LogToFileAndConsole($"Making backup with sqlite3: {backupCommand}");
+      await LogService.LogToFileAndConsole($"Backup started at {backupPath}");
       var currentDirectory = Directory.GetCurrentDirectory();
       var process = new Process()
       {
@@ -39,6 +45,7 @@ namespace TNTBot.Services
       };
       process.Start();
       await process.WaitForExitAsync();
+      await LogService.LogToFileAndConsole($"Backup done at {backupPath}");
     }
 
     private async Task DeleteOldBackups()
