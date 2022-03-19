@@ -17,7 +17,7 @@ namespace TNTBot.Commands
           .WithName("add")
           .WithDescription("Create a template")
           .AddOption("name", ApplicationCommandOptionType.String, "The name of the template", isRequired: true)
-          .AddOption("channel", ApplicationCommandOptionType.Channel, "The channel to announce the template in", isRequired: true)
+          .AddOption("channel", ApplicationCommandOptionType.Channel, "The channel to announce the template in", isRequired: true, channelTypes: new List<ChannelType>() { ChannelType.Text })
           .AddOption("mention", ApplicationCommandOptionType.Role, "The role to mention when the template is sent", isRequired: false)
           .AddOption("hidden", ApplicationCommandOptionType.Boolean, "Whether to hide the template from the template list, default = false", isRequired: false)
           .WithType(ApplicationCommandOptionType.SubCommand)

@@ -13,7 +13,7 @@ namespace TNTBot.Commands
       Description = "Make the bot repeat your message";
       Options = new SlashCommandOptionBuilder()
         .AddOption("message", ApplicationCommandOptionType.String, "The message you want the bot to repeat", isRequired: true)
-        .AddOption("channel", ApplicationCommandOptionType.Channel, "The channel to send the message to", isRequired: false);
+        .AddOption("channel", ApplicationCommandOptionType.Channel, "The channel to send the message to", isRequired: false, channelTypes: new List<ChannelType>() { ChannelType.Text });
       this.service = service;
     }
 
