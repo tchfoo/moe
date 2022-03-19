@@ -14,7 +14,7 @@ namespace TNTBot.Services
     {
       CreateTemplatesTable().Wait();
       this.settingsService = settingsService;
-      paramRegex = new Regex(@"\$((?<param>\w+)|\((?<param>.*)\))");
+      paramRegex = new Regex(@"\$((?<param>\w+)|\((?<param>[^\(\)]+)\))");
     }
 
     public bool IsAuthorized(SocketGuildUser user, ModrankLevel requiredLevel, out string? error)
@@ -142,6 +142,7 @@ namespace TNTBot.Services
       return paramRegex
         .Matches(allValues)
         .Select(x => x.Groups["param"].Value)
+        .Distinct()
         .ToList();
     }
 
