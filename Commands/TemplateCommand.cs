@@ -124,7 +124,7 @@ namespace TNTBot.Commands
       return (SubmittableModalBuilder)new SubmittableModalBuilder()
         .WithTitle("Template: Embed creator")
         .AddTextInput("Title", nameof(t.Title), placeholder: "Title of the embed, Placeholders can be used here", required: true, maxLength: EmbedBuilder.MaxTitleLength)
-        .AddTextInput("Description", nameof(t.Description), placeholder: "Description of the embed, Placeholders can be used here", required: true, maxLength: 2000)
+        .AddTextInput("Description", nameof(t.Description), placeholder: "Description of the embed, Placeholders can be used here", required: true, maxLength: 2000, style: TextInputStyle.Paragraph)
         .AddTextInput("Footer", nameof(t.Footer), placeholder: "Footer text, Placeholders can be used here", required: false, maxLength: 2048)
         .AddTextInput("Thumbnail image URL", nameof(t.ThumbnailImageUrl), placeholder: "Image URL of thumbnail in the embed", required: false)
         .AddTextInput("Image URL (large image)", nameof(t.LargeImageUrl), placeholder: "Image URL (large image)", required: false);
