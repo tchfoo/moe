@@ -105,6 +105,7 @@ namespace TNTBot.Commands
       if (!await service.HasCommand(guild, name))
       {
         await cmd.RespondAsync($"{Emotes.ErrorEmote} Command **{await service.PrefixCommandName(guild, name)}** does not exist");
+        return;
       }
 
       await service.RemoveCommand(guild, name);
@@ -116,6 +117,7 @@ namespace TNTBot.Commands
       if (!await service.HasCommands(guild))
       {
         await cmd.RespondAsync($"{Emotes.ErrorEmote} There are no custom commands");
+        return;
       }
 
       var commands = await service.GetCommands(guild);
