@@ -6,6 +6,6 @@ namespace TNTBot
   {
     public static Emoji SuccessEmote = new("\u2705");
 
-    public static Emote ErrorEmote = Emote.Parse("<:error:952225744724066344>");
+    public static Emoji ErrorEmote = new("\u274C");
   }
 }
