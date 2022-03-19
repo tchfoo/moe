@@ -1,6 +1,5 @@
 using Discord;
 using Discord.WebSocket;
-using TNTBot.Models;
 
 namespace TNTBot.Services
 {
@@ -26,7 +25,7 @@ namespace TNTBot.Services
 
       Discord.Log += async (msg) =>
         await LogService.LogToFileAndConsole(
-          $"[{msg.Severity}] {msg.Message} {msg.Exception}", level: LogLevel.Discord);
+          $"[DNet] {msg.Message} {msg.Exception}", severity: msg.Severity);
     }
 
     public static async Task Start()

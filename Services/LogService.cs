@@ -1,6 +1,5 @@
 using Discord;
 using Discord.WebSocket;
-using TNTBot.Models;
 
 namespace TNTBot.Services
 {
@@ -20,26 +19,32 @@ namespace TNTBot.Services
       var logChannel = await settingsService.GetLogChannel(guild);
       if (logChannel is null)
       {
-        await LogToFileAndConsole("No log channel was set", guild, LogLevel.Warning);
+        await LogToFileAndConsole("No log channel was set", guild, LogSeverity.Warning);
         return;
       }
 
       await logChannel.SendMessageAsync(text: text, embed: embed);
     }
 
-    public static async Task LogToFileAndConsole(string message, SocketGuild? guild = null, LogLevel level = LogLevel.Info)
+    public static async Task LogToFileAndConsole(string message, SocketGuild? guild = null, LogSeverity severity = LogSeverity.Info)
     {
-      var formattedMessage = FormatMessage(message, guild, level);
+      var formattedMessage = FormatMessage(message, guild, severity);
       Console.WriteLine(formattedMessage);
       await WriteToLogFile(formattedMessage);
     }
 
-    private static string FormatMessage(string message, SocketGuild? guild, LogLevel level)
+    private static string FormatMessage(string message, SocketGuild? guild, LogSeverity severity)
     {
-      var timePart = $"[{DateTime.Now:yyyy-MM-dd HH:mm}] ";
-      var levelPart = $"[{level.ToString().ToUpper()}] ";
-      var guildPart = guild is null ? string.Empty : $"[{guild.Name}#{guild.Id}] ";
-      return timePart + levelPart + guildPart + message;
+      var result = string.Empty;
+      result += $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] ";
+      result += $"[{severity}] ";
+      if (guild is not null)
+      {
+        var guildName = guild.Name[0..Math.Min(5, guild.Name.Length)];
+        var guildId = guild.Id.ToString()[0..5];
+        result += $"[{guildName}#{guildId}] ";
+      }
+      return result + message;
     }
 
     private static async Task WriteToLogFile(string message)
