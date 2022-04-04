@@ -9,6 +9,8 @@ namespace TNTBot.Services
     {
       CreateSettingsTable().Wait();
       CreateModranksTable().Wait();
+
+      DiscordService.Discord.UserLeft += OnUserLeft;
     }
 
     public async Task<SocketTextChannel?> GetPinChannel(SocketGuild guild)
@@ -176,6 +178,47 @@ namespace TNTBot.Services
 
       var sql = "DELETE FROM modranks WHERE guild_id = $0 AND role_id = $1";
       await DatabaseService.NonQuery(sql, role.Guild.Id, role.Id);
+    }
+
+    public async Task SetLeaveMessage(SocketGuild guild, SocketTextChannel channel, string message)
+    {
+      await LogService.LogToFileAndConsole(
+        $"Setting leave message to {message} for channel {channel}", guild);
+
+      var deleteSql = "DELETE FROM settings WHERE guild_id = $0 AND name = 'leave_message_channel'";
+      await DatabaseService.NonQuery(deleteSql, guild.Id);
+      deleteSql = "DELETE FROM settings WHERE guild_id = $0 AND name = 'leave_message_text'";
+      await DatabaseService.NonQuery(deleteSql, guild.Id);
+      var insertSql = "INSERT INTO settings(guild_id, name, value) VALUES($0, 'leave_message_channel', $1)";
+      await DatabaseService.NonQuery(insertSql, guild.Id, channel.Id);
+      insertSql = "INSERT INTO settings(guild_id, name, value) VALUES($0, 'leave_message_text', $1)";
+      await DatabaseService.NonQuery(insertSql, guild.Id, message);
+    }
+
+    public async Task<(SocketTextChannel Channel, string Message)?> GetLeaveMessage(SocketGuild guild)
+    {
+      var sql = "SELECT value FROM settings WHERE guild_id = $0 AND name = 'leave_message_channel'";
+      var channel = await DatabaseService.QueryFirst<ulong>(sql, guild.Id);
+      sql = "SELECT value FROM settings WHERE guild_id = $0 AND name = 'leave_message_text'";
+      var message = await DatabaseService.QueryFirst<string>(sql, guild.Id);
+      if (channel == 0 || message is null)
+      {
+        return null;
+      }
+
+      return (guild.GetTextChannel(channel), message);
+    }
+
+    private async Task OnUserLeft(SocketGuild guild, SocketUser user)
+    {
+      var leaveMessage = await GetLeaveMessage(guild);
+      if (leaveMessage is null)
+      {
+        return;
+      }
+
+      var message = leaveMessage.Value.Message.Replace("$user", user.Mention);
+      await leaveMessage.Value.Channel.SendMessageAsync(message);
     }
 
     private async Task CreateSettingsTable()

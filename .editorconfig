@@ -7,3 +7,5 @@ dotnet_diagnostic.IDE0008.severity = none
 dotnet_diagnostic.IDE0005.severity = suggestion
 # Disable "Parameter can be removed; its initial value is never used."
 dotnet_diagnostic.IDE0060.severity = none
+# Disable "Member does not access instance data and can be marked as static."
+dotnet_diagnostic.CA1822.severity = none

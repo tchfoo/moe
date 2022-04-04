@@ -45,6 +45,12 @@ namespace TNTBot.Commands
             .AddChoice(nameof(ModrankLevel.Moderator), (int)ModrankLevel.Moderator)
             .AddChoice(nameof(ModrankLevel.Administrator), (int)ModrankLevel.Administrator)
           ).WithType(ApplicationCommandOptionType.SubCommand)
+        ).AddOption(new SlashCommandOptionBuilder()
+          .WithName("leavemessage")
+          .WithDescription("Set the message that will be sent when a user leaves the server")
+          .AddOption("channel", ApplicationCommandOptionType.Channel, "The channel", isRequired: true, channelTypes: new List<ChannelType>() { ChannelType.Text })
+          .AddOption("message", ApplicationCommandOptionType.String, "The message. Use $user where the the name of the user should be substituted", isRequired: true)
+          .WithType(ApplicationCommandOptionType.SubCommand)
         ).WithType(ApplicationCommandOptionType.SubCommandGroup);
       this.service = service;
     }
@@ -68,6 +74,7 @@ namespace TNTBot.Commands
         "logchannel" => SetLogChannel(cmd, subcommand, guild),
         "commandprefix" => SetCommandPrefix(cmd, subcommand, guild),
         "modrank" => SetModrank(cmd, subcommand),
+        "leavemessage" => SetLeaveMessage(cmd, subcommand, guild),
         _ => throw new InvalidOperationException($"{Emotes.ErrorEmote} Unknown subcommand {subcommand.Name}")
       };
 
@@ -100,6 +107,7 @@ namespace TNTBot.Commands
       var logChannel = await service.GetLogChannel(guild);
       var prefix = await service.GetCommandPrefix(guild);
       var modranks = await service.GetModranks(guild);
+      var leaveMessage = await service.GetLeaveMessage(guild);
 
       string modrankAdminString = "", modrankModString = "";
       foreach (var modrank in modranks)
@@ -114,6 +122,8 @@ namespace TNTBot.Commands
         }
       }
 
+      string leaveMessageString = leaveMessage is null ? "None" : $"{leaveMessage.Value.Message} in {leaveMessage.Value.Channel.Mention}";
+
       var embed = new EmbedBuilder()
         .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
         .WithTitle("Bot Settings")
@@ -122,6 +132,7 @@ namespace TNTBot.Commands
         .AddField("Custom command prefix", prefix, inline: true)
         .AddField("Bot Administrator ranks", string.IsNullOrEmpty(modrankAdminString) ? "None" : modrankAdminString, inline: true)
         .AddField("Moderator ranks", string.IsNullOrEmpty(modrankModString) ? "None" : modrankModString, inline: true)
+        .AddField("Leave message", leaveMessageString, inline: true)
         .WithColor(Colors.Blurple);
 
       await cmd.RespondAsync(embed: embed.Build());
@@ -154,6 +165,21 @@ namespace TNTBot.Commands
       var level = (ModrankLevel)subcommand.GetOption<long>("level")!;
       await service.SetModrank(role, level);
       await cmd.RespondAsync($"{Emotes.SuccessEmote} Modrank is now {level} for role {role.Mention}");
+    }
+
+    private async Task SetLeaveMessage(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
+    {
+      var channel = subcommand.GetOption<SocketTextChannel>("channel")!;
+      var message = subcommand.GetOption<string>("message")!;
+
+      if (!message.Contains("$user"))
+      {
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} The message must contain the placeholder $user");
+        return;
+      }
+
+      await service.SetLeaveMessage(guild, channel, message);
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Leave message set to {message} in {channel.Mention}");
     }
   }
 }
