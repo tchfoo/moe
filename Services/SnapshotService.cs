@@ -176,19 +176,28 @@ namespace TNTBot.Services
 
       if (s.Channels.Count > 0)
       {
-        foreach (var c in s.Channels)
+        for (var i = 0; i < s.Channels.Count; i++)
         {
+          var c = s.Channels.ElementAt(i);
+          var channelString = string.Empty;
           var channel = s.Guild.Channels
             .FirstOrDefault(x => x.Id == c.Key);
-          if (channel is null)
-          {
-            result += $"~~{c.Value}~~ (deleted, id: {c.Key}) ";
-          }
-          else
+          if (channel is not null)
           {
             var mention = (channel as IMentionable)!.Mention;
             var channelName = channel.Name == c.Value ? mention : $"**{c.Value} (currently {mention})**";
-            result += $"{channelName} ";
+            channelString = $"{channelName} ";
+          }
+
+          if (result.Length + channelString.Length < EmbedFieldBuilder.MaxFieldValueLength - 20)
+          {
+            result += channelString;
+          }
+          else
+          {
+            var remaining = s.Channels.Count - i;
+            result += $"and {remaining} more";
+            break;
           }
         }
       }
@@ -202,18 +211,27 @@ namespace TNTBot.Services
 
       if (s.Roles?.Any() == true)
       {
-        foreach (var r in s.Roles)
+        for (var i = 0; i < s.Roles.Count; i++)
         {
+          var r = s.Roles.ElementAt(i);
+          var roleString = string.Empty;
           var role = s.Guild.Roles.FirstOrDefault(x => x.Id == r.Key);
-          if (role is null)
-          {
-            result += $"~~{r.Value}~~ (deleted, id: {r.Key}) ";
-          }
-          else
+          if (role is not null)
           {
             var mention = role.Mention;
             var roleName = role.Name == r.Value ? mention : $"**{r.Value} (currently {mention})**";
             result += $"{roleName} ";
+          }
+
+          if (result.Length + roleString.Length < EmbedFieldBuilder.MaxFieldValueLength - 20)
+          {
+            result += roleString;
+          }
+          else
+          {
+            var remaining = s.Roles.Count - i;
+            result += $"and {remaining} more";
+            break;
           }
         }
       }
