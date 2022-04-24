@@ -17,8 +17,15 @@ await LogService.LogToFileAndConsole($"Running in {ConfigService.Environment} en
 await ConfigService.Init();
 DiscordService.Init();
 
+bool isReadyEventFired = false;
 DiscordService.Discord.Ready += async () =>
 {
+  if (isReadyEventFired)
+  {
+    return;
+  }
+  isReadyEventFired = true;
+
   var settingsService = new SettingsService();
   var customCommandService = new CustomCommandService(settingsService);
   var customRoleService = new CustomRoleService(settingsService);
