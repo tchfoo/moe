@@ -221,6 +221,31 @@ namespace TNTBot.Services
       await leaveMessage.Value.Channel.SendMessageAsync(message);
     }
 
+    public async Task SetTimeZone(SocketGuild guild, TimeZoneTime timeZone)
+    {
+      var timeZoneString = timeZone.TimeZoneString;
+
+      await LogService.LogToFileAndConsole(
+        $"Setting time zone to {timeZoneString} for guild {guild}", guild);
+
+      var deleteSql = "DELETE FROM settings WHERE guild_id = $0 AND name = 'timezone'";
+      await DatabaseService.NonQuery(deleteSql, guild.Id);
+      var insertSql = "INSERT INTO settings(guild_id, name, value) VALUES($0, 'timezone', $1)";
+      await DatabaseService.NonQuery(insertSql, guild.Id, timeZoneString);
+    }
+
+    public async Task<TimeZoneTime?> GetTimeZone(SocketGuild guild)
+    {
+      var sql = "SELECT value FROM settings WHERE guild_id = $0 AND name = 'timezone'";
+      var timeZoneString = await DatabaseService.QueryFirst<string>(sql, guild.Id);
+      if (timeZoneString is null)
+      {
+        return null;
+      }
+
+      return TimeZoneTime.Parse(timeZoneString);
+    }
+
     private async Task CreateSettingsTable()
     {
       var sql = @"

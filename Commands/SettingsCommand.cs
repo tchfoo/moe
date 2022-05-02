@@ -51,6 +51,11 @@ namespace TNTBot.Commands
           .AddOption("channel", ApplicationCommandOptionType.Channel, "The channel", isRequired: true, channelTypes: new List<ChannelType>() { ChannelType.Text })
           .AddOption("message", ApplicationCommandOptionType.String, "The message. Use $user where the the name of the user should be substituted", isRequired: true)
           .WithType(ApplicationCommandOptionType.SubCommand)
+        ).AddOption(new SlashCommandOptionBuilder()
+          .WithName("timezone")
+          .WithDescription("Set the default time zone for /humantime")
+          .AddOption("timezone", ApplicationCommandOptionType.String, "The time zone", isRequired: true)
+          .WithType(ApplicationCommandOptionType.SubCommand)
         ).WithType(ApplicationCommandOptionType.SubCommandGroup);
       this.service = service;
     }
@@ -75,6 +80,7 @@ namespace TNTBot.Commands
         "commandprefix" => SetCommandPrefix(cmd, subcommand, guild),
         "modrank" => SetModrank(cmd, subcommand),
         "leavemessage" => SetLeaveMessage(cmd, subcommand, guild),
+        "timezone" => SetTimeZone(cmd, subcommand, guild),
         _ => throw new InvalidOperationException($"{Emotes.ErrorEmote} Unknown subcommand {subcommand.Name}")
       };
 
@@ -108,6 +114,7 @@ namespace TNTBot.Commands
       var prefix = await service.GetCommandPrefix(guild);
       var modranks = await service.GetModranks(guild);
       var leaveMessage = await service.GetLeaveMessage(guild);
+      var timeZone = await service.GetTimeZone(guild);
 
       string modrankAdminString = "", modrankModString = "";
       foreach (var modrank in modranks)
@@ -133,6 +140,7 @@ namespace TNTBot.Commands
         .AddField("Bot Administrator ranks", string.IsNullOrEmpty(modrankAdminString) ? "None" : modrankAdminString, inline: true)
         .AddField("Moderator ranks", string.IsNullOrEmpty(modrankModString) ? "None" : modrankModString, inline: true)
         .AddField("Leave message", leaveMessageString, inline: true)
+        .AddField("Time zone", timeZone is null ? "None" : timeZone.TimeZoneString, inline: true)
         .WithColor(Colors.Blurple);
 
       await cmd.RespondAsync(embed: embed.Build());
@@ -180,6 +188,31 @@ namespace TNTBot.Commands
 
       await service.SetLeaveMessage(guild, channel, message);
       await cmd.RespondAsync($"{Emotes.SuccessEmote} Leave message set to {message} in {channel.Mention}");
+    }
+
+    private async Task SetTimeZone(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
+    {
+      var timeZone = subcommand.GetOption<string>("timezone")!;
+
+      TimeZoneTime parsed;
+      try
+      {
+        parsed = TimeZoneTime.Parse(timeZone);
+      }
+      catch (FormatException ex)
+      {
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} {ex.Message}");
+        return;
+      }
+
+      if (parsed.TimeZoneBase is null)
+      {
+        await cmd.RespondAsync($"{Emotes.ErrorEmote} Time zone is not specified");
+        return;
+      }
+
+      await service.SetTimeZone(guild, parsed);
+      await cmd.RespondAsync($"{Emotes.SuccessEmote} Time zone set to {parsed.TimeZoneString}");
     }
   }
 }
