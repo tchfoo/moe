@@ -117,7 +117,7 @@ namespace TNTBot.Models
         offsetMinutes = "0";
       }
 
-      var isYaha = offsetHours == "YAHA";
+      var isYaha = string.Equals(offsetHours, "yaha", StringComparison.OrdinalIgnoreCase);
 
       var hours = isYaha ? -4 : int.Parse(offsetHours);
       var minutes = int.Parse(offsetMinutes);
