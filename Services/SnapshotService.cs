@@ -71,18 +71,26 @@ namespace TNTBot.Services
       return s;
     }
 
-    public async Task AddSnapshot(SocketGuild guild, string name, bool voicenames, bool rolenames, bool servericon)
+    public async Task AddSnapshot(SocketGuild guild, string name, bool textnames, bool voicenames, bool rolenames, bool servericon)
     {
       var s = new SnapshotModel
       {
         Guild = guild,
         Name = name,
         GuildName = guild.Name,
-        Channels = guild.TextChannels
-          .Where(CanBotManageChannel)
-          .Cast<SocketGuildChannel>()
-          .ToDictionary(k => k.Id, v => v.Name),
+        Channels = new Dictionary<ulong, string>(),
       };
+
+      if (textnames)
+      {
+        var textChannels = guild.TextChannels
+          .Where(CanBotManageChannel)
+          .Cast<SocketGuildChannel>();
+        foreach (var channel in textChannels)
+        {
+          s.Channels.Add(channel.Id, channel.Name);
+        }
+      }
 
       if (voicenames)
       {

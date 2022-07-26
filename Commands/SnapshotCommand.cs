@@ -16,6 +16,7 @@ namespace TNTBot.Commands
           .WithName("add")
           .WithDescription("Add a snapshot")
           .AddOption("name", ApplicationCommandOptionType.String, "The name of the snapshot to add", isRequired: true)
+          .AddOption("textnames", ApplicationCommandOptionType.Boolean, "Whether to include text channel names, default is false", isRequired: false)
           .AddOption("voicenames", ApplicationCommandOptionType.Boolean, "Whether to include voice channel names, default is false", isRequired: false)
           .AddOption("rolenames", ApplicationCommandOptionType.Boolean, "Whether to include role names, default is false", isRequired: false)
           .AddOption("servericon", ApplicationCommandOptionType.Boolean, "Whether to include server icon names, default is false", isRequired: false)
@@ -71,6 +72,7 @@ namespace TNTBot.Commands
     private async Task AddSnapshot(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
     {
       var name = subcommand.GetOption<string>("name")!;
+      var textnames = subcommand.GetOption<bool>("textnames");
       var voicenames = subcommand.GetOption<bool>("voicenames");
       var rolenames = subcommand.GetOption<bool>("rolenames");
       var servericon = subcommand.GetOption<bool>("servericon");
@@ -81,7 +83,7 @@ namespace TNTBot.Commands
         return;
       }
 
-      await service.AddSnapshot(guild, name, voicenames, rolenames, servericon);
+      await service.AddSnapshot(guild, name, textnames, voicenames, rolenames, servericon);
       await cmd.RespondAsync($"{Emotes.SuccessEmote} Added snapshot **{name}**");
     }
 
