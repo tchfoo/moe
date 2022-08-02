@@ -15,7 +15,7 @@ namespace TNTBot.Commands
         .AddOption(new SlashCommandOptionBuilder()
           .WithName("add")
           .WithDescription("Add a custom command")
-          .AddOption("name", ApplicationCommandOptionType.String, "The name of the command to add", isRequired: true)
+          .AddOption("name", ApplicationCommandOptionType.String, "The name of the command", isRequired: true)
           .AddOption("response", ApplicationCommandOptionType.String,
             @"Respond with this. Use $1, $2 for parameters, \n for newline or \m for new message", isRequired: true)
           .AddOption("description", ApplicationCommandOptionType.String, "A note on what the command does and how to use it", isRequired: false)
@@ -24,7 +24,7 @@ namespace TNTBot.Commands
         ).AddOption(new SlashCommandOptionBuilder()
           .WithName("remove")
           .WithDescription("Remove a custom command")
-          .AddOption("name", ApplicationCommandOptionType.String, "The name of the command to remove", isRequired: true)
+          .AddOption("name", ApplicationCommandOptionType.String, "The name of the command", isRequired: true)
           .WithType(ApplicationCommandOptionType.SubCommand)
         ).AddOption(new SlashCommandOptionBuilder()
           .WithName("list")

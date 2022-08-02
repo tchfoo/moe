@@ -13,7 +13,7 @@ namespace TNTBot.Commands
     {
       Description = "Announce a template";
       Options = new SlashCommandOptionBuilder()
-        .AddOption("name", ApplicationCommandOptionType.String, "The name of the command to add", isRequired: true)
+        .AddOption("name", ApplicationCommandOptionType.String, "The name of the template", isRequired: true)
         .AddOption("preview", ApplicationCommandOptionType.Boolean, "Whether to preview the template or actually announce it, default = false", isRequired: false);
       this.service = service;
     }
