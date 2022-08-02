@@ -24,7 +24,7 @@ namespace TNTBot.Services
       var embed = new EmbedBuilder()
         .WithAuthor(message.Author)
         .WithDescription($"{message.Content}\n\n[Jump to message]({message.GetJumpUrl()})")
-        .WithFooter($"{message.Timestamp.DateTime: yyyy-MM-dd • H:m}")
+        .WithFooter($"{message.Timestamp.DateTime.ToLocalTime(): yyyy-MM-dd • HH:mm}")
         .WithColor(Colors.GetMainRoleColor(user));
 
       if (message.Attachments.Count > 0)
