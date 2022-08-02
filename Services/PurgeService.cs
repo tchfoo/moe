@@ -2,34 +2,33 @@ using Discord;
 using Discord.WebSocket;
 using TNTBot.Models;
 
-namespace TNTBot.Services
+namespace TNTBot.Services;
+
+public class PurgeService
 {
-  public class PurgeService
+  private readonly SettingsService settingsService;
+
+  public readonly int MaxPurgeCount = 150;
+
+  public PurgeService(SettingsService settingsService)
   {
-    private readonly SettingsService settingsService;
+    this.settingsService = settingsService;
+  }
 
-    public readonly int MaxPurgeCount = 150;
+  public bool IsAuthorized(SocketGuildUser user, ModrankLevel requiredLevel, out string? error)
+  {
+    return settingsService.IsAuthorized(user, requiredLevel, out error);
+  }
 
-    public PurgeService(SettingsService settingsService)
-    {
-      this.settingsService = settingsService;
-    }
+  public async Task Purge(SocketSlashCommand cmd, SocketTextChannel channel, int count)
+  {
+    await LogService.LogToFileAndConsole(
+      $"Purging {count} messages from {channel}", channel.Guild);
 
-    public bool IsAuthorized(SocketGuildUser user, ModrankLevel requiredLevel, out string? error)
-    {
-      return settingsService.IsAuthorized(user, requiredLevel, out error);
-    }
-
-    public async Task Purge(SocketSlashCommand cmd, SocketTextChannel channel, int count)
-    {
-      await LogService.LogToFileAndConsole(
-        $"Purging {count} messages from {channel}", channel.Guild);
-
-      var messages = (await channel.GetMessagesAsync(count + 1)
-        .FlattenAsync())
-        .Where(x => x.Interaction?.Id != cmd.Id)
-        .Take(count);
-      await channel.DeleteMessagesAsync(messages);
-    }
+    var messages = (await channel.GetMessagesAsync(count + 1)
+      .FlattenAsync())
+      .Where(x => x.Interaction?.Id != cmd.Id)
+      .Take(count);
+    await channel.DeleteMessagesAsync(messages);
   }
 }

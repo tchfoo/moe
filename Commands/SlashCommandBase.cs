@@ -2,38 +2,37 @@
 using Discord;
 using Discord.WebSocket;
 
-namespace TNTBot.Commands
+namespace TNTBot.Commands;
+
+public abstract class SlashCommandBase
 {
-  public abstract class SlashCommandBase
+  private string? description;
+
+  public string Name { get; protected set; }
+  public string? Description
   {
-    private string? description;
+    get => description ?? "No description";
+    protected set => description = value;
+  }
+  public SlashCommandOptionBuilder? Options { get; protected set; }
 
-    public string Name { get; protected set; }
-    public string? Description
+  protected SlashCommandBase(string name)
+  {
+    Name = name;
+  }
+
+  public abstract Task Handle(SocketSlashCommand cmd);
+
+  public SlashCommandProperties GetCommandProperties()
+  {
+    var builder = new SlashCommandBuilder()
+      .WithName(Name)
+      .WithDescription(Description);
+    if (Options is not null)
     {
-      get => description ?? "No description";
-      protected set => description = value;
-    }
-    public SlashCommandOptionBuilder? Options { get; protected set; }
-
-    protected SlashCommandBase(string name)
-    {
-      Name = name;
+      builder.AddOptions(Options.Options.ToArray());
     }
 
-    public abstract Task Handle(SocketSlashCommand cmd);
-
-    public SlashCommandProperties GetCommandProperties()
-    {
-      var builder = new SlashCommandBuilder()
-        .WithName(Name)
-        .WithDescription(Description);
-      if (Options is not null)
-      {
-        builder.AddOptions(Options.Options.ToArray());
-      }
-
-      return builder.Build();
-    }
+    return builder.Build();
   }
 }
