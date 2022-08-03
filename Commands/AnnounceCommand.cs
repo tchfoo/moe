@@ -3,143 +3,142 @@ using Discord.WebSocket;
 using TNTBot.Models;
 using TNTBot.Services;
 
-namespace TNTBot.Commands
+namespace TNTBot.Commands;
+
+public class AnnounceCommand : SlashCommandBase
 {
-  public class AnnounceCommand : SlashCommandBase
+  private readonly TemplateService service;
+
+  public AnnounceCommand(TemplateService service) : base("announce")
   {
-    private readonly TemplateService service;
+    Description = "Announce a template";
+    Options = new SlashCommandOptionBuilder()
+      .AddOption("name", ApplicationCommandOptionType.String, "The name of the template", isRequired: true)
+      .AddOption("preview", ApplicationCommandOptionType.Boolean, "Whether to preview the template or actually announce it, default = false", isRequired: false);
+    this.service = service;
+  }
 
-    public AnnounceCommand(TemplateService service) : base("announce")
+  public override async Task Handle(SocketSlashCommand cmd)
+  {
+    var user = (SocketGuildUser)cmd.User;
+    var guild = user.Guild;
+    var name = cmd.GetOption<string>("name")!;
+    var preview = cmd.GetOption<bool>("preview");
+
+    if (!await service.HasTemplate(guild, name))
     {
-      Description = "Announce a template";
-      Options = new SlashCommandOptionBuilder()
-        .AddOption("name", ApplicationCommandOptionType.String, "The name of the command to add", isRequired: true)
-        .AddOption("preview", ApplicationCommandOptionType.Boolean, "Whether to preview the template or actually announce it, default = false", isRequired: false);
-      this.service = service;
+      await cmd.RespondAsync($"{Emotes.ErrorEmote} No template named {name}");
+      return;
+    }
+    var template = (await service.GetTemplate(guild, name))!;
+
+    if (!Authorize(user, template))
+    {
+      await cmd.RespondAsync($"{Emotes.ErrorEmote} You are not the creator of the template {name}");
+      return;
     }
 
-    public override async Task Handle(SocketSlashCommand cmd)
+    var paramNames = service.GetTemplateParameters(template);
+    if (paramNames.Count == 0)
     {
-      var user = (SocketGuildUser)cmd.User;
-      var guild = user.Guild;
-      var name = cmd.GetOption<string>("name")!;
-      var preview = cmd.GetOption<bool>("preview");
-
-      if (!await service.HasTemplate(guild, name))
-      {
-        await cmd.RespondAsync($"{Emotes.ErrorEmote} No template named {name}");
-        return;
-      }
-      var template = (await service.GetTemplate(guild, name))!;
-
-      if (!Authorize(user, template))
-      {
-        await cmd.RespondAsync($"{Emotes.ErrorEmote} You are not the creator of the template {name}");
-        return;
-      }
-
-      var paramNames = service.GetTemplateParameters(template);
-      if (paramNames.Count == 0)
-      {
-        await ShowTemplate(cmd, template, preview);
-      }
-      else
-      {
-        var modal = CreateAnnounceModal(template, paramNames);
-        await cmd.RespondWithModalAsync(modal.Build());
-
-        var _ = HandleModalSubmission(modal, paramNames, template, preview);
-      }
+      await ShowTemplate(cmd, template, preview);
     }
-    private bool Authorize(SocketGuildUser user, TemplateModel template)
+    else
     {
-      if (template.Creator?.Id == user.Id)
-      {
-        return true;
-      }
+      var modal = CreateAnnounceModal(template, paramNames);
+      await cmd.RespondWithModalAsync(modal.Build());
 
-      return service.IsAuthorized(user, ModrankLevel.Owner, out _);
+      var _ = HandleModalSubmission(modal, paramNames, template, preview);
+    }
+  }
+  private bool Authorize(SocketGuildUser user, TemplateModel template)
+  {
+    if (template.Creator?.Id == user.Id)
+    {
+      return true;
     }
 
-    private SubmittableModalBuilder CreateAnnounceModal(TemplateModel template, List<string> @params)
+    return service.IsAuthorized(user, ModrankLevel.Owner, out _);
+  }
+
+  private SubmittableModalBuilder CreateAnnounceModal(TemplateModel template, List<string> @params)
+  {
+    var modal = new SubmittableModalBuilder()
+      .WithTitle($"Announce: {template.Name}");
+
+    foreach (var param in @params)
     {
-      var modal = new SubmittableModalBuilder()
-        .WithTitle($"Announce: {template.Name}");
-
-      foreach (var param in @params)
-      {
-        modal.AddTextInput(param, param, placeholder: param, required: false);
-      }
-
-      return (SubmittableModalBuilder)modal;
+      modal.AddTextInput(param, param, placeholder: param, required: false);
     }
 
-    private async Task HandleModalSubmission(SubmittableModalBuilder modal, List<string> paramNames, TemplateModel template, bool preview)
+    return (SubmittableModalBuilder)modal;
+  }
+
+  private async Task HandleModalSubmission(SubmittableModalBuilder modal, List<string> paramNames, TemplateModel template, bool preview)
+  {
+    var submitted = await modal.WaitForSubmission();
+    var @params = paramNames.ToDictionary(x => x, x => submitted.GetValue(x) ?? "*unspecified*");
+
+    template.Title = service.ReplaceTemplateParameters(template.Title, @params)!;
+    template.Description = service.ReplaceTemplateParameters(template.Description, @params)!;
+    template.Footer = service.ReplaceTemplateParameters(template.Footer, @params);
+
+    await ShowTemplate(submitted, template, preview);
+  }
+
+  private async Task ShowTemplate(SocketInteraction interaction, TemplateModel template, bool preview)
+  {
+    if (preview)
     {
-      var submitted = await modal.WaitForSubmission();
-      var @params = paramNames.ToDictionary(x => x, x => submitted.GetValue(x) ?? "*unspecified*");
-
-      template.Title = service.ReplaceTemplateParameters(template.Title, @params)!;
-      template.Description = service.ReplaceTemplateParameters(template.Description, @params)!;
-      template.Footer = service.ReplaceTemplateParameters(template.Footer, @params);
-
-      await ShowTemplate(submitted, template, preview);
+      await PreviewTemplate(interaction, template);
     }
-
-    private async Task ShowTemplate(SocketInteraction interaction, TemplateModel template, bool preview)
+    else
     {
-      if (preview)
+      if (template.Channel is null)
       {
-        await PreviewTemplate(interaction, template);
-      }
-      else
-      {
-        if (template.Channel is null)
-        {
-          await interaction.RespondAsync($"{Emotes.ErrorEmote} The channel for this template got deleted");
-          return;
-        }
-
-        await AnnounceTemplate(interaction, template);
-      }
-    }
-
-    private async Task AnnounceTemplate(SocketInteraction interaction, TemplateModel template)
-    {
-      var embed = GetAnnouncementEmbed(template);
-      if (embed.Length > EmbedBuilder.MaxEmbedLength)
-      {
-        await interaction.RespondAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the announcement cannot be displayed, try recreating the template but shorter");
+        await interaction.RespondAsync($"{Emotes.ErrorEmote} The channel for this template got deleted");
         return;
       }
 
-      var mention = template.Mention?.Mention;
-      await template.Channel.SendMessageAsync(text: mention, embed: embed.Build());
-      await interaction.RespondAsync($"{Emotes.SuccessEmote} Announced template **{template.Name}**");
+      await AnnounceTemplate(interaction, template);
     }
+  }
 
-    private async Task PreviewTemplate(SocketInteraction interaction, TemplateModel template)
+  private async Task AnnounceTemplate(SocketInteraction interaction, TemplateModel template)
+  {
+    var embed = GetAnnouncementEmbed(template);
+    if (embed.Length > EmbedBuilder.MaxEmbedLength)
     {
-      var embed = GetAnnouncementEmbed(template);
-      if (embed.Length > EmbedBuilder.MaxEmbedLength)
-      {
-        await interaction.RespondAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the announcement cannot be displayed, try recreating the template but shorter");
-        return;
-      }
-
-      var mention = template.Mention?.Mention;
-      await interaction.RespondAsync(text: mention, embed: embed.Build(), ephemeral: true);
+      await interaction.RespondAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the announcement cannot be displayed, try recreating the template but shorter");
+      return;
     }
 
-    private EmbedBuilder GetAnnouncementEmbed(TemplateModel template)
+    var mention = template.Mention?.Mention;
+    await template.Channel.SendMessageAsync(text: mention, embed: embed.Build());
+    await interaction.RespondAsync($"{Emotes.SuccessEmote} Announced template **{template.Name}**");
+  }
+
+  private async Task PreviewTemplate(SocketInteraction interaction, TemplateModel template)
+  {
+    var embed = GetAnnouncementEmbed(template);
+    if (embed.Length > EmbedBuilder.MaxEmbedLength)
     {
-      return new EmbedBuilder()
-        .WithTitle(template.Title)
-        .WithDescription(template.Description)
-        .WithFooter(template.Footer)
-        .WithThumbnailUrl(template.ThumbnailImageUrl)
-        .WithImageUrl(template.LargeImageUrl)
-        .WithColor(Colors.Blurple);
+      await interaction.RespondAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the announcement cannot be displayed, try recreating the template but shorter");
+      return;
     }
+
+    var mention = template.Mention?.Mention;
+    await interaction.RespondAsync(text: mention, embed: embed.Build(), ephemeral: true);
+  }
+
+  private EmbedBuilder GetAnnouncementEmbed(TemplateModel template)
+  {
+    return new EmbedBuilder()
+      .WithTitle(template.Title)
+      .WithDescription(template.Description)
+      .WithFooter(template.Footer)
+      .WithThumbnailUrl(template.ThumbnailImageUrl)
+      .WithImageUrl(template.LargeImageUrl)
+      .WithColor(Colors.Blurple);
   }
 }

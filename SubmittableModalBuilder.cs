@@ -2,40 +2,39 @@ using Discord;
 using Discord.WebSocket;
 using TNTBot.Services;
 
-namespace TNTBot
+namespace TNTBot;
+
+public class SubmittableModalBuilder : ModalBuilder
 {
-  public class SubmittableModalBuilder : ModalBuilder
+  private SocketModal? submittedModal;
+  private readonly AutoResetEvent submittedEvent;
+
+  public SubmittableModalBuilder()
   {
-    private SocketModal? submittedModal;
-    private readonly AutoResetEvent submittedEvent;
+    CustomId = Guid.NewGuid().ToString();
+    DiscordService.Discord.ModalSubmitted += OnSubmitted;
+    submittedEvent = new AutoResetEvent(false);
+  }
 
-    public SubmittableModalBuilder()
+  ~SubmittableModalBuilder()
+  {
+    DiscordService.Discord.ModalSubmitted -= OnSubmitted;
+  }
+
+  public async Task<SocketModal> WaitForSubmission()
+  {
+    await Task.Run(() => submittedEvent.WaitOne());
+    return submittedModal!;
+  }
+
+  private Task OnSubmitted(SocketModal modal)
+  {
+    if (modal.Data.CustomId == CustomId)
     {
-      CustomId = Guid.NewGuid().ToString();
-      DiscordService.Discord.ModalSubmitted += OnSubmitted;
-      submittedEvent = new AutoResetEvent(false);
+      submittedModal = modal;
+      submittedEvent.Set();
     }
 
-    ~SubmittableModalBuilder()
-    {
-      DiscordService.Discord.ModalSubmitted -= OnSubmitted;
-    }
-
-    public async Task<SocketModal> WaitForSubmission()
-    {
-      await Task.Run(() => submittedEvent.WaitOne());
-      return submittedModal!;
-    }
-
-    private Task OnSubmitted(SocketModal modal)
-    {
-      if (modal.Data.CustomId == CustomId)
-      {
-        submittedModal = modal;
-        submittedEvent.Set();
-      }
-
-      return Task.CompletedTask;
-    }
+    return Task.CompletedTask;
   }
 }

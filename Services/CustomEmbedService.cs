@@ -3,11 +3,11 @@ using TNTBot.Models;
 
 namespace TNTBot.Services;
 
-public class SayService
+public class CustomEmbedService
 {
   private readonly SettingsService settingsService;
 
-  public SayService(SettingsService settingsService)
+  public CustomEmbedService(SettingsService settingsService)
   {
     this.settingsService = settingsService;
   }

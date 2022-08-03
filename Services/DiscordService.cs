@@ -1,41 +1,40 @@
 using Discord;
 using Discord.WebSocket;
 
-namespace TNTBot.Services
+namespace TNTBot.Services;
+
+public static class DiscordService
 {
-  public static class DiscordService
+  public static DiscordSocketClient Discord { get; private set; } = default!;
+
+  public static void Init()
   {
-    public static DiscordSocketClient Discord { get; private set; } = default!;
-
-    public static void Init()
+    var config = new DiscordSocketConfig()
     {
-      var config = new DiscordSocketConfig()
-      {
-        GatewayIntents =
-          GatewayIntents.Guilds |
-          GatewayIntents.GuildMembers |
-          GatewayIntents.GuildBans |
-          GatewayIntents.GuildVoiceStates |
-          GatewayIntents.GuildMessages |
-          GatewayIntents.DirectMessages,
-        AlwaysDownloadUsers = true,
-        MessageCacheSize = 10_000,
-      };
-      Discord = new DiscordSocketClient(config);
+      GatewayIntents =
+        GatewayIntents.Guilds |
+        GatewayIntents.GuildMembers |
+        GatewayIntents.GuildBans |
+        GatewayIntents.GuildVoiceStates |
+        GatewayIntents.GuildMessages |
+        GatewayIntents.DirectMessages,
+      AlwaysDownloadUsers = true,
+      MessageCacheSize = 10_000,
+    };
+    Discord = new DiscordSocketClient(config);
 
-      Discord.Log += async (msg) =>
-        await LogService.LogToFileAndConsole(
-          $"[DNet] {msg.Message} {msg.Exception}", severity: msg.Severity);
-    }
+    Discord.Log += async (msg) =>
+      await LogService.LogToFileAndConsole(
+        $"[DNet] {msg.Message} {msg.Exception}", severity: msg.Severity);
+  }
 
-    public static async Task Start()
-    {
-      var token = ConfigService.Config.Token;
-      await Discord.LoginAsync(TokenType.Bot, token);
-      await Discord.StartAsync();
+  public static async Task Start()
+  {
+    var token = ConfigService.Config.Token;
+    await Discord.LoginAsync(TokenType.Bot, token);
+    await Discord.StartAsync();
 
-      // Don't close the app
-      await Task.Delay(-1);
-    }
+    // Don't close the app
+    await Task.Delay(-1);
   }
 }

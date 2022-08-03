@@ -1,20 +1,19 @@
 using Discord.WebSocket;
 using TNTBot.Services;
 
-namespace TNTBot.Commands
+namespace TNTBot.Commands;
+
+public class PinMessageCommand : MessageCommandBase
 {
-  public class PinMessageCommand : MessageCommandBase
+  private readonly PinService service;
+
+  public PinMessageCommand(PinService service) : base("Pin to pin channel")
   {
-    private readonly PinService service;
+    this.service = service;
+  }
 
-    public PinMessageCommand(PinService service) : base("Pin to pin channel")
-    {
-      this.service = service;
-    }
-
-    public override async Task Handle(SocketMessageCommand cmd)
-    {
-      await service.TryPinningMessage(cmd, cmd.Data.Message);
-    }
+  public override async Task Handle(SocketMessageCommand cmd)
+  {
+    await service.TryPinningMessage(cmd, cmd.Data.Message);
   }
 }

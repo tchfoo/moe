@@ -2,25 +2,24 @@
 using Discord;
 using Discord.WebSocket;
 
-namespace TNTBot.Commands
+namespace TNTBot.Commands;
+
+public abstract class MessageCommandBase
 {
-  public abstract class MessageCommandBase
+  public string Name { get; protected set; }
+
+  protected MessageCommandBase(string name)
   {
-    public string Name { get; protected set; }
+    Name = name;
+  }
 
-    protected MessageCommandBase(string name)
-    {
-      Name = name;
-    }
+  public abstract Task Handle(SocketMessageCommand cmd);
 
-    public abstract Task Handle(SocketMessageCommand cmd);
+  public MessageCommandProperties GetCommandProperties()
+  {
+    var builder = new MessageCommandBuilder()
+      .WithName(Name);
 
-    public MessageCommandProperties GetCommandProperties()
-    {
-      var builder = new MessageCommandBuilder()
-        .WithName(Name);
-
-      return builder.Build();
-    }
+    return builder.Build();
   }
 }

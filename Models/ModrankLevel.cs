@@ -1,10 +1,9 @@
-namespace TNTBot.Models
+namespace TNTBot.Models;
+
+public enum ModrankLevel
 {
-  public enum ModrankLevel
-  {
-    None = 0,
-    Moderator = 1,
-    Administrator = 2,
-    Owner = 3
-  }
+  None = 0,
+  Moderator = 1,
+  Administrator = 2,
+  Owner = 3
 }
