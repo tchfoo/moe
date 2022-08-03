@@ -47,6 +47,7 @@ DiscordService.Discord.Ready += async () =>
   backupService.Init();
   var commandLoggerService = new CommandLoggerService();
   var humanTimeService = new HumanTimeService(settingsService);
+  var customEmbedService = new CustomEmbedService(settingsService);
 
   var slashCommands = new List<SlashCommandBase>
   {
@@ -67,6 +68,7 @@ DiscordService.Discord.Ready += async () =>
     new AnnounceCommand(templateService),
     new SnapshotCommand(snapshotService),
     new HumanTimeCommand(humanTimeService),
+    new CustomEmbedCommand(customEmbedService),
 };
 
   var messageCommands = new List<MessageCommandBase>
