@@ -74,6 +74,7 @@ DiscordService.Discord.Ready += async () =>
   var messageCommands = new List<MessageCommandBase>
   {
     new PinMessageCommand(pinService),
+    new EditEmbedMessageCommand(customEmbedService),
   };
 
   if (args.Contains("--register-commands"))
