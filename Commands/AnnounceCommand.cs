@@ -68,10 +68,20 @@ public class AnnounceCommand : SlashCommandBase
 
     foreach (var param in @params)
     {
-      modal.AddTextInput(param, param, placeholder: param, required: false);
+      modal.AddTextInput(param, param, placeholder: TrimPlaceholder(param), required: false);
     }
 
     return (SubmittableModalBuilder)modal;
+  }
+
+  private string? TrimPlaceholder(string? placeholder)
+  {
+    if (placeholder?.Length > 100)
+    {
+      return placeholder.Substring(0, Math.Min(placeholder.Length, 96)) + "...";;
+    }
+
+    return placeholder;
   }
 
   private async Task HandleModalSubmission(SubmittableModalBuilder modal, List<string> paramNames, TemplateModel template, bool preview)
