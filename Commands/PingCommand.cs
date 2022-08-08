@@ -1,6 +1,6 @@
 using Discord.WebSocket;
 
-namespace TNTBot.Commands;
+namespace MoeBot.Commands;
 
 public class PingCommand : SlashCommandBase
 {

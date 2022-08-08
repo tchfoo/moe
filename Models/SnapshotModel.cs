@@ -1,7 +1,7 @@
 using Discord;
 using Discord.WebSocket;
 
-namespace TNTBot.Models;
+namespace MoeBot.Models;
 
 public class SnapshotModel
 {

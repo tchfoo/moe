@@ -1,7 +1,7 @@
 using DotNetEnv;
-using TNTBot.Services;
+using MoeBot.Services;
 
-namespace TNTBot;
+namespace MoeBot;
 
 public class Config
 {

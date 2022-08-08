@@ -1,8 +1,8 @@
 using Discord;
 using Discord.WebSocket;
-using TNTBot.Models;
+using MoeBot.Models;
 
-namespace TNTBot.Services;
+namespace MoeBot.Services;
 
 public class PurgeService
 {

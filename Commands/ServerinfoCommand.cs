@@ -1,8 +1,8 @@
 using Discord;
 using Discord.WebSocket;
-using TNTBot.Services;
+using MoeBot.Services;
 
-namespace TNTBot.Commands;
+namespace MoeBot.Commands;
 
 public class ServerinfoCommand : SlashCommandBase
 {

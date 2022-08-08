@@ -1,6 +1,6 @@
 using Microsoft.Data.Sqlite;
 
-namespace TNTBot.Services;
+namespace MoeBot.Services;
 
 public static class DatabaseService
 {

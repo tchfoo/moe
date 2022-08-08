@@ -1,9 +1,9 @@
 using Discord;
 using Discord.WebSocket;
-using TNTBot.Services;
+using MoeBot.Services;
 using System.Text.RegularExpressions;
 
-namespace TNTBot.Commands;
+namespace MoeBot.Commands;
 
 public class PinSlashCommand : SlashCommandBase
 {

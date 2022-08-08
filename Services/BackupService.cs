@@ -1,5 +1,5 @@
 using System.Diagnostics;
-namespace TNTBot.Services;
+namespace MoeBot.Services;
 
 public class BackupService
 {

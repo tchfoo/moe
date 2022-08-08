@@ -1,8 +1,8 @@
 using Discord.WebSocket;
-using TNTBot.Models;
-using TNTBot.Services;
+using MoeBot.Models;
+using MoeBot.Services;
 
-namespace TNTBot.Commands;
+namespace MoeBot.Commands;
 
 public class CustomCommandHandler
 {

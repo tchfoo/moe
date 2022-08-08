@@ -1,7 +1,7 @@
 using Discord.WebSocket;
-using TNTBot.Models;
+using MoeBot.Models;
 
-namespace TNTBot.Services;
+namespace MoeBot.Services;
 
 public class CustomRoleService
 {
@@ -93,7 +93,7 @@ public class CustomRoleService
   private async Task RemoveBrokenRoles(SocketGuild guild)
   {
     var brokenRoles = (await GetRoles(guild)).Where(x => x.DiscordRole == null);
-    foreach(var role in brokenRoles)
+    foreach (var role in brokenRoles)
     {
       await LogService.LogToFileAndConsole(
         $"Removing broken custom role {role.Name}", guild);

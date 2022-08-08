@@ -1,7 +1,7 @@
 using Discord;
 using Discord.WebSocket;
 
-namespace TNTBot.Services;
+namespace MoeBot.Services;
 
 public class DiscordLogService
 {

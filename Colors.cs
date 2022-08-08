@@ -1,7 +1,7 @@
 using Discord;
 using Discord.WebSocket;
 
-namespace TNTBot;
+namespace MoeBot;
 
 public static class Colors
 {

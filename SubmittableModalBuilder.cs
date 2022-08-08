@@ -1,8 +1,8 @@
 using Discord;
 using Discord.WebSocket;
-using TNTBot.Services;
+using MoeBot.Services;
 
-namespace TNTBot;
+namespace MoeBot;
 
 public class SubmittableModalBuilder : ModalBuilder
 {

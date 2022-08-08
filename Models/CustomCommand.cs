@@ -1,4 +1,4 @@
-namespace TNTBot.Models;
+namespace MoeBot.Models;
 
 public class CustomCommand
 {

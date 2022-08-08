@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using TNTBot;
-using TNTBot.Commands;
-using TNTBot.Services;
+using MoeBot;
+using MoeBot.Commands;
+using MoeBot.Services;
 
 if (args.Contains("--dev"))
 {

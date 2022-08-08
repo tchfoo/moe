@@ -1,6 +1,6 @@
 using Discord.WebSocket;
 
-namespace TNTBot.Services;
+namespace MoeBot.Services;
 
 public class CommandLoggerService
 {

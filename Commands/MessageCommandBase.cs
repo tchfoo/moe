@@ -2,7 +2,7 @@
 using Discord;
 using Discord.WebSocket;
 
-namespace TNTBot.Commands;
+namespace MoeBot.Commands;
 
 public abstract class MessageCommandBase
 {

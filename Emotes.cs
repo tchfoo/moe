@@ -1,6 +1,6 @@
 using Discord;
 
-namespace TNTBot;
+namespace MoeBot;
 
 public static class Emotes
 {

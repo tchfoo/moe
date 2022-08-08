@@ -1,6 +1,6 @@
 using Discord.WebSocket;
 
-namespace TNTBot.Models;
+namespace MoeBot.Models;
 
 public class TemplateModel
 {
