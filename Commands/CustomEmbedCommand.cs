@@ -21,8 +21,8 @@ public class CustomEmbedCommand : SlashCommandBase
   {
     var user = (cmd.User as SocketGuildUser)!;
     var channel = cmd.GetOption<SocketTextChannel>("channel") ?? (cmd.Channel as SocketTextChannel)!;
-    
-    if(!service.IsAuthorized(user, ModrankLevel.Moderator, out var error))
+
+    if (!service.IsAuthorized(user, ModrankLevel.Moderator, out var error))
     {
       await cmd.RespondAsync(error);
       return;
@@ -32,10 +32,15 @@ public class CustomEmbedCommand : SlashCommandBase
     {
       Channel = channel,
     };
-    var modal = CreateEmbedModal();
-    await cmd.RespondWithModalAsync(modal.Build());
 
-    var _ = HandleModalSubmission(modal, customEmbed);
+    var modal = CreateEmbedModal();
+    modal.OnSubmitted += async submitted =>
+    {
+      var embed = GetEmbedToSend(submitted);
+      await ShowEmbed(submitted, embed, customEmbed.Channel);
+    };
+
+    await cmd.RespondWithModalAsync(modal.Build());
   }
 
   private SubmittableModalBuilder CreateEmbedModal()
@@ -47,13 +52,6 @@ public class CustomEmbedCommand : SlashCommandBase
       .AddTextInput("Footer", nameof(CustomEmbed.Footer), placeholder: "Footer text", required: false, maxLength: 2048)
       .AddTextInput("Thumbnail image URL", nameof(CustomEmbed.ThumbnailImageUrl), placeholder: "Image URL of thumbnail in the embed", required: false)
       .AddTextInput("Image URL (large image)", nameof(CustomEmbed.LargeImageUrl), placeholder: "Image URL (large image)", required: false);
-  }
-
-  private async Task HandleModalSubmission(SubmittableModalBuilder modal, CustomEmbed customEmbed)
-  {
-    var submitted = await modal.WaitForSubmission();
-    var embed = GetEmbedToSend(submitted);
-    await ShowEmbed(submitted, embed, customEmbed.Channel);
   }
 
   private async Task ShowEmbed(SocketInteraction interaction, EmbedBuilder embed, SocketTextChannel channel)

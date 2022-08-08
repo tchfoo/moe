@@ -95,28 +95,28 @@ public class TemplateCommand : SlashCommandBase
     };
 
     var modal = CreateTemplateModal(t);
-    await cmd.RespondWithModalAsync(modal.Build());
+    modal.OnSubmitted += async submitted =>
+    {
+      UpdateTemplateFromModal(submitted, t);
+      if (!service.ValidateTemplateParameters(submitted, t))
+      {
+        return;
+      }
 
-    var _ = HandleModalSubmission(modal, t);
+      await service.AddTemplate(t);
+      await submitted.RespondAsync($"{Emotes.SuccessEmote} Added template **{t.Name}**");
+    };
+
+    await cmd.RespondWithModalAsync(modal.Build());
   }
 
-  private async Task HandleModalSubmission(SubmittableModalBuilder modal, TemplateModel t)
+  private void UpdateTemplateFromModal(SocketModal submitted, TemplateModel t)
   {
-    var submitted = await modal.WaitForSubmission();
     t.Title = submitted.GetValue(nameof(t.Title))!;
     t.Description = submitted.GetValue(nameof(t.Description))!;
     t.Footer = submitted.GetValue(nameof(t.Footer));
     t.ThumbnailImageUrl = submitted.GetValue(nameof(t.ThumbnailImageUrl));
     t.LargeImageUrl = submitted.GetValue(nameof(t.LargeImageUrl));
-
-    if (!service.ValidateTemplateParameters(submitted, t))
-    {
-      return;
-    }
-
-    await service.AddTemplate(t);
-
-    await submitted.RespondAsync($"{Emotes.SuccessEmote} Added template **{t.Name}**");
   }
 
   private SubmittableModalBuilder CreateTemplateModal(TemplateModel t)

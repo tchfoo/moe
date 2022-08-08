@@ -1,3 +1,4 @@
+
 using Discord;
 using Discord.WebSocket;
 using MoeBot.Services;
@@ -6,33 +7,25 @@ namespace MoeBot;
 
 public class SubmittableModalBuilder : ModalBuilder
 {
-  private SocketModal? submittedModal;
-  private readonly AutoResetEvent submittedEvent;
+  public delegate void SubmittedEventHandler(SocketModal modal);
+  public event SubmittedEventHandler? OnSubmitted;
 
   public SubmittableModalBuilder()
   {
     CustomId = Guid.NewGuid().ToString();
-    DiscordService.Discord.ModalSubmitted += OnSubmitted;
-    submittedEvent = new AutoResetEvent(false);
+    DiscordService.Discord.ModalSubmitted += OnModalSubmitted;
   }
 
   ~SubmittableModalBuilder()
   {
-    DiscordService.Discord.ModalSubmitted -= OnSubmitted;
+    DiscordService.Discord.ModalSubmitted -= OnModalSubmitted;
   }
 
-  public async Task<SocketModal> WaitForSubmission()
-  {
-    await Task.Run(() => submittedEvent.WaitOne());
-    return submittedModal!;
-  }
-
-  private Task OnSubmitted(SocketModal modal)
+  private Task OnModalSubmitted(SocketModal modal)
   {
     if (modal.Data.CustomId == CustomId)
     {
-      submittedModal = modal;
-      submittedEvent.Set();
+      OnSubmitted?.Invoke(modal);
     }
 
     return Task.CompletedTask;

@@ -46,9 +46,18 @@ public class AnnounceCommand : SlashCommandBase
     else
     {
       var modal = CreateAnnounceModal(template, paramNames);
-      await cmd.RespondWithModalAsync(modal.Build());
+      modal.OnSubmitted += async submitted =>
+      {
+        var @params = paramNames.ToDictionary(x => x, x => submitted.GetValue(x) ?? "*unspecified*");
 
-      var _ = HandleModalSubmission(modal, paramNames, template, preview);
+        template.Title = service.ReplaceTemplateParameters(template.Title, @params)!;
+        template.Description = service.ReplaceTemplateParameters(template.Description, @params)!;
+        template.Footer = service.ReplaceTemplateParameters(template.Footer, @params);
+
+        await ShowTemplate(submitted, template, preview);
+      };
+
+      await cmd.RespondWithModalAsync(modal.Build());
     }
   }
   private bool Authorize(SocketGuildUser user, TemplateModel template)
@@ -78,22 +87,10 @@ public class AnnounceCommand : SlashCommandBase
   {
     if (placeholder?.Length > 100)
     {
-      return placeholder.Substring(0, Math.Min(placeholder.Length, 96)) + "...";;
+      return placeholder.Substring(0, Math.Min(placeholder.Length, 96)) + "...";
     }
 
     return placeholder;
-  }
-
-  private async Task HandleModalSubmission(SubmittableModalBuilder modal, List<string> paramNames, TemplateModel template, bool preview)
-  {
-    var submitted = await modal.WaitForSubmission();
-    var @params = paramNames.ToDictionary(x => x, x => submitted.GetValue(x) ?? "*unspecified*");
-
-    template.Title = service.ReplaceTemplateParameters(template.Title, @params)!;
-    template.Description = service.ReplaceTemplateParameters(template.Description, @params)!;
-    template.Footer = service.ReplaceTemplateParameters(template.Footer, @params);
-
-    await ShowTemplate(submitted, template, preview);
   }
 
   private async Task ShowTemplate(SocketInteraction interaction, TemplateModel template, bool preview)

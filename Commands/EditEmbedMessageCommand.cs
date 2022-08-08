@@ -51,9 +51,13 @@ public class EditEmbedMessageCommand : MessageCommandBase
     };
 
     var modal = EditEmbedModal(customEmbed);
-    await cmd.RespondWithModalAsync(modal.Build());
+    modal.OnSubmitted += async submitted =>
+    {
+      var embed = GetEmbedToSend(submitted);
+      await EditEmbed(submitted, embed, customEmbed.Channel, message);
+    };
 
-    var _ = HandleModalSubmission(modal, customEmbed, message);
+    await cmd.RespondWithModalAsync(modal.Build());
   }
 
   private SubmittableModalBuilder EditEmbedModal(CustomEmbed e)
@@ -71,17 +75,10 @@ public class EditEmbedMessageCommand : MessageCommandBase
   {
     if (placeholder?.Length > 100)
     {
-      return placeholder.Substring(0, Math.Min(placeholder.Length, 96)) + "...";;
+      return placeholder.Substring(0, Math.Min(placeholder.Length, 96)) + "...";
     }
 
     return placeholder;
-  }
-
-  private async Task HandleModalSubmission(SubmittableModalBuilder modal, CustomEmbed customEmbed, SocketMessage message)
-  {
-    var submitted = await modal.WaitForSubmission();
-    var embed = GetEmbedToSend(submitted);
-    await EditEmbed(submitted, embed, customEmbed.Channel, message);
   }
 
   private async Task EditEmbed(SocketInteraction interaction, EmbedBuilder embed, SocketTextChannel channel, SocketMessage message)
