@@ -75,11 +75,11 @@ public class SettingsCommand : SlashCommandBase
     var handle = subcommand.Name switch
     {
       "list" => ListSettings(cmd, guild),
-      "pinchannel" => SetPinChannel(cmd, subcommand, guild),
-      "logchannel" => SetLogChannel(cmd, subcommand, guild),
+      "pinchannel" => SetPinChannel(cmd, subcommand),
+      "logchannel" => SetLogChannel(cmd, subcommand),
       "commandprefix" => SetCommandPrefix(cmd, subcommand, guild),
       "modrank" => SetModrank(cmd, subcommand),
-      "leavemessage" => SetLeaveMessage(cmd, subcommand, guild),
+      "leavemessage" => SetLeaveMessage(cmd, subcommand),
       "timezone" => SetTimeZone(cmd, subcommand, guild),
       _ => throw new InvalidOperationException($"{Emotes.ErrorEmote} Unknown subcommand {subcommand.Name}")
     };
@@ -146,17 +146,17 @@ public class SettingsCommand : SlashCommandBase
     await cmd.RespondAsync(embed: embed.Build());
   }
 
-  private async Task SetPinChannel(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
+  private async Task SetPinChannel(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand)
   {
     var channel = subcommand.GetOption<SocketTextChannel>("channel")!;
-    await service.SetPinChannel(guild, channel);
+    await service.SetPinChannel(channel);
     await cmd.RespondAsync($"{Emotes.SuccessEmote} Pin channel set to {channel.Mention}");
   }
 
-  private async Task SetLogChannel(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
+  private async Task SetLogChannel(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand)
   {
     var channel = subcommand.GetOption<SocketTextChannel>("channel")!;
-    await service.SetLogChannel(guild, channel);
+    await service.SetLogChannel(channel);
     await cmd.RespondAsync($"{Emotes.SuccessEmote} Log channel set to {channel.Mention}");
   }
 
@@ -175,7 +175,7 @@ public class SettingsCommand : SlashCommandBase
     await cmd.RespondAsync($"{Emotes.SuccessEmote} Modrank is now {level} for role {role.Mention}");
   }
 
-  private async Task SetLeaveMessage(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
+  private async Task SetLeaveMessage(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand)
   {
     var channel = subcommand.GetOption<SocketTextChannel>("channel")!;
     var message = subcommand.GetOption<string>("message")!;
@@ -186,7 +186,7 @@ public class SettingsCommand : SlashCommandBase
       return;
     }
 
-    await service.SetLeaveMessage(guild, channel, message);
+    await service.SetLeaveMessage(channel, message);
     await cmd.RespondAsync($"{Emotes.SuccessEmote} Leave message set to {message} in {channel.Mention}");
   }
 

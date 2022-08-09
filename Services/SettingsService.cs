@@ -24,8 +24,9 @@ public class SettingsService
     return guild.GetTextChannel(channelId);
   }
 
-  public async Task SetPinChannel(SocketGuild guild, SocketTextChannel channel)
+  public async Task SetPinChannel(SocketTextChannel channel)
   {
+    var guild = channel.Guild;
     await LogService.LogToFileAndConsole(
       $"Setting pin channel to {channel}", guild);
 
@@ -51,8 +52,9 @@ public class SettingsService
     return guild.GetTextChannel(channelId);
   }
 
-  public async Task SetLogChannel(SocketGuild guild, SocketTextChannel channel)
+  public async Task SetLogChannel(SocketTextChannel channel)
   {
+    var guild = channel.Guild;
     await LogService.LogToFileAndConsole(
       $"Setting log channel to {channel}", guild);
 
@@ -180,8 +182,9 @@ public class SettingsService
     await DatabaseService.NonQuery(sql, role.Guild.Id, role.Id);
   }
 
-  public async Task SetLeaveMessage(SocketGuild guild, SocketTextChannel channel, string message)
+  public async Task SetLeaveMessage(SocketTextChannel channel, string message)
   {
+    var guild = channel.Guild;
     await LogService.LogToFileAndConsole(
       $"Setting leave message to {message} for channel {channel}", guild);
 
