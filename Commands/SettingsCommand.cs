@@ -46,6 +46,11 @@ public class SettingsCommand : SlashCommandBase
           .AddChoice(nameof(ModrankLevel.Administrator), (int)ModrankLevel.Administrator)
         ).WithType(ApplicationCommandOptionType.SubCommand)
       ).AddOption(new SlashCommandOptionBuilder()
+        .WithName("noxp")
+        .WithDescription("Set the role that is given to users who are not allowed to gain XP")
+        .AddOption("role", ApplicationCommandOptionType.Role, "The role", isRequired: true)
+        .WithType(ApplicationCommandOptionType.SubCommand)
+      ).AddOption(new SlashCommandOptionBuilder()
         .WithName("leavemessage")
         .WithDescription("Set the message that will be sent when a user leaves the server")
         .AddOption("channel", ApplicationCommandOptionType.Channel, "The channel", isRequired: true, channelTypes: new List<ChannelType>() { ChannelType.Text })
@@ -80,6 +85,7 @@ public class SettingsCommand : SlashCommandBase
       "commandprefix" => SetCommandPrefix(cmd, subcommand, guild),
       "modrank" => SetModrank(cmd, subcommand),
       "leavemessage" => SetLeaveMessage(cmd, subcommand),
+      "noxp" => SetNoXPRole(cmd, subcommand),
       "timezone" => SetTimeZone(cmd, subcommand, guild),
       _ => throw new InvalidOperationException($"{Emotes.ErrorEmote} Unknown subcommand {subcommand.Name}")
     };
@@ -113,6 +119,7 @@ public class SettingsCommand : SlashCommandBase
     var logChannel = await service.GetLogChannel(guild);
     var prefix = await service.GetCommandPrefix(guild);
     var modranks = await service.GetModranks(guild);
+    var noXPRole = await service.GetNoXPRole(guild);
     var leaveMessage = await service.GetLeaveMessage(guild);
     var timeZone = await service.GetTimeZone(guild);
 
@@ -139,6 +146,7 @@ public class SettingsCommand : SlashCommandBase
       .AddField("Custom command prefix", prefix, inline: true)
       .AddField("Bot Administrator ranks", string.IsNullOrEmpty(modrankAdminString) ? "None" : modrankAdminString, inline: true)
       .AddField("Moderator ranks", string.IsNullOrEmpty(modrankModString) ? "None" : modrankModString, inline: true)
+      .AddField("No-XP role", noXPRole?.Mention ?? "None", inline: true)
       .AddField("Leave message", leaveMessageString, inline: true)
       .AddField("Time zone", timeZone is null ? "None" : timeZone.TimeZoneString, inline: true)
       .WithColor(Colors.Blurple);
@@ -173,6 +181,13 @@ public class SettingsCommand : SlashCommandBase
     var level = (ModrankLevel)subcommand.GetOption<long>("level")!;
     await service.SetModrank(role, level);
     await cmd.RespondAsync($"{Emotes.SuccessEmote} Modrank is now {level} for role {role.Mention}");
+  }
+
+  private async Task SetNoXPRole(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand)
+  {
+    var role = subcommand.GetOption<SocketRole>("role")!;
+    await service.SetNoXPRole(role);
+    await cmd.RespondAsync($"{Emotes.SuccessEmote} No XP role set to {role.Mention}");
   }
 
   private async Task SetLeaveMessage(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand)

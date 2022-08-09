@@ -182,6 +182,34 @@ public class SettingsService
     await DatabaseService.NonQuery(sql, role.Guild.Id, role.Id);
   }
 
+  public async Task<SocketRole?> GetNoXPRole(SocketGuild guild)
+  {
+    var sql = "SELECT value FROM settings WHERE guild_id = $0 AND name = 'no_xp_role'";
+    var roleId = await DatabaseService.QueryFirst<ulong>(sql, guild.Id);
+    if (roleId == 0)
+    {
+      return null;
+    }
+    return guild.GetRole(roleId);
+  }
+
+  public async Task SetNoXPRole(SocketRole role)
+  {
+    var guild = role.Guild;
+    await LogService.LogToFileAndConsole(
+      $"Setting no xp role to {role}", guild);
+
+    var deleteSql = "DELETE FROM settings WHERE guild_id = $0 AND name = 'no_xp_role'";
+    await DatabaseService.NonQuery(deleteSql, guild.Id);
+    var insertSql = "INSERT INTO settings(guild_id, name, value) VALUES($0, 'no_xp_role', $1)";
+    await DatabaseService.NonQuery(insertSql, guild.Id, role.Id);
+  }
+
+  public async Task<bool> HasNoXPRole(SocketGuild guild)
+  {
+    return await GetNoXPRole(guild) != null;
+  }
+
   public async Task SetLeaveMessage(SocketTextChannel channel, string message)
   {
     var guild = channel.Guild;

@@ -7,10 +7,17 @@ namespace MoeBot.Services;
 public class LevelService
 {
   private static readonly TimeSpan TimeBetweenMessages = TimeSpan.FromMinutes(1);
+  private readonly SettingsService settingsService;
 
-  public LevelService()
+  public LevelService(SettingsService settingsService)
   {
     CreateLevelsTable().Wait();
+    this.settingsService = settingsService;
+  }
+
+  public bool IsAuthorized(SocketGuildUser user, ModrankLevel requiredLevel, out string? error)
+  {
+    return settingsService.IsAuthorized(user, requiredLevel, out error);
   }
 
   public async Task HandleMessage(SocketMessage msg)
@@ -21,6 +28,12 @@ public class LevelService
     }
 
     var user = (SocketGuildUser)msg.Author;
+
+    if (await IsNoXPRoleApplied(user))
+    {
+      return;
+    }
+
     await EnsureLevelExists(user);
 
     var levelBefore = await GetLevel(user);
@@ -94,6 +107,30 @@ public class LevelService
   {
     var sql = "UPDATE levels SET levelup_message = $0 WHERE guild_id = $1 AND user_id = $2";
     await DatabaseService.NonQuery(sql, enabled, user.Guild.Id, user.Id);
+  }
+
+  public async Task<bool> IsNoXPRoleApplied(SocketGuildUser user)
+  {
+    var noXPRole = await settingsService.GetNoXPRole(user.Guild);
+    return user.Roles.Contains(noXPRole);
+  }
+
+  public async Task ToggleNoXPRole(SocketGuildUser user)
+  {
+    var noXPRole = await settingsService.GetNoXPRole(user.Guild);
+    if (user.Roles.Contains(noXPRole))
+    {
+      await user.RemoveRoleAsync(noXPRole);
+    }
+    else
+    {
+      await user.AddRoleAsync(noXPRole);
+    }
+  }
+
+  public async Task<bool> IsNoXPRoleSet(SocketGuild guild)
+  {
+    return await settingsService.HasNoXPRole(guild);;
   }
 
   private async Task TryAddingXP(SocketGuildUser user)

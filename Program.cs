@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.WebSocket;
 using MoeBot;
 using MoeBot.Commands;
@@ -29,7 +29,7 @@ DiscordService.Discord.Ready += async () =>
   var settingsService = new SettingsService();
   var customCommandService = new CustomCommandService(settingsService);
   var customRoleService = new CustomRoleService(settingsService);
-  var levelService = new LevelService();
+  var levelService = new LevelService(settingsService);
   var rngCommand = new RngCommand();
   var customCommandHandler = new CustomCommandHandler(customCommandService);
   var pinService = new PinService(settingsService);
@@ -77,6 +77,11 @@ DiscordService.Discord.Ready += async () =>
     new EditEmbedMessageCommand(customEmbedService),
   };
 
+  var userCommands = new List<UserCommandBase>
+  {
+    new NoXPUserCommand(levelService),
+  };
+
   if (args.Contains("--register-commands"))
   {
     await LogService.LogToFileAndConsole("Registering commands");
@@ -84,6 +89,7 @@ DiscordService.Discord.Ready += async () =>
       .Select(x => x.GetCommandProperties())
       .Cast<ApplicationCommandProperties>()
       .Concat(messageCommands.Select(x => x.GetCommandProperties()))
+      .Concat(userCommands.Select(x => x.GetCommandProperties()))
       .ToArray();
 
     if (ConfigService.IsProd())
@@ -125,6 +131,22 @@ DiscordService.Discord.Ready += async () =>
       $"{cmd.User} executed message command {cmd.CommandName} on message {cmd.Data.Message}", guild);
 
     var command = messageCommands.First(x => cmd.CommandName == x.Name);
+    await command.Handle(cmd);
+  };
+
+  DiscordService.Discord.UserCommandExecuted += async (cmd) =>
+  {
+    if (cmd.Channel.GetChannelType() != ChannelType.Text)
+    {
+      await cmd.RespondAsync($"{Emotes.ErrorEmote} Context menu commands are not allowed in DMs");
+      return;
+    }
+
+    var guild = ((SocketGuildChannel)cmd.Channel).Guild;
+    await LogService.LogToFileAndConsole(
+      $"{cmd.User} executed user command {cmd.CommandName} on user {cmd.Data.Member}", guild);
+
+    var command = userCommands.First(x => cmd.CommandName == x.Name);
     await command.Handle(cmd);
   };
 
