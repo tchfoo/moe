@@ -123,7 +123,7 @@ public class CustomRoleCommand : SlashCommandBase
       var newSubscribedRoles = (await service.GetRoles(guild))
         .Where(x => submittedRoles.Contains(x.Name));
 
-      await service.SyncronizeRoleSubscriptions(user, oldSubscribedRoles, newSubscribedRoles);
+      await service.SyncRoleSubscriptions(user, oldSubscribedRoles, newSubscribedRoles);
       oldSubscribedRoles = newSubscribedRoles;
 
       await submitted.RespondAsync($"{Emotes.SuccessEmote} Your roles have been updated", ephemeral: true);
