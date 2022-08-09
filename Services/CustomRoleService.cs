@@ -1,3 +1,4 @@
+using Discord;
 using Discord.WebSocket;
 using MoeBot.Models;
 
@@ -36,25 +37,18 @@ public class CustomRoleService
 
   public async Task<List<CustomRole>> GetRoles(SocketGuild guild)
   {
-    var sql = "SELECT name, role_id FROM custom_roles WHERE guild_id = $0";
-    var result = await DatabaseService.Query<string, ulong>(sql, guild.Id);
-    return result.ConvertAll(x => new CustomRole(x.Item1!, guild.GetRole(x.Item2!)));
+    var sql = "SELECT name, description, role_id FROM custom_roles WHERE guild_id = $0";
+    var roles = await DatabaseService.Query<string, string, ulong>(sql, guild.Id);
+    return roles.ConvertAll(x => new CustomRole(x.Item1!, x.Item2, guild.GetRole(x.Item3!)));
   }
 
-  public async Task<CustomRole?> GetRole(SocketGuild guild, string name)
-  {
-    var sql = "SELECT role_id FROM custom_roles WHERE guild_id = $0 AND name = $1";
-    var result = await DatabaseService.QueryFirst<ulong>(sql, guild.Id, name);
-    return new CustomRole(name, guild.GetRole(result));
-  }
-
-  public async Task AddRole(SocketGuild guild, string name, SocketRole role)
+  public async Task AddRole(SocketGuild guild, string name, string? description, SocketRole role)
   {
     await LogService.LogToFileAndConsole(
-      $"Adding custom role {name}, discord role: {role}", guild);
+      $"Adding custom role {name}, description: {description}, discord role: {role}", guild);
 
-    var sql = "INSERT INTO custom_roles(guild_id, name, role_id) VALUES($0, $1, $2)";
-    await DatabaseService.NonQuery(sql, guild.Id, name, role.Id);
+    var sql = "INSERT INTO custom_roles(guild_id, name, description, role_id) VALUES($0, $1, $2, $3)";
+    await DatabaseService.NonQuery(sql, guild.Id, name, description, role.Id);
   }
 
   public async Task RemoveRole(SocketGuild guild, string name)
@@ -66,28 +60,28 @@ public class CustomRoleService
     await DatabaseService.NonQuery(sql, guild.Id, name);
   }
 
-  public async Task<bool> IsSubscribedToRole(SocketGuildUser user, string name)
+  public async Task<List<CustomRole>> GetSubscribedRoles(SocketGuildUser user)
   {
-    var customRole = (await GetRole(user.Guild, name))!;
-    return user.Roles.Any(x => x.Id == customRole.DiscordRole.Id);
+    return (await GetRoles(user.Guild))
+      .Where(x => user.Roles.Contains(x.DiscordRole))
+      .ToList();
   }
 
-  public async Task SubscribeToRole(SocketGuildUser user, string name)
+  public async Task SyncRoleSubscriptions(SocketGuildUser user, IEnumerable<CustomRole> oldRoles, IEnumerable<CustomRole> newRoles)
   {
+    var oldRolesSet = new HashSet<IRole>(oldRoles.Select(x => x.DiscordRole));
+    var newRolesSet = new HashSet<IRole>(newRoles.Select(x => x.DiscordRole));
+
+    var toSubscribe = newRolesSet.Except(oldRolesSet);
+    var toUnsubscribe = oldRolesSet.Except(newRolesSet);
+
+    var toSubscribeLog = string.Join(",", toSubscribe.Select(x => x.Name));
+    var toUnsubscribeLog = string.Join(",", toUnsubscribe.Select(x => x.Name));
     await LogService.LogToFileAndConsole(
-      $"Subscribing user {user} to custom role {name}", user.Guild);
+      $"Syncing role subscriptions for {user}: subscribing to {toSubscribeLog}; unsubscribing from: {toUnsubscribeLog}", user.Guild);
 
-    var customRole = (await GetRole(user.Guild, name))!;
-    await user.AddRoleAsync(customRole.DiscordRole);
-  }
-
-  public async Task UnsubscribeFromRole(SocketGuildUser user, string name)
-  {
-    await LogService.LogToFileAndConsole(
-      $"Unsubscribing user {user} from custom role {name}", user.Guild);
-
-    var customRole = (await GetRole(user.Guild, name))!;
-    await user.RemoveRoleAsync(customRole.DiscordRole);
+    await user.AddRolesAsync(toSubscribe);
+    await user.RemoveRolesAsync(toUnsubscribe);
   }
 
   private async Task RemoveBrokenRoles(SocketGuild guild)
@@ -108,6 +102,7 @@ public class CustomRoleService
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         guild_id INTEGER NOT NULL,
         name TEXT NOT NULL,
+        description TEXT,
         role_id INTEGER NOT NULL
       )";
     await DatabaseService.NonQuery(sql);
