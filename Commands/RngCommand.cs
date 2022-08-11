@@ -47,8 +47,8 @@ public class RngCommand : SlashCommandBase
       return false;
     }
 
-    var owners = ConfigService.Config.Owners;
-    var yaha = ConfigService.Config.Yaha;
+    var owners = ConfigService.Environment.Owners;
+    var yaha = ConfigService.Environment.Yaha;
     var author = msg.Author.Id;
     if (!(owners.Contains(author) || author == yaha))
     {

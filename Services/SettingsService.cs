@@ -135,7 +135,7 @@ public class SettingsService
 
   private async Task<ModrankLevel> GetModrankLevel(SocketGuildUser user)
   {
-    if (ConfigService.Config.Owners.Contains(user.Id))
+    if (ConfigService.Environment.Owners.Contains(user.Id))
     {
       return ModrankLevel.Owner;
     }

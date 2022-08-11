@@ -2,21 +2,15 @@ namespace MoeBot.Services;
 
 public static class ConfigService
 {
-  public static Config Config { get; private set; } = default!;
-  public static string Environment { get; set; } = default!;
+  public static CLIOptions Options { get; private set; } = default!;
+  public static Environment Environment { get; private set; } = default!;
 
-  public static async Task Init()
+  public static async Task Init(string[] args)
   {
-    Config = await Config.Load();
-  }
+    Options = CLIOptions.Parse(args);
+    Environment = await MoeBot.Environment.Load();
 
-  public static bool IsDev()
-  {
-    return Environment == "dev";
-  }
-
-  public static bool IsProd()
-  {
-    return Environment == "prod";
+    var environment = Options.IsDevelopment ? "development" : "production";
+    await LogService.LogToFileAndConsole($"Running in {environment} environment");
   }
 }

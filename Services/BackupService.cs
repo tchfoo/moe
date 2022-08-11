@@ -10,16 +10,16 @@ public class BackupService
     Task.Run(async () =>
     {
       var currentMs = (DateTime.Now - DateTime.MinValue).TotalMilliseconds;
-      var intervalMs = ConfigService.Config.BackupInterval.TotalMilliseconds;
+      var intervalMs = ConfigService.Environment.BackupInterval.TotalMilliseconds;
       var lastBackupSince = TimeSpan.FromMilliseconds(currentMs % intervalMs);
-      var nextBackup = ConfigService.Config.BackupInterval - lastBackupSince;
+      var nextBackup = ConfigService.Environment.BackupInterval - lastBackupSince;
       await Task.Delay(nextBackup);
 
       while (true)
       {
         await StartMakingDatabaseBackup();
         await DeleteOldBackups();
-        await Task.Delay(ConfigService.Config.BackupInterval);
+        await Task.Delay(ConfigService.Environment.BackupInterval);
       }
     });
   }
@@ -52,7 +52,7 @@ public class BackupService
   {
     var filesToDelete = new DirectoryInfo(BackupsDir).GetFiles()
       .OrderBy(x => x.CreationTime)
-      .Skip(ConfigService.Config.BackupsToKeep);
+      .Skip(ConfigService.Environment.BackupsToKeep);
 
     foreach (var file in filesToDelete)
     {

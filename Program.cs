@@ -1,20 +1,10 @@
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using MoeBot;
 using MoeBot.Commands;
 using MoeBot.Services;
 
-if (args.Contains("--dev"))
-{
-  ConfigService.Environment = "dev";
-}
-else
-{
-  ConfigService.Environment = "prod";
-}
-await LogService.LogToFileAndConsole($"Running in {ConfigService.Environment} environment");
-
-await ConfigService.Init();
+await ConfigService.Init(args);
 DiscordService.Init();
 
 bool isReadyEventFired = false;
@@ -92,13 +82,13 @@ DiscordService.Discord.Ready += async () =>
       .Concat(userCommands.Select(x => x.GetCommandProperties()))
       .ToArray();
 
-    if (ConfigService.IsProd())
+    if (ConfigService.Options.IsProduction)
     {
       await DiscordService.Discord.BulkOverwriteGlobalApplicationCommandsAsync(commandProperties);
     }
-    else
+    else if(ConfigService.Options.IsDevelopment)
     {
-      var guild = DiscordService.Discord.GetGuild(ConfigService.Config.ServerID!.Value);
+      var guild = DiscordService.Discord.GetGuild(ConfigService.Environment.ServerID!.Value);
       await guild.BulkOverwriteApplicationCommandAsync(commandProperties);
     }
   }

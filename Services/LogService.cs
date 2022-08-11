@@ -53,6 +53,6 @@ public class LogService
     Directory.CreateDirectory(logsDirPath);
 
     var currentLogPath = Path.Combine(logsDirPath, $"{DateTime.Now:yyyy-MM-dd}.log");
-    await File.AppendAllTextAsync(currentLogPath, message + Environment.NewLine);
+    await File.AppendAllTextAsync(currentLogPath, message + System.Environment.NewLine);
   }
 }

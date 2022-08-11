@@ -1,10 +1,12 @@
-using DotNetEnv;
 using MoeBot.Services;
 
 namespace MoeBot;
 
-public class Config
+public class Environment
 {
+  public const string ProductionEnvFile = "production.env";
+  public const string DevelopmentEnvFile = "development.env";
+
   public string Token { get; set; } = default!;
   public ulong? ServerID { get; set; } = default!;
   public List<ulong> Owners { get; set; } = default!;
@@ -12,24 +14,25 @@ public class Config
   public TimeSpan BackupInterval { get; set; } = default!;
   public int BackupsToKeep { get; set; } = default!;
 
-  public static async Task<Config> Load()
+  public static async Task<Environment> Load()
   {
-    string envFile = ".env";
-    if (ConfigService.IsDev())
+    string envFile = default!;
+    if (ConfigService.Options.IsDevelopment)
     {
-      envFile = "dev.env";
+      envFile = DevelopmentEnvFile;
     }
-    else if (ConfigService.IsProd())
+    else if (ConfigService.Options.IsProduction)
     {
-      envFile = "prod.env";
+      envFile = ProductionEnvFile;
     }
-    await LogService.LogToFileAndConsole($"Using {envFile} for environment variables");
-    Env.Load(envFile);
 
-    return new Config()
+    await LogService.LogToFileAndConsole($"Using {envFile} for environment variables");
+    DotNetEnv.Env.Load(envFile);
+
+    return new Environment()
     {
       Token = GetEnv("TOKEN"),
-      ServerID = ConfigService.IsProd() ? null : ulong.Parse(GetEnv("SERVERID")),
+      ServerID = ConfigService.Options.IsProduction ? null : ulong.Parse(GetEnv("SERVERID")),
       Owners = GetEnv("OWNERS")
         .Split(',')
         .Select(x => ulong.Parse(x))
@@ -42,7 +45,7 @@ public class Config
 
   private static string GetEnv(string name)
   {
-    return Environment.GetEnvironmentVariable(name) ??
+    return System.Environment.GetEnvironmentVariable(name) ??
       throw new InvalidOperationException($"Environment variable {name} is not set");
   }
 }

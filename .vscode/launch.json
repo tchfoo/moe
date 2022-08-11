@@ -12,7 +12,8 @@
       // If you have changed target frameworks, make sure to update the program path.
       "program": "${workspaceFolder}/bin/Debug/net6.0/MoeBot.dll",
       "args": [
-        "--dev",
+        "--",
+        "--development",
       ],
       "cwd": "${workspaceFolder}",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
@@ -30,7 +31,8 @@
       // If you have changed target frameworks, make sure to update the program path.
       "program": "${workspaceFolder}/bin/Debug/net6.0/MoeBot.dll",
       "args": [
-        "--dev",
+        "--",
+        "--development",
         "--register-commands",
       ],
       "cwd": "${workspaceFolder}",

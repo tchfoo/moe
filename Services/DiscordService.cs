@@ -30,7 +30,7 @@ public static class DiscordService
 
   public static async Task Start()
   {
-    var token = ConfigService.Config.Token;
+    var token = ConfigService.Environment.Token;
     await Discord.LoginAsync(TokenType.Bot, token);
     await Discord.StartAsync();
 
