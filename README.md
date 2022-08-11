@@ -12,7 +12,7 @@ The bot has numerous features, many of which can be found in other bots, but the
 - Moderation
   - Message purging
   - Logging to a specified channel (message remove, edit, voice channel leave/join/change, member join/leave, member ban/unban)
-  - Modranks: a three-level permission system, where each command can only be used by specified moderator ranks "modranks".
+  - <span id="modranks">Modranks</span>: a three-level permission system, where each command can only be used by specified moderator ranks "modranks".
 - Leave messages
 - Remembers roles after a user leaves, so the roles can be given back if the user joins again
 - Applicable roles: users can apply and remove a set of roles from themselves
@@ -50,3 +50,53 @@ The bot has numerous features, many of which can be found in other bots, but the
   - Leave message: what the bot should say after a user leaves the server and in which channel
   - Time zone: set a default timezone for the timezone converter command
 
+# Running MoeBot
+
+## Create a [Discord Bot](https://discord.com/developers/docs/intro#bots-and-apps)
+
+Create a new application in the [Discord Developer Portal](https://discord.com/developers/applications). Make sure it has the following **application permissions**: `bot, applications.commands, guilds.members.read, messages.read` and **bot permissions**: `Manage Server, Manage Roles, Manage Channels, Ban Members, Read Messages/View Channels, Send Messages, Manage Messages, Embed Links, Attach Files, Use External Emojis`. Check out [Making Your First Bot with Discord.Net](https://discordnet.dev/guides/getting_started/first-bot.html) for a detailed guide on how to do it.
+You will need the access token later.
+
+## Configuration
+
+Create **development.env** file where you cloned this repository and paste the following content there:
+
+```
+TOKEN=<DISCORD_BOT_ACCESS_TOKEN>
+SERVERID=<DISCORD_SERVER_ID
+OWNERS=<DISCORD_USER_ID>
+PRIVILIGED=<DISCORD_USER_ID>
+BACKUP_INTERVAL_MINUTES=60
+BACKUPS_TO_KEEP=50
+```
+
+Replace the placeholders enclosed in angle brackets with their appropriate value. You can get the **Server ID** by right clicking on a server and choosing Copy ID. Same concept applies to **User ID**s. You probably want to put your user's ID into both **OWNERS** and **PRIVILIGED**.
+
+For more information, see [Configuration in detail](#configuration-in-detail).
+
+## Run MoeBot with dotnet
+
+Install [.NET 6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0).
+
+Run the command in a command prompt or terminal for starting the bot:
+
+`dotnet run -- --development --register-commands`
+
+You should see the bot online on your server. By typing **/** in the message box, various commands should appear from your bot.
+
+# Configuration in detail
+
+You can have seperate configurations for developing the bot and using it in production.
+A development configuration is in **development.env** file and looks like [this](#configuration).
+Same concept applies to production configuration too, except it doesn't use the `SERVERID` field.
+To tell the bot which configuration should it use, run it with `--development` or `--production`. It defaults to production in case no environment was specified.
+
+## Options
+- TOKEN: Your Discord bot's access token. Anyone with possession of this token can act on your bot's behalf.
+- SERVERID: The Server ID where guild scoped commands can be registered. Only used when running in development mode.
+- OWNERS: Comma seperated list of User IDs who have full access to the bot. Overrides [modranks](#modranks).
+- PRIVILIGED: User ID of privileged user. Can use certain features of the bot.
+- BACKUP_INTERVAL_MINUTES: Minutes between automatic database backups.
+- BACKUPS_TO_KEEP: Delete old backups after the number of backups exceeds this.
+
+Commands (including slash commands and context commands) are registered at guild (discord server) scope when using development mode, and global scope when using production mode. Global command registration may take a few seconds or minutes due to Discord's API, but guild scoped commands are almost instant. In order to register commands, you need to run the bot with `--register-commands` parameter. The reason why registering commands is not the default is Discord can rate limit the bot when it tries to register commands over and over again in a short period of time. This can be annoying when debugging.
