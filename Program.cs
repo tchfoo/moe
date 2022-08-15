@@ -20,7 +20,8 @@ DiscordService.Discord.Ready += async () =>
   var customCommandService = new CustomCommandService(settingsService);
   var customRoleService = new CustomRoleService(settingsService);
   var levelService = new LevelService(settingsService);
-  var rngCommand = new RngCommand();
+  var rngService = new RngService(settingsService);
+  var rngCommand = new RngCommand(rngService);
   var customCommandHandler = new CustomCommandHandler(customCommandService);
   var pinService = new PinService(settingsService);
   LogService.Instance = new LogService(settingsService);

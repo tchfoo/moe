@@ -10,7 +10,6 @@ public class Environment
   public string Token { get; set; } = default!;
   public ulong? ServerID { get; set; } = default!;
   public List<ulong> Owners { get; set; } = default!;
-  public ulong Priviliged { get; set; } = default!;
   public TimeSpan BackupInterval { get; set; } = default!;
   public int BackupsToKeep { get; set; } = default!;
 
@@ -37,7 +36,6 @@ public class Environment
         .Split(',')
         .Select(x => ulong.Parse(x))
         .ToList(),
-      Priviliged = ulong.Parse(GetEnv("PRIVILIGED")),
       BackupInterval = TimeSpan.FromMinutes(int.Parse(GetEnv("BACKUP_INTERVAL_MINUTES"))),
       BackupsToKeep = int.Parse(GetEnv("BACKUPS_TO_KEEP")),
     };

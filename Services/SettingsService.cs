@@ -111,6 +111,19 @@ public class SettingsService
     return true;
   }
 
+  public bool IsAuthorizedDMSilent(SocketUser user, ModrankLevel requiredLevel)
+  {
+    var guilds = DiscordService.Discord.Guilds;
+    var guildUsers = guilds
+      .Select(x => x.GetUser(user.Id))
+      .Where(x => x is not null);
+    var bestModrank = guildUsers
+      .Select(x => GetModrankLevel(x).Result)
+      .Max();
+
+    return requiredLevel <= bestModrank;
+  }
+
   public async Task SetModrank(SocketRole role, ModrankLevel level)
   {
     await RemoveModrank(role);

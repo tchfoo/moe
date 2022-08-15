@@ -1,21 +1,25 @@
 using Discord;
 using Discord.WebSocket;
+using MoeBot.Models;
 using MoeBot.Services;
 
 namespace MoeBot.Commands;
 
 public class RngCommand : SlashCommandBase
 {
-  public RngCommand() : base("rng")
+  private readonly RngService service;
+
+  public RngCommand(RngService service) : base("rng")
   {
     Description = "Generates a random number";
     Options = new SlashCommandOptionBuilder()
       .AddOption("min", ApplicationCommandOptionType.Integer, "The minimum number the bot generates. Defaults to 1", isRequired: false)
       .AddOption("max", ApplicationCommandOptionType.Integer, "The maximum number the bot generates", isRequired: true);
     CreateRngnumsTable().Wait();
+    this.service = service;
   }
 
-  //DISCLAIMER: This command contains an unfair advantage, where you can define your own RNG pool. The bot authors are not responsible for the use/abuse of this feature, and never would use (or used) it themselves. This feature is only intended for educational purposes only.
+  // DISCLAIMER: For those who can read this code: the creators of the bot are not responsible for the use/abuse of the questionable feature in this command and never would use (or used) it themselves. The feature is only intended for educational purposes only.
   private async Task CreateRngnumsTable()
   {
     await DatabaseService.NonQuery(@"
@@ -42,15 +46,8 @@ public class RngCommand : SlashCommandBase
 
   public async Task<bool> HandleDM(SocketMessage msg, string name, List<string> args)
   {
-    if (msg.Channel.GetChannelType() != ChannelType.DM)
-    {
-      return false;
-    }
-
-    var owners = ConfigService.Environment.Owners;
-    var priviliged = ConfigService.Environment.Priviliged;
-    var author = msg.Author.Id;
-    if (!(owners.Contains(author) || author == priviliged))
+    var author = msg.Author;
+    if (!service.IsAuthorizedDMSilent(author, ModrankLevel.Administrator))
     {
       return false;
     }
@@ -72,25 +69,29 @@ public class RngCommand : SlashCommandBase
   {
     try
     {
-      List<string> numsList = args
-        .Select(int.Parse)
-        .Select(x => $"({x})")
-        .ToList();
-      string numsSql = string.Join(',', numsList);
+      var nums = args.Select(int.Parse);
+      if (!nums.Any())
+      {
+        throw new FormatException();
+      }
+
+      var numsSql = string.Join(',', nums.Select(x => $"({x})"));
       var addSql = $"INSERT INTO rngnums (num) VALUES {numsSql}";
       await DatabaseService.NonQuery(addSql);
-      await msg.Channel.SendMessageAsync(numsSql);
+
+      var numsMessages = string.Join(", ", nums);
+      await msg.Channel.SendMessageAsync($"{Emotes.SuccessEmote} Fake RNG numbers added: {numsMessages}");
     }
     catch (FormatException)
     {
-      await msg.Channel.SendMessageAsync("Nem egész számokat adtál meg! Helyes szintaktika: `!setrng 10 20 30`");
+      await msg.Channel.SendMessageAsync($"{Emotes.ErrorEmote} Invalid number(s). Example usage: `setrng 10 20 30`");
     }
   }
 
   private async Task ClearRng(SocketMessage msg)
   {
     await DatabaseService.NonQuery("DELETE FROM rngnums");
-    await msg.Channel.SendMessageAsync("Rng számok sikeresen törölve");
+    await msg.Channel.SendMessageAsync($"{Emotes.SuccessEmote} Deleted RNG numbers");
   }
 
   private async Task<bool> IsFakeRngNumberAvailable()

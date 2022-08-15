@@ -65,12 +65,11 @@ Create **development.env** file where you cloned this repository and paste the f
 TOKEN=<DISCORD_BOT_ACCESS_TOKEN>
 SERVERID=<DISCORD_SERVER_ID
 OWNERS=<DISCORD_USER_ID>
-PRIVILIGED=<DISCORD_USER_ID>
 BACKUP_INTERVAL_MINUTES=60
 BACKUPS_TO_KEEP=50
 ```
 
-Replace the placeholders enclosed in angle brackets with their appropriate value. You can get the **Server ID** by right clicking on a server and choosing Copy ID. Same concept applies to **User ID**s. You probably want to put your user's ID into both **OWNERS** and **PRIVILIGED**.
+Replace the placeholders enclosed in angle brackets with their appropriate value. You can get the **Server ID** by right clicking on a server and choosing Copy ID. Same concept applies to **User ID**s. You probably want to assign your user's ID to **OWNERS**.
 
 For more information, see [Configuration in detail](#configuration-in-detail).
 
@@ -95,7 +94,6 @@ To tell the bot which configuration should it use, run it with `--development` o
 - TOKEN: Your Discord bot's access token. Anyone with possession of this token can act on your bot's behalf.
 - SERVERID: The Server ID where guild scoped commands can be registered. Only used when running in development mode.
 - OWNERS: Comma seperated list of User IDs who have full access to the bot. Overrides [modranks](#modranks).
-- PRIVILIGED: User ID of privileged user. Can use certain features of the bot.
 - BACKUP_INTERVAL_MINUTES: Minutes between automatic database backups.
 - BACKUPS_TO_KEEP: Delete old backups after the number of backups exceeds this.
 
