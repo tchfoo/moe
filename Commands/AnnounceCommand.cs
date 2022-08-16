@@ -85,7 +85,7 @@ public class AnnounceCommand : SlashCommandBase
 
   private string? TrimPlaceholder(string? placeholder)
   {
-    if (placeholder?.Length > 100)
+    if (placeholder?.Length > TextInputBuilder.MaxPlaceholderLength)
     {
       return placeholder.Substring(0, Math.Min(placeholder.Length, 96)) + "...";
     }
