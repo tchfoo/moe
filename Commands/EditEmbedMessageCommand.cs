@@ -66,14 +66,14 @@ public class EditEmbedMessageCommand : MessageCommandBase
       .WithTitle("Embed editor")
       .AddTextInput("Title", nameof(e.Title), placeholder: TrimPlaceholder(e.Title), value: e.Title, required: true, maxLength: EmbedBuilder.MaxTitleLength)
       .AddTextInput("Description", nameof(e.Description), placeholder: TrimPlaceholder(e.Description), value: e.Description, required: true, maxLength: 2000, style: TextInputStyle.Paragraph)
-      .AddTextInput("Footer", nameof(e.Footer), placeholder: TrimPlaceholder(e.Footer), value: e.Footer, required: false, maxLength: 2048)
+      .AddTextInput("Footer", nameof(e.Footer), placeholder: TrimPlaceholder(e.Footer), value: e.Footer, required: false, maxLength: EmbedFooterBuilder.MaxFooterTextLength)
       .AddTextInput("Thumbnail image URL", nameof(e.ThumbnailImageUrl), placeholder: TrimPlaceholder(e.ThumbnailImageUrl), value: e.ThumbnailImageUrl, required: false)
       .AddTextInput("Image URL (large image)", nameof(e.LargeImageUrl), placeholder: TrimPlaceholder(e.LargeImageUrl), value: e.LargeImageUrl, required: false);
   }
 
   private string? TrimPlaceholder(string? placeholder)
   {
-    if (placeholder?.Length > 100)
+    if (placeholder?.Length > TextInputBuilder.MaxPlaceholderLength)
     {
       return placeholder.Substring(0, Math.Min(placeholder.Length, 96)) + "...";
     }

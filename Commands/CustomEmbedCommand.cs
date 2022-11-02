@@ -49,7 +49,7 @@ public class CustomEmbedCommand : SlashCommandBase
       .WithTitle("Embed creator")
       .AddTextInput("Title", nameof(CustomEmbed.Title), placeholder: "Title of the embed", required: true, maxLength: EmbedBuilder.MaxTitleLength)
       .AddTextInput("Description", nameof(CustomEmbed.Description), placeholder: "Description of the embed", required: true, maxLength: 2000, style: TextInputStyle.Paragraph)
-      .AddTextInput("Footer", nameof(CustomEmbed.Footer), placeholder: "Footer text", required: false, maxLength: 2048)
+      .AddTextInput("Footer", nameof(CustomEmbed.Footer), placeholder: "Footer text", required: false, maxLength: EmbedFooterBuilder.MaxFooterTextLength)
       .AddTextInput("Thumbnail image URL", nameof(CustomEmbed.ThumbnailImageUrl), placeholder: "Image URL of thumbnail in the embed", required: false)
       .AddTextInput("Image URL (large image)", nameof(CustomEmbed.LargeImageUrl), placeholder: "Image URL (large image)", required: false);
   }
