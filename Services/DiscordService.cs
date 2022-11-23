@@ -17,6 +17,7 @@ public static class DiscordService
         GatewayIntents.GuildBans |
         GatewayIntents.GuildVoiceStates |
         GatewayIntents.GuildMessages |
+        GatewayIntents.MessageContent |
         GatewayIntents.DirectMessages,
       AlwaysDownloadUsers = true,
       MessageCacheSize = 10_000,
