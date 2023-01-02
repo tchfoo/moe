@@ -39,6 +39,8 @@ DiscordService.Discord.Ready += async () =>
   var commandLoggerService = new CommandLoggerService();
   var humanTimeService = new HumanTimeService(settingsService);
   var customEmbedService = new CustomEmbedService(settingsService);
+  var autoroleService = new AutoroleService(settingsService);
+  autoroleService.Register();
 
   var slashCommands = new List<SlashCommandBase>
   {

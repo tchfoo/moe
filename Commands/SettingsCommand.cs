@@ -61,6 +61,20 @@ public class SettingsCommand : SlashCommandBase
         .WithDescription("Set the default time zone for /humantime")
         .AddOption("timezone", ApplicationCommandOptionType.String, "The time zone", isRequired: true)
         .WithType(ApplicationCommandOptionType.SubCommand)
+      ).AddOption(new SlashCommandOptionBuilder()
+        .WithName("autorole")
+        .WithDescription("Autoroles will be given to new members when joining the server")
+        .AddOption(new SlashCommandOptionBuilder()
+          .WithName("add")
+          .WithDescription("Add an autorole. Autoroles will be given to new members when joining the server")
+          .AddOption("role", ApplicationCommandOptionType.Role, "The role", isRequired: true)
+          .WithType(ApplicationCommandOptionType.SubCommand)
+        ).AddOption(new SlashCommandOptionBuilder()
+          .WithName("remove")
+          .WithDescription("Remove an autorole. Autoroles will be given to new members when joining the server")
+          .AddOption("role", ApplicationCommandOptionType.Role, "The role", isRequired: true)
+          .WithType(ApplicationCommandOptionType.SubCommand)
+        ).WithType(ApplicationCommandOptionType.SubCommandGroup)
       ).WithType(ApplicationCommandOptionType.SubCommandGroup);
     this.service = service;
   }
@@ -87,6 +101,12 @@ public class SettingsCommand : SlashCommandBase
       "leavemessage" => SetLeaveMessage(cmd, subcommand),
       "noxp" => SetNoXPRole(cmd, subcommand),
       "timezone" => SetTimeZone(cmd, subcommand, guild),
+      "autorole" => subcommand.GetSubcommand().Name switch
+      {
+        "add" => AddAutorole(cmd, subcommand.GetSubcommand(), guild),
+        "remove" => RemoveAutorole(cmd, subcommand.GetSubcommand(), guild),
+        _ => throw new InvalidOperationException($"{Emotes.ErrorEmote} Unknown subcommand {subcommand.Name}")
+      },
       _ => throw new InvalidOperationException($"{Emotes.ErrorEmote} Unknown subcommand {subcommand.Name}")
     };
 
@@ -131,6 +151,8 @@ public class SettingsCommand : SlashCommandBase
     var leaveMessage = await service.GetLeaveMessage(guild);
     string leaveMessageString = leaveMessage is null ? "None" : $"{leaveMessage.Value.Message} in {leaveMessage.Value.Channel.Mention}";
     var timeZone = await service.GetTimeZone(guild);
+    var autoroles = (await service.GetAutoroles(guild))
+      .Select(x => x.Mention);
 
     var embed = new EmbedBuilder()
       .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
@@ -143,6 +165,7 @@ public class SettingsCommand : SlashCommandBase
       .AddField("No-XP role", noXPRole?.Mention ?? "None", inline: true)
       .AddField("Leave message", leaveMessageString, inline: true)
       .AddField("Time zone", timeZone is null ? "None" : timeZone.TimeZoneString, inline: true)
+      .AddField("Autoroles", autoroles.Any() ? string.Join(" ", autoroles) : "None", inline: true)
       .WithColor(Colors.Blurple);
 
     await cmd.RespondAsync(embed: embed.Build());
@@ -222,5 +245,33 @@ public class SettingsCommand : SlashCommandBase
 
     await service.SetTimeZone(guild, parsed);
     await cmd.RespondAsync($"{Emotes.SuccessEmote} Time zone set to {parsed.TimeZoneString}");
+  }
+
+  private async Task AddAutorole(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
+  {
+    var role = subcommand.GetOption<SocketRole>("role")!;
+
+    if (await service.HasAutorole(guild, role))
+    {
+      await cmd.RespondAsync($"{Emotes.ErrorEmote} Role {role.Mention} is already an autorole");
+      return;
+    }
+
+    await service.AddAutorole(guild, role);
+    await cmd.RespondAsync($"{Emotes.SuccessEmote} Added {role.Mention} to autoroles");
+  }
+
+  private async Task RemoveAutorole(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
+  {
+    var role = subcommand.GetOption<SocketRole>("role")!;
+
+    if (!await service.HasAutorole(guild, role))
+    {
+      await cmd.RespondAsync($"{Emotes.ErrorEmote} Role {role.Mention} is not an autorole");
+      return;
+    }
+
+    await service.RemoveAutorole(guild, role);
+    await cmd.RespondAsync($"{Emotes.SuccessEmote} Removed {role.Mention} from autoroles");
   }
 }

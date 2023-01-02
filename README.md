@@ -49,6 +49,7 @@ The bot has numerous features, many of which can be found in other bots, but the
   - No-XP role: the role that cannot receive XP in the leveling system
   - Leave message: what the bot should say after a user leaves the server and in which channel
   - Time zone: set a default timezone for the timezone converter command
+  - Autorole: set roles that will be applied to new users when they join
 
 # Running MoeBot
 

@@ -9,6 +9,7 @@ public class SettingsService
   {
     CreateSettingsTable().Wait();
     CreateModranksTable().Wait();
+    CreateAutorolesTable().Wait();
 
     DiscordService.Discord.UserLeft += OnUserLeft;
   }
@@ -290,6 +291,50 @@ public class SettingsService
     return TimeZoneTime.Parse(timeZoneString);
   }
 
+  public async Task<bool> HasAutorole(SocketGuild guild, SocketRole role)
+  {
+    var sql = "SELECT COUNT(*) FROM autoroles WHERE guild_id = $0 AND role_id = $1";
+    var count = await DatabaseService.QueryFirst<int>(sql, guild.Id, role.Id);
+    return count > 0;
+  }
+
+  public async Task<List<SocketRole>> GetAutoroles(SocketGuild guild)
+  {
+    var sql = "SELECT role_id FROM autoroles WHERE guild_id = $0";
+    var roleIds = await DatabaseService.Query<ulong>(sql, guild.Id);
+    var roles = new List<SocketRole>();
+    foreach (var roleId in roleIds)
+    {
+      var role = guild.GetRole(roleId);
+      if (role is null)
+      {
+        await RemoveAutorole(guild, roleId: roleId);
+      }
+      else
+      {
+        roles.Add(role);
+      }
+    }
+
+    return roles;
+  }
+
+  public async Task AddAutorole(SocketGuild guild, SocketRole role)
+  {
+    await LogService.LogToFileAndConsole($"Adding autorole {role}", guild);
+
+    var sql = "INSERT INTO autoroles(guild_id, role_id) VALUES($0, $1)";
+    await DatabaseService.NonQuery(sql, guild.Id, role.Id);
+  }
+
+  public async Task RemoveAutorole(SocketGuild guild, SocketRole? role = null, ulong? roleId = null)
+  {
+    await LogService.LogToFileAndConsole($"Removing autorole {role?.ToString() ?? roleId.ToString()}", guild);
+
+    var sql = "DELETE FROM autoroles WHERE guild_id = $0 AND role_id = $1";
+    await DatabaseService.NonQuery(sql, guild.Id, role?.Id ?? roleId);
+  }
+
   private async Task CreateSettingsTable()
   {
     var sql = @"
@@ -309,6 +354,17 @@ public class SettingsService
         guild_id INTEGER NOT NULL,
         role_id INTEGER NOT NULL,
         level INTEGER NOT NULL
+      )";
+    await DatabaseService.NonQuery(sql);
+  }
+
+  private async Task CreateAutorolesTable()
+  {
+    var sql = @"
+      CREATE TABLE IF NOT EXISTS autoroles(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        guild_id INTEGER NOT NULL,
+        role_id INTEGER NOT NULL
       )";
     await DatabaseService.NonQuery(sql);
   }
