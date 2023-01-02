@@ -77,6 +77,13 @@ public class CustomRoleCommand : SlashCommandBase
       return;
     }
 
+    var highestBotRole = guild.CurrentUser.Roles.OrderByDescending(x => x.Position).First();
+    if (role.Position > highestBotRole.Position)
+    {
+      await cmd.RespondAsync($"{Emotes.ErrorEmote} Role {role.Mention} is in a higher position than my role ({highestBotRole.Mention}), therefore I won't be able to apply this role to other users");
+      return;
+    }
+
     await service.AddRole(guild, name, description, role);
     await cmd.RespondAsync($"{Emotes.SuccessEmote} Added role **{name}** to the list of custom roles");
   }
@@ -121,10 +128,31 @@ public class CustomRoleCommand : SlashCommandBase
     {
       var submittedRoles = submitted.Data.Values;
       var newSubscribedRoles = (await service.GetRoles(guild))
-        .Where(x => submittedRoles.Contains(x.Name));
+        .Where(x => submittedRoles.Contains(x.Name))
+        .ToList();
+
+      var highestBotRole = guild.CurrentUser.Roles.OrderByDescending(x => x.Position).First();
+      var newRoles = newSubscribedRoles
+        .ExceptBy(oldSubscribedRoles.Select(x => x.DiscordRole), x => x.DiscordRole);
+      var tooHighPermRoles = newRoles
+        .Where(x => x.DiscordRole.Position > highestBotRole.Position);
+
+      newSubscribedRoles = newSubscribedRoles
+        .ExceptBy(tooHighPermRoles.Select(x => x.DiscordRole), x => x.DiscordRole)
+        .ToList();
 
       await service.SyncRoleSubscriptions(user, oldSubscribedRoles, newSubscribedRoles);
       oldSubscribedRoles = newSubscribedRoles;
+
+      if (tooHighPermRoles.Any())
+      {
+        await submitted.RespondAsync($"{Emotes.ErrorEmote} Some of the roles you have selected can't be applied to due permission issues with Discord roles. This incident will be reported", ephemeral: true);
+        foreach (var role in tooHighPermRoles)
+        {
+          await LogService.Instance.LogToDiscord(guild, $"{Emotes.ErrorEmote} Role {role.DiscordRole.Mention} for custom role **{role.Name}** is in a higher position than my role ({highestBotRole.Mention}), therefore I can't apply this role to users");
+        }
+        return;
+      }
 
       await submitted.RespondAsync($"{Emotes.SuccessEmote} Your roles have been updated", ephemeral: true);
     };

@@ -257,6 +257,13 @@ public class SettingsCommand : SlashCommandBase
       return;
     }
 
+    var highestBotRole = guild.CurrentUser.Roles.OrderByDescending(x => x.Position).First();
+    if(role.Position > highestBotRole.Position)
+    {
+      await cmd.RespondAsync($"{Emotes.ErrorEmote} Role {role.Mention} is in a higher position than my role ({highestBotRole.Mention}), therefore I won't be able to apply this role to new users");
+      return;
+    }
+
     await service.AddAutorole(guild, role);
     await cmd.RespondAsync($"{Emotes.SuccessEmote} Added {role.Mention} to autoroles");
   }

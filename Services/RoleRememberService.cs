@@ -20,9 +20,22 @@ public class RoleRememberService
 
   private async Task OnUserJoined(SocketGuildUser user)
   {
-    var availableRoles = user.Guild.Roles.Select(x => x.Id);
+    var guild = user.Guild;
+    var availableRoles = guild.Roles.Select(x => x.Id);
     var roles = (await LoadRoles(user))
-      .Where(x => availableRoles.Contains(x));
+      .Where(x => availableRoles.Contains(x))
+      .Select(x => guild.GetRole(x))
+      .ToList();
+
+    var highestBotRole = guild.CurrentUser.Roles.OrderByDescending(x => x.Position).First();
+    foreach (var role in roles.ToList())
+    {
+      if (role.Position > highestBotRole.Position)
+      {
+        await LogService.Instance.LogToDiscord(guild, $"{Emotes.ErrorEmote} Role {role.Mention} is in a higher position than my role ({highestBotRole.Mention}), therefore I can't apply this role to {user.Mention} for joining back");
+        roles.Remove(role);
+      }
+    }
 
     await LogService.LogToFileAndConsole(
       $"User rejoined, adding roles {string.Join(", ", roles)} to {user}", user.Guild);
@@ -33,8 +46,15 @@ public class RoleRememberService
 
   private async Task SaveRoles(SocketGuildUser user, IEnumerable<SocketRole> roles)
   {
+    var guild = user.Guild;
     foreach (var role in roles)
     {
+      var highestBotRole = guild.CurrentUser.Roles.OrderByDescending(x => x.Position).First();
+      if (role.Position > highestBotRole.Position)
+      {
+        await LogService.Instance.LogToDiscord(guild, $"{Emotes.ErrorEmote} Role {role.Mention} is in a higher position than my role ({highestBotRole.Mention}), therefore I won't be able to apply this role to {user.Mention} when they join back");
+      }
+
       var sql = "INSERT INTO remember_roles(guild_id, user_id, role_id) VALUES($0, $1, $2)";
       await DatabaseService.NonQuery(sql, user.Guild.Id, user.Id, role.Id);
     }
