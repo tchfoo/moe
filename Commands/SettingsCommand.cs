@@ -119,24 +119,18 @@ public class SettingsCommand : SlashCommandBase
     var logChannel = await service.GetLogChannel(guild);
     var prefix = await service.GetCommandPrefix(guild);
     var modranks = await service.GetModranks(guild);
+    var modrankAdmins = modranks
+      .Where(x => x.Level == ModrankLevel.Administrator)
+      .Select(x => x.Role.Mention)
+      .ToList();
+    var modrankMods = modranks
+      .Where(x => x.Level == ModrankLevel.Moderator)
+      .Select(x => x.Role.Mention)
+      .ToList();
     var noXPRole = await service.GetNoXPRole(guild);
     var leaveMessage = await service.GetLeaveMessage(guild);
-    var timeZone = await service.GetTimeZone(guild);
-
-    string modrankAdminString = "", modrankModString = "";
-    foreach (var modrank in modranks)
-    {
-      if (modrank.Level.ToString() == "Administrator")
-      {
-        modrankAdminString += $" {modrank.Role.Mention}";
-      }
-      else if (modrank.Level.ToString() == "Moderator")
-      {
-        modrankModString += $"{modrank.Role.Mention}";
-      }
-    }
-
     string leaveMessageString = leaveMessage is null ? "None" : $"{leaveMessage.Value.Message} in {leaveMessage.Value.Channel.Mention}";
+    var timeZone = await service.GetTimeZone(guild);
 
     var embed = new EmbedBuilder()
       .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
@@ -144,8 +138,8 @@ public class SettingsCommand : SlashCommandBase
       .AddField("Pin chanel", pinChannel?.Mention ?? "None", inline: true)
       .AddField("Log channel", logChannel?.Mention ?? "None", inline: true)
       .AddField("Custom command prefix", prefix, inline: true)
-      .AddField("Bot Administrator ranks", string.IsNullOrEmpty(modrankAdminString) ? "None" : modrankAdminString, inline: true)
-      .AddField("Moderator ranks", string.IsNullOrEmpty(modrankModString) ? "None" : modrankModString, inline: true)
+      .AddField("Bot Administrator ranks", modrankAdmins.Any() ? string.Join(" ", modrankAdmins) : "None", inline: true)
+      .AddField("Moderator ranks", modrankMods.Any() ? string.Join(" ", modrankMods) : "None", inline: true)
       .AddField("No-XP role", noXPRole?.Mention ?? "None", inline: true)
       .AddField("Leave message", leaveMessageString, inline: true)
       .AddField("Time zone", timeZone is null ? "None" : timeZone.TimeZoneString, inline: true)
