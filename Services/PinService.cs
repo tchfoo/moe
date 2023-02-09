@@ -19,13 +19,18 @@ public class PinService
 
   private Embed PinMessageEmbed(IMessage message)
   {
-    var user = (SocketGuildUser)message.Author;
+    var color = Colors.Grey;
+    if (message.Author is SocketGuildUser)
+    {
+      var user = (SocketGuildUser)message.Author;
+      color = Colors.GetMainRoleColor(user);
+    }
 
     var embed = new EmbedBuilder()
       .WithAuthor(message.Author)
       .WithDescription($"{message.Content}\n\n[Jump to message]({message.GetJumpUrl()})")
       .WithFooter($"{message.Timestamp.DateTime.ToLocalTime(): yyyy-MM-dd • HH:mm}")
-      .WithColor(Colors.GetMainRoleColor(user));
+      .WithColor(color);
 
     if (message.Attachments.Count > 0)
     {
