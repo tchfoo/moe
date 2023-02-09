@@ -82,7 +82,7 @@ public class SnapshotService
     };
 
     s.Channels = guild.Channels
-      .Where(x => x is ITextChannel || (voicenames && x is IVoiceChannel))
+      .Where(x => (textnames && x is ITextChannel) || (voicenames && x is IVoiceChannel))
       .ToDictionary(x => x.Id, x => x.Name);
     if (rolenames)
     {
@@ -231,9 +231,9 @@ public class SnapshotService
 
   private string GetGuildNameDump(SnapshotModel s)
   {
-    var guildName = s.GuildName == s.Guild.Name ? s.GuildName : $"**{s.GuildName}** (currently {s.Guild.Name})**";
-
-    return guildName;
+    return s.GuildName == s.Guild.Name ?
+      s.GuildName :
+      $"**{s.GuildName}** (currently {s.Guild.Name})**";
   }
 
   private async Task AddSnapshot(SnapshotModel s)
@@ -257,16 +257,24 @@ public class SnapshotService
 
     if (s.Channels.Count > 0)
     {
-      var values = string.Join(",", s.Channels.Select(x => $"({id}, {x.Key}, '{x.Value}')"));
-      sql = $"INSERT INTO snapshot_channels(snapshot_id, channel_id, channel_name) VALUES {values}";
-      await DatabaseService.NonQuery(sql);
+      var i = 0;
+      var placeholders = string.Join(",", s.Channels.Select(x => $"(${i++}, ${i++}, ${i++})"));
+      sql = $"INSERT INTO snapshot_channels(snapshot_id, channel_id, channel_name) VALUES {placeholders}";
+      var values = s.Channels
+        .SelectMany(x => new object[] { id, x.Key, x.Value })
+        .ToArray();
+      await DatabaseService.NonQuery(sql, values);
     }
 
     if (s.Roles is not null)
     {
-      var values = string.Join(",", s.Roles.Select(x => $"({id}, {x.Key}, '{x.Value}')"));
-      sql = $"INSERT INTO snapshot_roles(snapshot_id, role_id, role_name) VALUES {values}";
-      await DatabaseService.NonQuery(sql);
+      var i = 0;
+      var placeholders = string.Join(",", s.Roles.Select(x => $"(${i++}, ${i++}, ${i++})"));
+      sql = $"INSERT INTO snapshot_roles(snapshot_id, role_id, role_name) VALUES {placeholders}";
+      var values = s.Roles
+        .SelectMany(x => new object[] { id, x.Key, x.Value })
+        .ToArray();
+      await DatabaseService.NonQuery(sql, values);
     }
   }
 
