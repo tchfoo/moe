@@ -81,27 +81,9 @@ public class SnapshotService
       Channels = new Dictionary<ulong, string>(),
     };
 
-    if (textnames)
-    {
-      var textChannels = guild.TextChannels
-        .Where(CanBotManageChannel)
-        .Cast<SocketGuildChannel>();
-      foreach (var channel in textChannels)
-      {
-        s.Channels.Add(channel.Id, channel.Name);
-      }
-    }
-
-    if (voicenames)
-    {
-      var voiceChannels = guild.VoiceChannels
-        .Where(CanBotManageChannel)
-        .Cast<SocketGuildChannel>();
-      foreach (var channel in voiceChannels)
-      {
-        s.Channels.Add(channel.Id, channel.Name);
-      }
-    }
+    s.Channels = guild.Channels
+      .Where(x => x is ITextChannel || (voicenames && x is IVoiceChannel))
+      .ToDictionary(x => x.Id, x => x.Name);
     if (rolenames)
     {
       s.Roles = guild.Roles
