@@ -114,13 +114,12 @@ public class CustomCommandCommand : SlashCommandBase
 
   private async Task ListCommands(SocketSlashCommand cmd, SocketGuild guild)
   {
-    if (!await service.HasCommands(guild))
+    var commands = await service.GetCommands(guild);
+    if (commands.Count == 0)
     {
       await cmd.RespondAsync($"{Emotes.ErrorEmote} There are no custom commands");
       return;
     }
-
-    var commands = await service.GetCommands(guild);
 
     var p = new PaginatableEmbedBuilder<CustomCommand>
       (5, commands, items =>

@@ -19,14 +19,6 @@ public class CustomRoleService
     return settingsService.IsAuthorized(user, requiredLevel, out error);
   }
 
-  public async Task<bool> HasRoles(SocketGuild guild)
-  {
-    await RemoveBrokenRoles(guild);
-    var sql = "SELECT COUNT(*) FROM custom_roles WHERE guild_id = $0";
-    var count = await DatabaseService.QueryFirst<int>(sql, guild.Id);
-    return count > 0;
-  }
-
   public async Task<bool> HasRole(SocketGuild guild, string name)
   {
     await RemoveBrokenRoles(guild);

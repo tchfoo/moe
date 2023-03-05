@@ -22,13 +22,6 @@ public class TemplateService
     return settingsService.IsAuthorized(user, requiredLevel, out error);
   }
 
-  public async Task<bool> HasTemplates(SocketGuild guild)
-  {
-    var sql = "SELECT COUNT(*) FROM templates WHERE guild_id = $0";
-    var count = await DatabaseService.QueryFirst<int>(sql, guild.Id);
-    return count > 0;
-  }
-
   public async Task<bool> HasTemplate(SocketGuild guild, string name)
   {
     var sql = "SELECT COUNT(*) FROM templates WHERE guild_id = $0 AND name = $1";
@@ -36,7 +29,7 @@ public class TemplateService
     return count > 0;
   }
 
-  public async Task<List<(string Name, SocketGuildUser Creator)>> ListTemplates(SocketGuild guild)
+  public async Task<List<(string Name, SocketGuildUser Creator)>> GetTemplates(SocketGuild guild)
   {
     var sql = "SELECT name, creator_id FROM templates WHERE guild_id = $0 AND hidden = false";
     var templates = await DatabaseService.Query<string, ulong>(sql, guild.Id);

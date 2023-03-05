@@ -152,7 +152,8 @@ public class SettingsCommand : SlashCommandBase
     string leaveMessageString = leaveMessage is null ? "None" : $"{leaveMessage.Value.Message} in {leaveMessage.Value.Channel.Mention}";
     var timeZone = await service.GetTimeZone(guild);
     var autoroles = (await service.GetAutoroles(guild))
-      .Select(x => x.Mention);
+      .Select(x => x.Mention)
+      .ToList();
 
     var embed = new EmbedBuilder()
       .WithAuthor(guild.Name, iconUrl: guild.IconUrl)
@@ -160,12 +161,12 @@ public class SettingsCommand : SlashCommandBase
       .AddField("Pin chanel", pinChannel?.Mention ?? "None", inline: true)
       .AddField("Log channel", logChannel?.Mention ?? "None", inline: true)
       .AddField("Custom command prefix", prefix, inline: true)
-      .AddField("Bot Administrator ranks", modrankAdmins.Any() ? string.Join(" ", modrankAdmins) : "None", inline: true)
-      .AddField("Moderator ranks", modrankMods.Any() ? string.Join(" ", modrankMods) : "None", inline: true)
+      .AddField("Bot Administrator ranks", modrankAdmins.Count > 0 ? string.Join(" ", modrankAdmins) : "None", inline: true)
+      .AddField("Moderator ranks", modrankMods.Count > 0 ? string.Join(" ", modrankMods) : "None", inline: true)
       .AddField("No-XP role", noXPRole?.Mention ?? "None", inline: true)
       .AddField("Leave message", leaveMessageString, inline: true)
       .AddField("Time zone", timeZone is null ? "None" : timeZone.TimeZoneString, inline: true)
-      .AddField("Autoroles", autoroles.Any() ? string.Join(" ", autoroles) : "None", inline: true)
+      .AddField("Autoroles", autoroles.Count > 0 ? string.Join(" ", autoroles) : "None", inline: true)
       .WithColor(Colors.Blurple);
 
     await cmd.RespondAsync(embed: embed.Build());

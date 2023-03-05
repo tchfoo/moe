@@ -105,15 +105,14 @@ public class CustomRoleCommand : SlashCommandBase
   private async Task SelectRole(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
   {
     var user = (SocketGuildUser)cmd.User;
-
-    if (!await service.HasRoles(guild))
+    var roles = await service.GetRoles(guild);
+    if (roles.Count == 0)
     {
       await cmd.RespondAsync($"{Emotes.ErrorEmote} There are no custom roles");
       return;
     }
 
-    var roles = await service.GetRoles(guild);
-    IEnumerable<CustomRole> oldSubscribedRoles = await service.GetSubscribedRoles(user);
+    var oldSubscribedRoles = await service.GetSubscribedRoles(user);
     var options = roles.Select(x =>
         new SelectMenuOptionBuilder(x.Name, x.Name, x.Description, isDefault: oldSubscribedRoles.Contains(x))
       ).ToList();
@@ -135,7 +134,8 @@ public class CustomRoleCommand : SlashCommandBase
       var newRoles = newSubscribedRoles
         .ExceptBy(oldSubscribedRoles.Select(x => x.DiscordRole), x => x.DiscordRole);
       var tooHighPermRoles = newRoles
-        .Where(x => x.DiscordRole.Position > highestBotRole.Position);
+        .Where(x => x.DiscordRole.Position > highestBotRole.Position)
+        .ToList();
 
       newSubscribedRoles = newSubscribedRoles
         .ExceptBy(tooHighPermRoles.Select(x => x.DiscordRole), x => x.DiscordRole)
@@ -144,7 +144,7 @@ public class CustomRoleCommand : SlashCommandBase
       await service.SyncRoleSubscriptions(user, oldSubscribedRoles, newSubscribedRoles);
       oldSubscribedRoles = newSubscribedRoles;
 
-      if (tooHighPermRoles.Any())
+      if (tooHighPermRoles.Count > 0)
       {
         await submitted.RespondAsync($"{Emotes.ErrorEmote} Some of the roles you have selected can't be applied to due permission issues with Discord roles. This incident will be reported", ephemeral: true);
         foreach (var role in tooHighPermRoles)

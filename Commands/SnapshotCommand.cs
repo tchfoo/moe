@@ -149,13 +149,13 @@ public class SnapshotCommand : SlashCommandBase
   }
   private async Task ListSnapshots(SocketSlashCommand cmd, SocketGuild guild)
   {
-    if (!await service.HasSnapshots(guild))
+    var snapshots = await service.GetSnapshots(guild);
+    if (snapshots.Count == 0)
     {
       await cmd.RespondAsync($"{Emotes.ErrorEmote} There are no snapshots");
       return;
     }
 
-    var snapshots = await service.ListSnapshots(guild);
 
     var p = new PaginatableEmbedBuilder<string>
       (10, snapshots, items =>

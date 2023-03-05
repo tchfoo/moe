@@ -168,9 +168,8 @@ public class TemplateCommand : SlashCommandBase
   private async Task ListTemplates(SocketSlashCommand cmd, SocketGuildUser user)
   {
     var guild = user.Guild;
-    var templates = await service.ListTemplates(user.Guild);
-
-    if (!await service.HasTemplates(guild))
+    var templates = await service.GetTemplates(user.Guild);
+    if (templates.Count == 0)
     {
       await cmd.RespondAsync($"{Emotes.ErrorEmote} There are no templates");
       return;

@@ -69,8 +69,10 @@ public class RngCommand : SlashCommandBase
   {
     try
     {
-      var nums = args.Select(int.Parse);
-      if (!nums.Any())
+      var nums = args
+        .Select(int.Parse)
+        .ToList();
+      if (nums.Count == 0)
       {
         throw new FormatException();
       }

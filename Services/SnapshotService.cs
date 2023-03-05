@@ -21,13 +21,6 @@ public class SnapshotService
     return settingsService.IsAuthorized(user, requiredLevel, out error);
   }
 
-  public async Task<bool> HasSnapshots(SocketGuild guild)
-  {
-    var sql = "SELECT COUNT(*) FROM snapshots WHERE guild_id = $0";
-    var count = await DatabaseService.QueryFirst<int>(sql, guild.Id);
-    return count > 0;
-  }
-
   public async Task<bool> HasSnapshot(SocketGuild guild, string name)
   {
     var sql = "SELECT COUNT(*) FROM snapshots WHERE guild_id = $0 AND name = $1";
@@ -35,7 +28,7 @@ public class SnapshotService
     return count > 0;
   }
 
-  public async Task<List<string>> ListSnapshots(SocketGuild guild)
+  public async Task<List<string>> GetSnapshots(SocketGuild guild)
   {
     var sql = "SELECT name FROM snapshots WHERE guild_id = $0";
     var snapshots = await DatabaseService.Query<string>(sql, guild.Id);
@@ -262,7 +255,7 @@ public class SnapshotService
       sql = $"INSERT INTO snapshot_channels(snapshot_id, channel_id, channel_name) VALUES {placeholders}";
       var values = s.Channels
         .SelectMany(x => new object[] { id, x.Key, x.Value })
-        .ToArray();
+        .ToList();
       await DatabaseService.NonQuery(sql, values);
     }
 
@@ -273,7 +266,7 @@ public class SnapshotService
       sql = $"INSERT INTO snapshot_roles(snapshot_id, role_id, role_name) VALUES {placeholders}";
       var values = s.Roles
         .SelectMany(x => new object[] { id, x.Key, x.Value })
-        .ToArray();
+        .ToList();
       await DatabaseService.NonQuery(sql, values);
     }
   }

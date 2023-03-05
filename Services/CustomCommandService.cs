@@ -19,13 +19,6 @@ public class CustomCommandService
     return settingsService.IsAuthorized(user, requiredLevel, out error);
   }
 
-  public async Task<bool> HasCommands(SocketGuild guild)
-  {
-    var sql = "SELECT COUNT(*) FROM custom_commands WHERE guild_id = $0";
-    var count = await DatabaseService.QueryFirst<int>(sql, guild.Id);
-    return count > 0;
-  }
-
   public async Task<bool> HasCommand(SocketGuild guild, string name)
   {
     name = await CleanCommandName(guild, name);
