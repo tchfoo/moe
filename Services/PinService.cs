@@ -17,24 +17,29 @@ public class PinService
     return await settingsService.GetPinChannel(guild);
   }
 
-  private Embed PinMessageEmbed(IMessage message)
+  private Embed PinMessageEmbed(IMessage msg)
   {
     var color = Colors.Grey;
-    if (message.Author is SocketGuildUser)
+    if (msg.Author is SocketGuildUser)
     {
-      var user = (SocketGuildUser)message.Author;
+      var user = (SocketGuildUser)msg.Author;
       color = Colors.GetMainRoleColor(user);
     }
 
+    var attachmentInfo = msg.Attachments.Count >= 2 ?
+      $"*{msg.Attachments.Count - 1} more image(s)*\n" :
+      string.Empty;
+    var jumpToMessage = $"[Jump to message]({msg.GetJumpUrl()})";
+
     var embed = new EmbedBuilder()
-      .WithAuthor(message.Author)
-      .WithDescription($"{message.Content}\n\n[Jump to message]({message.GetJumpUrl()})")
-      .WithFooter($"{message.Timestamp.DateTime.ToLocalTime(): yyyy-MM-dd • HH:mm}")
+      .WithAuthor(msg.Author)
+      .WithDescription($"{msg.Content}\n\n{attachmentInfo}{jumpToMessage}")
+      .WithFooter($"{msg.Timestamp.DateTime.ToLocalTime(): yyyy-MM-dd • HH:mm}")
       .WithColor(color);
 
-    if (message.Attachments.Count > 0)
+    if (msg.Attachments.Count > 0)
     {
-      embed.WithImageUrl(message.Attachments.First().Url);
+      embed.WithImageUrl(msg.Attachments.First().Url);
     }
 
     return embed.Build();
@@ -84,8 +89,18 @@ public class PinService
     await LogService.LogToFileAndConsole(
       $"Pinning message {msg.Id} from {cmd.Channel}", guild);
 
-    var pinEmbed = PinMessageEmbed(msg);
-    await pinChannel!.SendMessageAsync(embed: pinEmbed);
+    var onlyImageAttachments = msg.Attachments.All(x => x.ContentType.StartsWith("image"));
+    if (onlyImageAttachments)
+    {
+      var pinEmbed = PinMessageEmbed(msg);
+      await pinChannel!.SendMessageAsync(embed: pinEmbed);
+    }
+    else
+    {
+      var attachments = string.Join("\n", msg.Attachments.Select(x => x.Url));
+      await pinChannel!.SendMessageAsync($"**{msg.Author.Username}**: {msg.Content}\n\n{attachments}");
+    }
+
     await cmd.RespondAsync($"{Emotes.SuccessEmote} Message successfully pinned");
     return true;
   }
