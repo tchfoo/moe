@@ -36,6 +36,8 @@ DiscordService.Discord.Ready += async () =>
   var snapshotService = new SnapshotService(settingsService);
   var backupService = new BackupService();
   backupService.Init();
+  var heartbeatService = new HeartbeatService();
+  heartbeatService.Init();
   var commandLoggerService = new CommandLoggerService();
   var humanTimeService = new HumanTimeService(settingsService);
   var customEmbedService = new CustomEmbedService(settingsService);
