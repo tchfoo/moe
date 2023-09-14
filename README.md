@@ -64,7 +64,7 @@ Create **development.env** file where you cloned this repository and paste the f
 
 ```
 TOKEN=<DISCORD_BOT_ACCESS_TOKEN>
-SERVERID=<DISCORD_SERVER_ID
+SERVERID=<DISCORD_SERVER_ID>
 OWNERS=<DISCORD_USER_ID>
 BACKUP_INTERVAL_MINUTES=60
 BACKUPS_TO_KEEP=50
