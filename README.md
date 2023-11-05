@@ -86,21 +86,23 @@ You should see the bot online on your server. By typing **/** in the message box
 
 # Configuration in detail
 
-You can have seperate configurations for developing the bot and using it in production.
+You can have separate configurations for developing the bot and using it in production.
 A development configuration is in **development.env** file and looks like [this](#configuration).
 Same concept applies to production configuration too, except it doesn't use the `SERVERID` field.
 To tell the bot which configuration should it use, run it with `--development` or `--production`. It defaults to production in case no environment was specified.
 
 ## Options
+
 - TOKEN: Your Discord bot's access token. Anyone with possession of this token can act on your bot's behalf.
 - SERVERID: The Server ID where guild scoped commands can be registered. Only used when running in development mode.
-- OWNERS: Comma seperated list of User IDs who have full access to the bot. Overrides [modranks](#modranks).
+- OWNERS: Comma separated list of User IDs who have full access to the bot. Overrides [modranks](#modranks).
 - BACKUP_INTERVAL_MINUTES: Minutes between automatic database backups.
 - BACKUPS_TO_KEEP: Delete old backups after the number of backups exceeds this.
 
 Commands (including slash commands and context commands) are registered at guild (discord server) scope when using development mode, and global scope when using production mode. Global command registration may take a few seconds or minutes due to Discord's API, but guild scoped commands are almost instant. In order to register commands, you need to run the bot with `--register-commands` parameter. The reason why registering commands is not the default is Discord can rate limit the bot when it tries to register commands over and over again in a short period of time. This can be annoying when debugging.
 
 # Credits
+
 - [Discord.Net](https://github.com/discord-net/Discord.Net) - The library used to interact with the Discord API.
 - [DotNetEnv](https://github.com/tonerdo/dotnet-env) - The library used for the bot's configuration file.
 - The formula to calculate leveling XP is based on [Mee6](https://mee6.xyz)'s formula.
