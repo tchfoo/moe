@@ -1,4 +1,4 @@
-<h1 align="center">Moe-Bot</h1>
+<h1 align="center">MoeBot</h1>
 <h4 align="center">A multi-purpose (private) Discord bot made using Discord.NET</h4>
 
 Moe is a Discord bot made for my friend's private server. The main goal was to utilise Discord's new bot API features such as slash commands, message and user commands, modals, select menus, buttons, responses and ephemeral responses and so on. It turned out to be pretty usable, and while it might not be as feature-rich as the other multi-purpose bots out there, it could replace almost all of the bots on that small server.
