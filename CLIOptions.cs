@@ -1,6 +1,6 @@
 using CommandLine;
 
-namespace MoeBot;
+namespace Moe;
 
 public class CLIOptions
 {

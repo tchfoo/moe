@@ -1,4 +1,4 @@
-namespace MoeBot.Models;
+namespace Moe.Models;
 
 public enum ModrankLevel
 {

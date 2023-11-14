@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using MoeBot;
-using MoeBot.Commands;
-using MoeBot.Services;
+using Moe;
+using Moe.Commands;
+using Moe.Services;
 
 await ConfigService.Init(args);
 DiscordService.Init();

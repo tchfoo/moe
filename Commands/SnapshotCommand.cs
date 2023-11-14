@@ -1,9 +1,9 @@
 using Discord;
 using Discord.WebSocket;
-using MoeBot.Models;
-using MoeBot.Services;
+using Moe.Models;
+using Moe.Services;
 
-namespace MoeBot.Commands;
+namespace Moe.Commands;
 
 public class SnapshotCommand : SlashCommandBase
 {

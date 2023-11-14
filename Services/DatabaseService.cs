@@ -1,6 +1,6 @@
 using Microsoft.Data.Sqlite;
 
-namespace MoeBot.Services;
+namespace Moe.Services;
 
 public static class DatabaseService
 {

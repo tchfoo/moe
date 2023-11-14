@@ -1,7 +1,7 @@
 using Discord;
 using Discord.WebSocket;
 
-namespace MoeBot.Services;
+namespace Moe.Services;
 
 public static class DiscordService
 {

@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
 using Discord.WebSocket;
-using MoeBot.Models;
+using Moe.Models;
 
-namespace MoeBot.Services;
+namespace Moe.Services;
 
 public class CustomCommandService
 {

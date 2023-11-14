@@ -1,7 +1,7 @@
 using Discord.WebSocket;
 using MathNet.Numerics.RootFinding;
 
-namespace MoeBot.Models;
+namespace Moe.Models;
 
 public class Level
 {

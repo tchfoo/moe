@@ -7,7 +7,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/MoeBot.csproj",
+        "${workspaceFolder}/moe.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -19,7 +19,7 @@
       "type": "process",
       "args": [
         "publish",
-        "${workspaceFolder}/MoeBot.csproj",
+        "${workspaceFolder}/moe.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -29,12 +29,7 @@
       "label": "watch",
       "command": "dotnet",
       "type": "process",
-      "args": [
-        "watch",
-        "run",
-        "--project",
-        "${workspaceFolder}/MoeBot.csproj"
-      ],
+      "args": ["watch", "run", "--project", "${workspaceFolder}/moe.csproj"],
       "problemMatcher": "$msCompile"
     }
   ]

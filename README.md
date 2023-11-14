@@ -1,4 +1,4 @@
-<h1 align="center">MoeBot</h1>
+<h1 align="center">Moe</h1>
 <h4 align="center">A multi-purpose (private) Discord bot made using Discord.NET</h4>
 
 Moe is a Discord bot made for my friend's private server. The main goal was to utilise Discord's new bot API features such as slash commands, message and user commands, modals, select menus, buttons, responses and ephemeral responses and so on. It turned out to be pretty usable, and while it might not be as feature-rich as the other multi-purpose bots out there, it could replace almost all of the bots on that small server.
@@ -51,7 +51,7 @@ The bot has numerous features, many of which can be found in other bots, but the
   - Time zone: set a default timezone for the timezone converter command
   - Autorole: set roles that will be applied to new users when they join
 
-# Running MoeBot
+# Running Moe
 
 ## Create a [Discord Bot](https://discord.com/developers/docs/intro#bots-and-apps)
 
@@ -74,7 +74,7 @@ Replace the placeholders enclosed in angle brackets with their appropriate value
 
 For more information, see [Configuration in detail](#configuration-in-detail).
 
-## Run MoeBot with dotnet
+## Run Moe with dotnet
 
 Install [.NET 6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0).
 

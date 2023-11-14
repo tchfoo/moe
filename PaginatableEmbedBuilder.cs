@@ -1,8 +1,8 @@
 using Discord;
 using Discord.WebSocket;
-using MoeBot.Services;
+using Moe.Services;
 
-namespace MoeBot;
+namespace Moe;
 
 public class PaginatableEmbedBuilder<T>
 {

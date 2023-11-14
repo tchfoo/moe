@@ -2,7 +2,7 @@
 using Discord;
 using Discord.WebSocket;
 
-namespace MoeBot.Commands;
+namespace Moe.Commands;
 
 public abstract class UserCommandBase
 {

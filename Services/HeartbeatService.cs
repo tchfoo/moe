@@ -1,6 +1,6 @@
 using Discord;
 
-namespace MoeBot.Services;
+namespace Moe.Services;
 
 public class HeartbeatService
 {

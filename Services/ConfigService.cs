@@ -1,4 +1,4 @@
-namespace MoeBot.Services;
+namespace Moe.Services;
 
 public static class ConfigService
 {
@@ -8,7 +8,7 @@ public static class ConfigService
   public static async Task Init(string[] args)
   {
     Options = CLIOptions.Parse(args);
-    Environment = await MoeBot.Environment.Load();
+    Environment = await Moe.Environment.Load();
 
     var environment = Options.IsDevelopment ? "development" : "production";
     await LogService.LogToFileAndConsole($"Running in {environment} environment");

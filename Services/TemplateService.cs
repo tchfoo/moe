@@ -1,9 +1,9 @@
 using System.Text.RegularExpressions;
 using Discord.WebSocket;
 using Discord;
-using MoeBot.Models;
+using Moe.Models;
 
-namespace MoeBot.Services;
+namespace Moe.Services;
 
 public class TemplateService
 {

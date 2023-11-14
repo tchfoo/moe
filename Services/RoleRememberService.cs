@@ -1,6 +1,6 @@
 using Discord.WebSocket;
 
-namespace MoeBot.Services;
+namespace Moe.Services;
 
 public class RoleRememberService
 {

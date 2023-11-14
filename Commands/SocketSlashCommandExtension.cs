@@ -1,6 +1,6 @@
 using Discord.WebSocket;
 
-namespace MoeBot;
+namespace Moe;
 
 public static class SocketSlashCommandExtension
 {

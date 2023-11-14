@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace MoeBot;
+namespace Moe;
 
 public static class DurationParser
 {

@@ -1,8 +1,8 @@
 using Discord;
 using Discord.WebSocket;
-using MoeBot.Services;
+using Moe.Services;
 
-namespace MoeBot.Commands;
+namespace Moe.Commands;
 
 public class RankCommand : SlashCommandBase
 {
