@@ -1,10 +1,8 @@
 # Sensitive files
 *.env
-token.json
 storage.db
 logs
 backups
-.heartbeat
 
 # Generated files
 obj

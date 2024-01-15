@@ -12,6 +12,7 @@ public class Environment
   public List<ulong> Owners { get; set; } = default!;
   public TimeSpan BackupInterval { get; set; } = default!;
   public int BackupsToKeep { get; set; } = default!;
+  public int StatusPort { get; set; } = default!;
 
   public static async Task<Environment> Load()
   {
@@ -38,6 +39,7 @@ public class Environment
         .ToList(),
       BackupInterval = TimeSpan.FromMinutes(int.Parse(GetEnv("BACKUP_INTERVAL_MINUTES"))),
       BackupsToKeep = int.Parse(GetEnv("BACKUPS_TO_KEEP")),
+      StatusPort = int.Parse(GetEnv("STATUS_PORT")),
     };
   }
 

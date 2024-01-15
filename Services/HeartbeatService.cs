@@ -1,3 +1,4 @@
+using System.Net;
 using Discord;
 
 namespace Moe.Services;
@@ -8,6 +9,12 @@ public class HeartbeatService
   {
     Task.Run(async () =>
     {
+      HttpListener listener = new HttpListener();
+      var url = $"http://localhost:{ConfigService.Environment.StatusPort}/";
+      listener.Prefixes.Add(url);
+      listener.Start();
+      await LogService.LogToFileAndConsole($"HTTP server started on {url}");
+
       while (true)
       {
         if (DiscordService.Discord.ConnectionState != ConnectionState.Connected)
@@ -15,16 +22,10 @@ public class HeartbeatService
           continue;
         }
 
-        var seconds = GetSecondsSinceEpoch().ToString();
-        File.WriteAllText(".heartbeat", seconds);
-        await Task.Delay(1000);
+        HttpListenerContext context = listener.GetContext();
+        // return 200
+        context.Response.OutputStream.Close();
       }
     });
-  }
-
-  private int GetSecondsSinceEpoch()
-  {
-    TimeSpan t = DateTime.UtcNow - new DateTime(1970, 1, 1);
-    return (int)t.TotalSeconds;
   }
 }
