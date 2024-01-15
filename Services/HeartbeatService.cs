@@ -10,7 +10,7 @@ public class HeartbeatService
     Task.Run(async () =>
     {
       HttpListener listener = new HttpListener();
-      var url = $"http://localhost:{ConfigService.Environment.StatusPort}/";
+      var url = $"http://+:{ConfigService.Environment.StatusPort}/";
       listener.Prefixes.Add(url);
       listener.Start();
       await LogService.LogToFileAndConsole($"HTTP server started on {url}");
