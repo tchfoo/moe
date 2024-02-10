@@ -1,23 +1,17 @@
 { buildDotnetModule
-, fetchFromGitHub
 , lib
+, version
 }:
 
 # to update deps.nix:
 # checkout out github:gepbird/nixpkgs/moebot-fetch-deps
-# update version number, rev and hash
 # $ pkgs/tools/moebot/update.sh
 # copy pkgs/tools/moebot/deps.nix to this directory
-buildDotnetModule rec {
+buildDotnetModule {
   pname = "moe";
-  version = "2024-01-15.1";
+  inherit version;
 
-  src = fetchFromGitHub {
-    owner = "ymstnt";
-    repo = pname;
-    rev = "0368a158f95dbc33d91ce8a001cd645672e99679";
-    hash = "sha256-0f0n4Wdp9Shddzc6oAq35me/rJ5qTbIAbg6mCGpYzts=";
-  };
+  src = ../.;
 
   nugetDeps = ./deps.nix;
 

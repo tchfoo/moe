@@ -10,9 +10,10 @@
     flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system:
       let
         pkgs = import nixpkgs { inherit system; };
+        version = builtins.substring 0 8 self.lastModifiedDate or "dirty";
       in
       {
-        packages.moe = pkgs.callPackage ./nix/package.nix { };
+        packages.moe = pkgs.callPackage ./nix/package.nix { inherit version; };
         defaultPackage = self.packages.${system}.moe;
       }
     );
