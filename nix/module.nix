@@ -1,16 +1,17 @@
-{ config, pkgs, lib, ... }:
+packages:
+{ config, pkgs, lib, specialArgs, ... }:
 
 with lib;
 with types;
 let
-  cfg = config.services.moe;
+  cfg = config.moe;
 in
 {
-  options.services.moe = {
+  options.moe = {
     enable = mkEnableOption "Enable the moe service";
     package = mkOption {
       type = package;
-      default = (pkgs.callPackage ./package.nix { });
+      default = packages.${pkgs.system}.default;
     };
     group = mkOption {
       type = str;
