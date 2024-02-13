@@ -27,17 +27,17 @@ in
       '';
     };
     settings = {
-      tokenFile = mkOption {
+      token = mkOption {
         type = str;
         description = ''
-          Path to file containing your Discord bot's access token.
+          Your Discord bot's access token.
           Anyone with possession of this token can act on your bot's behalf.
         '';
       };
-      ownersFile = mkOption {
+      owners = mkOption {
         type = str;
         description = ''
-          Path to file of a comma separated list of User IDs who have full access to the bot. Overrides modranks.
+          A comma separated list of User IDs who have full access to the bot. Overrides modranks.
         '';
       };
       backups-interval-minutes = mkOption {
@@ -62,6 +62,16 @@ in
         '';
       };
     };
+    credentialsFile = mkOption {
+      type = types.path;
+      description = lib.mdDoc ''
+        Path to a key-value pair file to be merged with the settings.
+        Useful to merge a file which is better kept out of the Nix store
+        to set secret config parameters like `token`.
+      '';
+      default = "/dev/null";
+      example = "/var/lib/secrets/moe/production.env";
+    };
   };
 
   config = mkIf cfg.enable {
@@ -82,16 +92,14 @@ in
         ExecStart = "${cfg.package}/bin/moe";
         WorkingDirectory = "/var/moe";
         User = "moe";
+        EnvironmentFile = cfg.credentialsFile;
         Environment =
           let
-            fromFile = file: builtins.replaceStrings ["\n"] [""] (builtins.readFile file);
-            token = "TOKEN=${fromFile cfg.settings.tokenFile}";
-            owners = "OWNERS=${fromFile cfg.settings.ownersFile}";
             backups-interval-minutes = "BACKUP_INTERVAL_MINUTES=${toString cfg.settings.backups-interval-minutes}";
             backups-to-keep = "BACKUPS_TO_KEEP=${toString cfg.settings.backups-to-keep}";
             status-port = "STATUS_PORT=${toString cfg.settings.status-port}";
           in
-          "${token} ${owners} ${backups-interval-minutes} ${backups-to-keep} ${status-port}";
+          "${backups-interval-minutes} ${backups-to-keep} ${status-port}";
       };
     };
   };
