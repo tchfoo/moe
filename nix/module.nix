@@ -27,19 +27,6 @@ in
       '';
     };
     settings = {
-      token = mkOption {
-        type = str;
-        description = ''
-          Your Discord bot's access token.
-          Anyone with possession of this token can act on your bot's behalf.
-        '';
-      };
-      owners = mkOption {
-        type = str;
-        description = ''
-          A comma separated list of User IDs who have full access to the bot. Overrides modranks.
-        '';
-      };
       backups-interval-minutes = mkOption {
         type = int;
         default = 60;
@@ -67,7 +54,7 @@ in
       description = lib.mdDoc ''
         Path to a key-value pair file to be merged with the settings.
         Useful to merge a file which is better kept out of the Nix store
-        to set secret config parameters like `token`.
+        to set secret config parameters like `token` and `owners`.
       '';
       default = "/dev/null";
       example = "/var/lib/secrets/moe/production.env";
