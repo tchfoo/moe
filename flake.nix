@@ -17,5 +17,10 @@
       in
       {
         packages.default = pkgs.callPackage ./nix/package.nix { inherit version; };
+        devShells.default = pkgs.mkShell {
+          packages = with pkgs; [
+            dotnet-sdk_6
+          ];
+        };
       });
 }
