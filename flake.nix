@@ -6,17 +6,15 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    {
-      nixosModule = import ./nix/module.nix self.outputs.packages;
-    } //
-    flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system:
+  outputs = inputs: with inputs;
+    flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
         version = builtins.substring 0 8 self.lastModifiedDate or "dirty";
       in
       {
         packages.default = pkgs.callPackage ./nix/package.nix { inherit version; };
+        nixosModule = import ./nix/module.nix self.outputs.packages;
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             dotnet-sdk_6
