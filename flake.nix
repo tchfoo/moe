@@ -7,6 +7,9 @@
   };
 
   outputs = inputs: with inputs;
+    {
+      nixosModule = import ./nix/module.nix self.outputs.packages;
+    } //
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
@@ -14,7 +17,6 @@
       in
       {
         packages.default = pkgs.callPackage ./nix/package.nix { inherit version; };
-        nixosModule = import ./nix/module.nix self.outputs.packages;
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             dotnet-sdk_6
