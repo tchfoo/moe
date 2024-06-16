@@ -255,7 +255,7 @@ public class SnapshotService
       sql = $"INSERT INTO snapshot_channels(snapshot_id, channel_id, channel_name) VALUES {placeholders}";
       var values = s.Channels
         .SelectMany(x => new object[] { id, x.Key, x.Value })
-        .ToList();
+        .ToArray();
       await DatabaseService.NonQuery(sql, values);
     }
 
@@ -266,7 +266,7 @@ public class SnapshotService
       sql = $"INSERT INTO snapshot_roles(snapshot_id, role_id, role_name) VALUES {placeholders}";
       var values = s.Roles
         .SelectMany(x => new object[] { id, x.Key, x.Value })
-        .ToList();
+        .ToArray();
       await DatabaseService.NonQuery(sql, values);
     }
   }
