@@ -1,6 +1,8 @@
 { buildDotnetModule
 , lib
 , version
+, dotnet-sdk_8
+, dotnet-runtime_8
 }:
 
 buildDotnetModule {
@@ -13,6 +15,9 @@ buildDotnetModule {
   nugetDeps = ./deps.nix;
 
   projectFile = [ "moe.csproj" ];
+
+  dotnet-sdk = dotnet-sdk_8;
+  dotnet-runtime = dotnet-runtime_8;
 
   executables = [ "moe" ];
 
