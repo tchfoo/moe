@@ -18,13 +18,15 @@ public class PinSlashCommand : SlashCommandBase
 
   public override async Task Handle(SocketSlashCommand cmd)
   {
+    await cmd.DeferAsync();
+
     var messageUrl = cmd.GetOption<string>("link")!;
 
     var formattedMessageUrl = Regex.Match(messageUrl, @"^https:\/\/(canary\.|ptb\.)?discord\.com\/channels\/(\d+)\/(\d+)\/(\d+)");
 
     if (!formattedMessageUrl.Success)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Invalid message link");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Invalid message link");
       return;
     }
 
@@ -45,13 +47,13 @@ public class PinSlashCommand : SlashCommandBase
     }
     catch (Exception)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Invalid message link");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Invalid message link");
       return;
     }
 
     if (inputGuildId != guildId || inputChannelId != channelId)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} You can only pin messages from this channel");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} You can only pin messages from this channel");
       return;
     }
 
@@ -61,7 +63,7 @@ public class PinSlashCommand : SlashCommandBase
 
     if (message == null)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Invalid message link");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Invalid message link");
       return;
     }
 

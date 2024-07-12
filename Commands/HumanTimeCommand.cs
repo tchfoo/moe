@@ -20,6 +20,8 @@ public class HumanTimeCommand : SlashCommandBase
 
   public async override Task Handle(SocketSlashCommand cmd)
   {
+    await cmd.DeferAsync();
+
     var guild = (cmd.Channel as SocketGuildChannel)!.Guild;
 
     var from = cmd.GetOption<string>("from") ?? string.Empty;
@@ -27,7 +29,7 @@ public class HumanTimeCommand : SlashCommandBase
 
     if (string.IsNullOrEmpty(from) && string.IsNullOrEmpty(to))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} You didn't specify any time zone. Perhaps you believe in the Stacked Earth theory?");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} You didn't specify any time zone. Perhaps you believe in the Stacked Earth theory?");
       return;
     }
 
@@ -38,7 +40,7 @@ public class HumanTimeCommand : SlashCommandBase
     }
     catch (FormatException ex)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Invalid from: {ex.Message}");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Invalid from: {ex.Message}");
       return;
     }
     TimeZoneTime toTime;
@@ -48,7 +50,7 @@ public class HumanTimeCommand : SlashCommandBase
     }
     catch (FormatException ex)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Invalid to: {ex.Message}");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Invalid to: {ex.Message}");
       return;
     }
 
@@ -59,6 +61,6 @@ public class HumanTimeCommand : SlashCommandBase
       .AddField("From", $"{fromTime.Time:HH:mm} {fromTime.TimeZoneString}")
       .AddField("To", $"{toTime.Time:HH:mm} {toTime.TimeZoneString}")
       .WithColor(Colors.Blurple);
-    await cmd.RespondAsync(embed: embed.Build());
+    await cmd.FollowupAsync(embed: embed.Build());
   }
 }

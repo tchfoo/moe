@@ -31,6 +31,8 @@ public class RngCommand : SlashCommandBase
 
   public override async Task Handle(SocketSlashCommand cmd)
   {
+    await cmd.DeferAsync();
+
     long rngMin = cmd.GetOption<long>("min", 1);
     long rngMax = cmd.GetOption<long>("max")!;
 
@@ -105,7 +107,7 @@ public class RngCommand : SlashCommandBase
   private async Task PrintFakeRng(SocketSlashCommand cmd)
   {
     var selectedNum = await DatabaseService.QueryFirst<int>("SELECT num FROM rngnums LIMIT(1);");
-    await cmd.RespondAsync(selectedNum.ToString());
+    await cmd.FollowupAsync(selectedNum.ToString());
 
     var user = (SocketGuildUser)cmd.User;
     await LogService.LogToFileAndConsole(
@@ -118,16 +120,16 @@ public class RngCommand : SlashCommandBase
   {
     if (rngMin > rngMax)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Minimum number cannot be bigger than maximum");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Minimum number cannot be bigger than maximum");
       return;
     }
     else if (rngMin == rngMax)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} The two numbers cannot be the same");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} The two numbers cannot be the same");
       return;
     }
 
     long rngNum = Random.Shared.NextInt64(rngMin, rngMax);
-    await cmd.RespondAsync(rngNum.ToString());
+    await cmd.FollowupAsync(rngNum.ToString());
   }
 }

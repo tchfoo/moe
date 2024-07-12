@@ -18,6 +18,8 @@ public class UserinfoCommand : SlashCommandBase
 
   public override async Task Handle(SocketSlashCommand cmd)
   {
+    await cmd.DeferAsync();
+
     var user = cmd.GetOption<SocketGuildUser>("user") ?? (SocketGuildUser)cmd.User;
 
     var firstJoined = await service.FirstJoined(user);
@@ -37,7 +39,7 @@ public class UserinfoCommand : SlashCommandBase
       .WithColor(Colors.GetMainRoleColor(user))
       .WithFooter($"ID: {user.Id}");
 
-    await cmd.RespondAsync(embed: embed.Build());
+    await cmd.FollowupAsync(embed: embed.Build());
   }
 
   private string RolesToString(IReadOnlyCollection<SocketRole> allRoles)

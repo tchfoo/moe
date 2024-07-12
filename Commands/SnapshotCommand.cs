@@ -46,13 +46,15 @@ public class SnapshotCommand : SlashCommandBase
 
   public override async Task Handle(SocketSlashCommand cmd)
   {
+    await cmd.DeferAsync();
+
     var user = (SocketGuildUser)cmd.User;
     var guild = user.Guild;
     var subcommand = cmd.GetSubcommand();
 
     if (!service.IsAuthorized(user, ModrankLevel.Administrator, out var error))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} " + error);
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} " + error);
       return;
     }
 
@@ -79,12 +81,12 @@ public class SnapshotCommand : SlashCommandBase
 
     if (await service.HasSnapshot(guild, name))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Snapshot **{name}** already exists");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Snapshot **{name}** already exists");
       return;
     }
 
     await service.AddSnapshot(guild, name, textnames, voicenames, rolenames, servericon);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Added snapshot **{name}**");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Added snapshot **{name}**");
   }
 
   private async Task RemoveSnapshot(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
@@ -93,12 +95,12 @@ public class SnapshotCommand : SlashCommandBase
 
     if (!await service.HasSnapshot(guild, name))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Snapshot **{name}** does not exist");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Snapshot **{name}** does not exist");
       return;
     }
 
     await service.RemoveSnapshot(guild, name);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Removed snapshot **{name}**");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Removed snapshot **{name}**");
   }
 
   private async Task RestoreSnapshot(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
@@ -107,11 +109,9 @@ public class SnapshotCommand : SlashCommandBase
 
     if (!await service.HasSnapshot(guild, name))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Snapshot **{name}** does not exist");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Snapshot **{name}** does not exist");
       return;
     }
-
-    await cmd.DeferAsync();
 
     var message = $"Restoring snapshot **{name}**";
     var result = await service.RestoreSnapshot(guild, name);
@@ -129,7 +129,7 @@ public class SnapshotCommand : SlashCommandBase
 
     if (!await service.HasSnapshot(guild, name))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Snapshot **{name}** does not exist");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Snapshot **{name}** does not exist");
       return;
     }
 
@@ -139,12 +139,12 @@ public class SnapshotCommand : SlashCommandBase
     var dumpMessage = $"Dumped snapshot **{name}**:";
     if (s.GuildIcon == null)
     {
-      await cmd.RespondAsync(dumpMessage, embed: dump.Build());
+      await cmd.FollowupAsync(dumpMessage, embed: dump.Build());
     }
     else
     {
       var icon = new FileAttachment(s.GuildIcon.Value.Stream, "servericon.png");
-      await cmd.RespondWithFileAsync(icon, dumpMessage, embed: dump.Build());
+      await cmd.FollowupWithFileAsync(icon, dumpMessage, embed: dump.Build());
     }
   }
   private async Task ListSnapshots(SocketSlashCommand cmd, SocketGuild guild)
@@ -152,7 +152,7 @@ public class SnapshotCommand : SlashCommandBase
     var snapshots = await service.GetSnapshots(guild);
     if (snapshots.Count == 0)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} There are no snapshots");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} There are no snapshots");
       return;
     }
 
@@ -166,6 +166,6 @@ public class SnapshotCommand : SlashCommandBase
           .WithColor(Colors.Blurple)
       );
 
-    await cmd.RespondAsync(embed: p.Embed, components: p.Components);
+    await cmd.FollowupAsync(embed: p.Embed, components: p.Components);
   }
 }

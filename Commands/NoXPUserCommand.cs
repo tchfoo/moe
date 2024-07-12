@@ -15,19 +15,21 @@ public class NoXPUserCommand : UserCommandBase
 
   public override async Task Handle(SocketUserCommand cmd)
   {
+    await cmd.DeferAsync();
+
     var user = (SocketGuildUser)cmd.User;
     var guild = user.Guild;
     var member = (SocketGuildUser)cmd.Data.Member;
 
     if (!service.IsAuthorized(user, ModrankLevel.Moderator, out var error))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} {error}");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} {error}");
       return;
     }
 
     if (!await service.IsNoXPRoleSet(guild))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} No-XP role was not set");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} No-XP role was not set");
       return;
     }
 
@@ -38,11 +40,11 @@ public class NoXPUserCommand : UserCommandBase
 
     if (isApplied)
     {
-      await cmd.RespondAsync($"{Emotes.SuccessEmote} No-XP role added to {member.Mention}");
+      await cmd.FollowupAsync($"{Emotes.SuccessEmote} No-XP role added to {member.Mention}");
     }
     else
     {
-      await cmd.RespondAsync($"{Emotes.SuccessEmote} No-XP role removed from {member.Mention}");
+      await cmd.FollowupAsync($"{Emotes.SuccessEmote} No-XP role removed from {member.Mention}");
     }
   }
 }

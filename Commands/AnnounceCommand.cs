@@ -95,6 +95,8 @@ public class AnnounceCommand : SlashCommandBase
 
   private async Task ShowTemplate(SocketInteraction interaction, TemplateModel template, bool preview)
   {
+    await interaction.DeferAsync();
+
     if (preview)
     {
       await PreviewTemplate(interaction, template);
@@ -103,7 +105,7 @@ public class AnnounceCommand : SlashCommandBase
     {
       if (template.Channel is null)
       {
-        await interaction.RespondAsync($"{Emotes.ErrorEmote} The channel for this template got deleted");
+        await interaction.FollowupAsync($"{Emotes.ErrorEmote} The channel for this template got deleted");
         return;
       }
 
@@ -116,13 +118,13 @@ public class AnnounceCommand : SlashCommandBase
     var embed = GetAnnouncementEmbed(template);
     if (embed.Length > EmbedBuilder.MaxEmbedLength)
     {
-      await interaction.RespondAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the announcement cannot be displayed, try recreating the template but shorter");
+      await interaction.FollowupAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the announcement cannot be displayed, try recreating the template but shorter");
       return;
     }
 
     var mention = template.Mention?.Mention;
     await template.Channel.SendMessageAsync(text: mention, embed: embed.Build());
-    await interaction.RespondAsync($"{Emotes.SuccessEmote} Announced template **{template.Name}**");
+    await interaction.FollowupAsync($"{Emotes.SuccessEmote} Announced template **{template.Name}**");
   }
 
   private async Task PreviewTemplate(SocketInteraction interaction, TemplateModel template)
@@ -130,12 +132,12 @@ public class AnnounceCommand : SlashCommandBase
     var embed = GetAnnouncementEmbed(template);
     if (embed.Length > EmbedBuilder.MaxEmbedLength)
     {
-      await interaction.RespondAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the announcement cannot be displayed, try recreating the template but shorter");
+      await interaction.FollowupAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the announcement cannot be displayed, try recreating the template but shorter");
       return;
     }
 
     var mention = template.Mention?.Mention;
-    await interaction.RespondAsync(text: mention, embed: embed.Build(), ephemeral: true);
+    await interaction.FollowupAsync(text: mention, embed: embed.Build(), ephemeral: true);
   }
 
   private EmbedBuilder GetAnnouncementEmbed(TemplateModel template)

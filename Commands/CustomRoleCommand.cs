@@ -34,12 +34,14 @@ public class CustomRoleCommand : SlashCommandBase
 
   public override async Task Handle(SocketSlashCommand cmd)
   {
+    await cmd.DeferAsync();
+
     var user = (SocketGuildUser)cmd.User;
     var subcommand = cmd.GetSubcommand();
 
     if (!Authorize(user, subcommand.Name, out var error))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} " + error);
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} " + error);
       return;
     }
 
@@ -73,19 +75,19 @@ public class CustomRoleCommand : SlashCommandBase
 
     if (await service.HasRole(guild, name))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Role **{name}** already exists");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Role **{name}** already exists");
       return;
     }
 
     var highestBotRole = guild.CurrentUser.Roles.OrderByDescending(x => x.Position).First();
     if (role.Position > highestBotRole.Position)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Role {role.Mention} is in a higher position than my role ({highestBotRole.Mention}), therefore I won't be able to apply this role to other users");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Role {role.Mention} is in a higher position than my role ({highestBotRole.Mention}), therefore I won't be able to apply this role to other users");
       return;
     }
 
     await service.AddRole(guild, name, description, role);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Added role **{name}** to the list of custom roles");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Added role **{name}** to the list of custom roles");
   }
 
   private async Task RemoveRole(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
@@ -94,12 +96,12 @@ public class CustomRoleCommand : SlashCommandBase
 
     if (!await service.HasRole(guild, name))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Role **{name}** does not exist");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Role **{name}** does not exist");
       return;
     }
 
     await service.RemoveRole(guild, name);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Removed role **{name}** from the list of custom roles");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Removed role **{name}** from the list of custom roles");
   }
 
   private async Task SelectRole(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
@@ -108,7 +110,7 @@ public class CustomRoleCommand : SlashCommandBase
     var roles = await service.GetRoles(guild);
     if (roles.Count == 0)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} There are no custom roles");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} There are no custom roles");
       return;
     }
 
@@ -146,7 +148,7 @@ public class CustomRoleCommand : SlashCommandBase
 
       if (tooHighPermRoles.Count > 0)
       {
-        await submitted.RespondAsync($"{Emotes.ErrorEmote} Some of the roles you have selected can't be applied to due permission issues with Discord roles. This incident will be reported", ephemeral: true);
+        await submitted.FollowupAsync($"{Emotes.ErrorEmote} Some of the roles you have selected can't be applied to due permission issues with Discord roles. This incident will be reported", ephemeral: true);
         foreach (var role in tooHighPermRoles)
         {
           await LogService.Instance.LogToDiscord(guild, $"{Emotes.ErrorEmote} Role {role.DiscordRole.Mention} for custom role **{role.Name}** is in a higher position than my role ({highestBotRole.Mention}), therefore I can't apply this role to users");
@@ -154,11 +156,11 @@ public class CustomRoleCommand : SlashCommandBase
         return;
       }
 
-      await submitted.RespondAsync($"{Emotes.SuccessEmote} Your roles have been updated", ephemeral: true);
+      await submitted.FollowupAsync($"{Emotes.SuccessEmote} Your roles have been updated", ephemeral: true);
     };
 
     var components = new ComponentBuilder()
         .WithSelectMenu(menu);
-    await cmd.RespondAsync(components: components.Build(), ephemeral: true);
+    await cmd.FollowupAsync(components: components.Build(), ephemeral: true);
   }
 }

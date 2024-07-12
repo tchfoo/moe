@@ -49,7 +49,7 @@ public class PinService
   {
     if (msg.Author.IsBot)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Bot messages cannot be pinned");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Bot messages cannot be pinned");
       return false;
     }
 
@@ -64,7 +64,7 @@ public class PinService
       await LogService.LogToFileAndConsole(
         "No pin channel was set", guild, LogSeverity.Warning);
 
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} No pin channel was set. Set it using `/settings pinchannel`");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} No pin channel was set. Set it using `/settings pinchannel`");
       return false;
     }
 
@@ -101,7 +101,7 @@ public class PinService
       await pinChannel!.SendMessageAsync($"**{msg.Author.Username}**: {msg.Content}\n\n{attachments}");
     }
 
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Message successfully pinned");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Message successfully pinned");
     return true;
   }
 }

@@ -105,7 +105,7 @@ public class TemplateService
         error += "Here is the stuff you have entered:\n";
       }
 
-      modal.RespondAsync($"{Emotes.ErrorEmote} " + error, embed: dump.Build());
+      modal.FollowupAsync($"{Emotes.ErrorEmote} " + error, embed: dump.Build());
       return false;
     }
 

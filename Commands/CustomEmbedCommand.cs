@@ -56,14 +56,16 @@ public class CustomEmbedCommand : SlashCommandBase
 
   private async Task ShowEmbed(SocketInteraction interaction, EmbedBuilder embed, SocketTextChannel channel)
   {
+    await interaction.DeferAsync();
+
     if (embed.Length > EmbedBuilder.MaxEmbedLength)
     {
-      await interaction.RespondAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the announcement cannot be displayed, try recreating the template but shorter");
+      await interaction.FollowupAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the announcement cannot be displayed, try recreating the template but shorter");
       return;
     }
 
     await channel.SendMessageAsync(embed: embed.Build());
-    await interaction.RespondAsync($"{Emotes.SuccessEmote} Embed sent");
+    await interaction.FollowupAsync($"{Emotes.SuccessEmote} Embed sent");
   }
 
   private EmbedBuilder GetEmbedToSend(SocketModal modal)

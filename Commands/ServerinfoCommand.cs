@@ -16,6 +16,8 @@ public class ServerinfoCommand : SlashCommandBase
 
   public override async Task Handle(SocketSlashCommand cmd)
   {
+    await cmd.DeferAsync();
+
     var guild = (cmd.Channel as SocketGuildChannel)!.Guild;
 
     var humans = guild.Users.Count(x => !x.IsBot);
@@ -33,6 +35,6 @@ public class ServerinfoCommand : SlashCommandBase
       .WithColor(Colors.Blurple)
       .WithFooter($"ID: {guild.Id} • Created at {guild.CreatedAt:yyyy-MM-dd}");
 
-    await cmd.RespondAsync(embed: embed.Build());
+    await cmd.FollowupAsync(embed: embed.Build());
   }
 }

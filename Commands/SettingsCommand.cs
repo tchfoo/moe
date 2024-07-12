@@ -81,13 +81,15 @@ public class SettingsCommand : SlashCommandBase
 
   public override async Task Handle(SocketSlashCommand cmd)
   {
+    await cmd.DeferAsync();
+
     var user = (SocketGuildUser)cmd.User;
     var guild = user.Guild;
     var subcommand = cmd.GetSubcommand();
 
     if (!Authorize(user, subcommand.Name, out var error))
     {
-      await cmd.RespondAsync(error);
+      await cmd.FollowupAsync(error);
       return;
     }
 
@@ -169,28 +171,28 @@ public class SettingsCommand : SlashCommandBase
       .AddField("Autoroles", autoroles.Count > 0 ? string.Join(" ", autoroles) : "None", inline: true)
       .WithColor(Colors.Blurple);
 
-    await cmd.RespondAsync(embed: embed.Build());
+    await cmd.FollowupAsync(embed: embed.Build());
   }
 
   private async Task SetPinChannel(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand)
   {
     var channel = subcommand.GetOption<SocketTextChannel>("channel")!;
     await service.SetPinChannel(channel);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Pin channel set to {channel.Mention}");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Pin channel set to {channel.Mention}");
   }
 
   private async Task SetLogChannel(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand)
   {
     var channel = subcommand.GetOption<SocketTextChannel>("channel")!;
     await service.SetLogChannel(channel);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Log channel set to {channel.Mention}");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Log channel set to {channel.Mention}");
   }
 
   private async Task SetCommandPrefix(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
   {
     var prefix = subcommand.GetOption<string>("prefix")!;
     await service.SetCommandPrefix(guild, prefix);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Command prefix set to {prefix}");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Command prefix set to {prefix}");
   }
 
   private async Task SetModrank(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand)
@@ -198,14 +200,14 @@ public class SettingsCommand : SlashCommandBase
     var role = subcommand.GetOption<SocketRole>("role")!;
     var level = (ModrankLevel)subcommand.GetOption<long>("level")!;
     await service.SetModrank(role, level);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Modrank is now {level} for role {role.Mention}");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Modrank is now {level} for role {role.Mention}");
   }
 
   private async Task SetNoXPRole(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand)
   {
     var role = subcommand.GetOption<SocketRole>("role")!;
     await service.SetNoXPRole(role);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} No XP role set to {role.Mention}");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} No XP role set to {role.Mention}");
   }
 
   private async Task SetLeaveMessage(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand)
@@ -215,12 +217,12 @@ public class SettingsCommand : SlashCommandBase
 
     if (!message.Contains("$user"))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} The message must contain the placeholder $user");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} The message must contain the placeholder $user");
       return;
     }
 
     await service.SetLeaveMessage(channel, message);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Leave message set to {message} in {channel.Mention}");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Leave message set to {message} in {channel.Mention}");
   }
 
   private async Task SetTimeZone(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
@@ -234,18 +236,18 @@ public class SettingsCommand : SlashCommandBase
     }
     catch (FormatException ex)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} {ex.Message}");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} {ex.Message}");
       return;
     }
 
     if (parsed.TimeZoneBase is null)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Time zone is not specified");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Time zone is not specified");
       return;
     }
 
     await service.SetTimeZone(guild, parsed);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Time zone set to {parsed.TimeZoneString}");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Time zone set to {parsed.TimeZoneString}");
   }
 
   private async Task AddAutorole(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
@@ -254,19 +256,19 @@ public class SettingsCommand : SlashCommandBase
 
     if (await service.HasAutorole(guild, role))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Role {role.Mention} is already an autorole");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Role {role.Mention} is already an autorole");
       return;
     }
 
     var highestBotRole = guild.CurrentUser.Roles.OrderByDescending(x => x.Position).First();
     if(role.Position > highestBotRole.Position)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Role {role.Mention} is in a higher position than my role ({highestBotRole.Mention}), therefore I won't be able to apply this role to new users");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Role {role.Mention} is in a higher position than my role ({highestBotRole.Mention}), therefore I won't be able to apply this role to new users");
       return;
     }
 
     await service.AddAutorole(guild, role);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Added {role.Mention} to autoroles");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Added {role.Mention} to autoroles");
   }
 
   private async Task RemoveAutorole(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
@@ -275,11 +277,11 @@ public class SettingsCommand : SlashCommandBase
 
     if (!await service.HasAutorole(guild, role))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Role {role.Mention} is not an autorole");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Role {role.Mention} is not an autorole");
       return;
     }
 
     await service.RemoveAutorole(guild, role);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Removed {role.Mention} from autoroles");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Removed {role.Mention} from autoroles");
   }
 }

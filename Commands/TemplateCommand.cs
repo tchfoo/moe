@@ -97,6 +97,8 @@ public class TemplateCommand : SlashCommandBase
     var modal = CreateTemplateModal(t);
     modal.OnSubmitted += async submitted =>
     {
+      await submitted.DeferAsync();
+
       UpdateTemplateFromModal(submitted, t);
       if (!service.ValidateTemplateParameters(submitted, t))
       {
@@ -104,7 +106,7 @@ public class TemplateCommand : SlashCommandBase
       }
 
       await service.AddTemplate(t);
-      await submitted.RespondAsync($"{Emotes.SuccessEmote} Added template **{t.Name}**");
+      await submitted.FollowupAsync($"{Emotes.SuccessEmote} Added template **{t.Name}**");
     };
 
     await cmd.RespondWithModalAsync(modal.Build());
@@ -132,25 +134,29 @@ public class TemplateCommand : SlashCommandBase
 
   private async Task RemoveTemplate(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuildUser user)
   {
+    await cmd.DeferAsync();
+
     var name = subcommand.GetOption<string>("name")!;
 
     if (!await service.HasTemplate(user.Guild, name))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Template **{name}** does not exist");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Template **{name}** does not exist");
       return;
     }
 
     await service.RemoveTemplate(user.Guild, name);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Removed template **{name}**");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Removed template **{name}**");
   }
 
   private async Task DumpTemplate(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuildUser user)
   {
+    await cmd.DeferAsync();
+
     var name = subcommand.GetOption<string>("name")!;
 
     if (!await service.HasTemplate(user.Guild, name))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Template **{name}** does not exist");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Template **{name}** does not exist");
       return;
     }
 
@@ -158,20 +164,22 @@ public class TemplateCommand : SlashCommandBase
     var dump = service.GetTemplateDump(t);
     if (dump.Length > EmbedBuilder.MaxEmbedLength)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the template cannot be dumped, try recreating the template but shorter");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the template cannot be dumped, try recreating the template but shorter");
       return;
     }
 
-    await cmd.RespondAsync(text: $"Dump of template **{name}**:", embed: dump.Build());
+    await cmd.FollowupAsync(text: $"Dump of template **{name}**:", embed: dump.Build());
   }
 
   private async Task ListTemplates(SocketSlashCommand cmd, SocketGuildUser user)
   {
+    await cmd.DeferAsync();
+
     var guild = user.Guild;
     var templates = await service.GetTemplates(user.Guild);
     if (templates.Count == 0)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} There are no templates");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} There are no templates");
       return;
     }
 
@@ -186,6 +194,6 @@ public class TemplateCommand : SlashCommandBase
           .WithColor(Colors.Blurple)
       );
 
-    await cmd.RespondAsync(embed: p.Embed, components: p.Components);
+    await cmd.FollowupAsync(embed: p.Embed, components: p.Components);
   }
 }

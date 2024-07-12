@@ -37,13 +37,15 @@ public class CustomCommandCommand : SlashCommandBase
 
   public override async Task Handle(SocketSlashCommand cmd)
   {
+    await cmd.DeferAsync();
+
     var user = (SocketGuildUser)cmd.User;
     var guild = user.Guild;
     var subcommand = cmd.GetSubcommand();
 
     if (!Authorize(user, subcommand.Name, out var error))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} " + error);
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} " + error);
       return;
     }
 
@@ -67,24 +69,24 @@ public class CustomCommandCommand : SlashCommandBase
 
     if (await service.HasCommand(guild, name))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Command **{await service.PrefixCommandName(guild, name)}** already exists");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Command **{await service.PrefixCommandName(guild, name)}** already exists");
       return;
     }
 
     if (name.Contains(' '))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Custom commands cannot have spaces in them");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Custom commands cannot have spaces in them");
       return;
     }
 
     if (!ValidateResponse(response, out var error))
     {
-      await cmd.RespondAsync(error);
+      await cmd.FollowupAsync(error);
       return;
     }
 
     await service.AddCommand(guild, name, response, description, delete);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Added command **{await service.PrefixCommandName(guild, name)}**");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Added command **{await service.PrefixCommandName(guild, name)}**");
   }
 
   private bool Authorize(SocketGuildUser user, string subcommand, out string? error)
@@ -104,12 +106,12 @@ public class CustomCommandCommand : SlashCommandBase
 
     if (!await service.HasCommand(guild, name))
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Command **{await service.PrefixCommandName(guild, name)}** does not exist");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Command **{await service.PrefixCommandName(guild, name)}** does not exist");
       return;
     }
 
     await service.RemoveCommand(guild, name);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Removed command **{await service.PrefixCommandName(guild, name)}**");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Removed command **{await service.PrefixCommandName(guild, name)}**");
   }
 
   private async Task ListCommands(SocketSlashCommand cmd, SocketGuild guild)
@@ -117,7 +119,7 @@ public class CustomCommandCommand : SlashCommandBase
     var commands = await service.GetCommands(guild);
     if (commands.Count == 0)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} There are no custom commands");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} There are no custom commands");
       return;
     }
 
@@ -132,7 +134,7 @@ public class CustomCommandCommand : SlashCommandBase
           .WithColor(Colors.Blurple)
       );
 
-    await cmd.RespondAsync(embed: p.Embed, components: p.Components);
+    await cmd.FollowupAsync(embed: p.Embed, components: p.Components);
   }
 
   private bool ValidateResponse(string response, out string? error)

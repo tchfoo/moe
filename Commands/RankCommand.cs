@@ -18,6 +18,8 @@ public class RankCommand : SlashCommandBase
 
   public override async Task Handle(SocketSlashCommand cmd)
   {
+    await cmd.DeferAsync();
+
     var user = cmd.GetOption<SocketGuildUser>("user") ?? (SocketGuildUser)cmd.User;
 
     await service.EnsureLevelExists(user);
@@ -33,7 +35,7 @@ public class RankCommand : SlashCommandBase
         .AddField("Progress", $"{level.XPFromThisLevel} XP / {level.TotalLevelXP} XP {progressBar} {percentageOut}%")
         .WithColor(Colors.GetMainRoleColor(user));
 
-    await cmd.RespondAsync(embed: embed.Build());
+    await cmd.FollowupAsync(embed: embed.Build());
   }
 
   private string GetProgressBar(double percentage)

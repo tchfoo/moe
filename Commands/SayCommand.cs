@@ -19,12 +19,14 @@ public class SayCommand : SlashCommandBase
 
   public override async Task Handle(SocketSlashCommand cmd)
   {
+    await cmd.DeferAsync();
+
     var user = (SocketGuildUser)cmd.User;
     if (cmd.HasOption("channel"))
     {
       if (!service.IsAuthorized(user, ModrankLevel.Moderator, out var error))
       {
-        await cmd.RespondAsync($"{Emotes.ErrorEmote} " + error);
+        await cmd.FollowupAsync($"{Emotes.ErrorEmote} " + error);
         return;
       }
     }
@@ -34,11 +36,11 @@ public class SayCommand : SlashCommandBase
 
     if (message.Length > 2000)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} The message is too long");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} The message is too long");
       return;
     }
 
     await channel.SendMessageAsync(message);
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Message sent", ephemeral: true);
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Message sent", ephemeral: true);
   }
 }

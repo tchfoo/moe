@@ -83,9 +83,11 @@ public class EditEmbedMessageCommand : MessageCommandBase
 
   private async Task EditEmbed(SocketInteraction interaction, EmbedBuilder embed, SocketTextChannel channel, SocketMessage message)
   {
+    await interaction.DeferAsync();
+
     if (embed.Length > EmbedBuilder.MaxEmbedLength)
     {
-      await interaction.RespondAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the announcement cannot be displayed, try recreating the template but shorter");
+      await interaction.FollowupAsync($"{Emotes.ErrorEmote} You have reached the maximum embed character limit ({EmbedBuilder.MaxEmbedLength} characters), so the announcement cannot be displayed, try recreating the template but shorter");
       return;
     }
 
@@ -93,7 +95,7 @@ public class EditEmbedMessageCommand : MessageCommandBase
     {
       messageProperties.Embed = embed.Build();
     });
-    await interaction.RespondAsync($"{Emotes.SuccessEmote} Embed edited");
+    await interaction.FollowupAsync($"{Emotes.SuccessEmote} Embed edited");
   }
 
   private EmbedBuilder GetEmbedToSend(SocketModal modal)

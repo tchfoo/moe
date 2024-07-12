@@ -15,11 +15,13 @@ public class LevelupMessage : SlashCommandBase
 
   public override async Task Handle(SocketSlashCommand cmd)
   {
+    await cmd.DeferAsync();
+
     var user = (SocketGuildUser)cmd.User;
     await service.ToggleLevelupMessage(user);
     var enabled = await service.IsLevelupMessageEnabled(user);
 
     var enabledOut = enabled ? "enabled" : "disabled";
-    await cmd.RespondAsync($"{Emotes.SuccessEmote} Levelup message is now {enabledOut} for {user.Mention}");
+    await cmd.FollowupAsync($"{Emotes.SuccessEmote} Levelup message is now {enabledOut} for {user.Mention}");
   }
 }

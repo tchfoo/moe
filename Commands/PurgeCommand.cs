@@ -18,23 +18,24 @@ public class PurgeCommand : SlashCommandBase
 
   public override async Task Handle(SocketSlashCommand cmd)
   {
+    await cmd.DeferAsync();
+
     var user = (SocketGuildUser)cmd.User;
     var channel = (SocketTextChannel)cmd.Channel;
     var count = (int)cmd.GetOption<long>("count");
 
     if (!service.IsAuthorized(user, ModrankLevel.Moderator, out var error))
     {
-      await cmd.RespondAsync(error);
+      await cmd.FollowupAsync(error);
       return;
     }
 
     if (count > service.MaxPurgeCount)
     {
-      await cmd.RespondAsync($"{Emotes.ErrorEmote} Cannot purge more than {service.MaxPurgeCount} messages");
+      await cmd.FollowupAsync($"{Emotes.ErrorEmote} Cannot purge more than {service.MaxPurgeCount} messages");
       return;
     }
 
-    await cmd.DeferAsync();
     await service.Purge(cmd, channel, count);
     await cmd.FollowupAsync($"{Emotes.SuccessEmote} Purged {count} messages from {channel.Mention}");
   }

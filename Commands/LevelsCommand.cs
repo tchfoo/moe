@@ -16,6 +16,8 @@ public class LevelsCommand : SlashCommandBase
 
   public override async Task Handle(SocketSlashCommand cmd)
   {
+    await cmd.DeferAsync();
+
     var guild = ((SocketGuildChannel)cmd.Channel).Guild;
 
     var leaderboard = await service.GetLeaderboard(guild);
@@ -30,6 +32,6 @@ public class LevelsCommand : SlashCommandBase
           .WithColor(Colors.Blurple)
       );
 
-    await cmd.RespondAsync(embed: p.Embed, components: p.Components);
+    await cmd.FollowupAsync(embed: p.Embed, components: p.Components);
   }
 }

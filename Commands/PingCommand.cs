@@ -11,6 +11,7 @@ public class PingCommand : SlashCommandBase
 
   public override async Task Handle(SocketSlashCommand cmd)
   {
-    await cmd.RespondAsync("Pong!");
+    await cmd.DeferAsync();
+    await cmd.FollowupAsync("Pong!");
   }
 }

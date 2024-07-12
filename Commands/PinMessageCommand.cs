@@ -14,6 +14,8 @@ public class PinMessageCommand : MessageCommandBase
 
   public override async Task Handle(SocketMessageCommand cmd)
   {
+    await cmd.DeferAsync();
+
     await service.TryPinningMessage(cmd, cmd.Data.Message);
   }
 }
