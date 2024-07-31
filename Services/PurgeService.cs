@@ -25,7 +25,10 @@ public class PurgeService
     await LogService.LogToFileAndConsole(
       $"Purging {count} messages from {channel}", channel.Guild);
 
-    var messages = await channel.GetMessagesAsync(count).FlattenAsync();
+    var messages = (await channel.GetMessagesAsync(count + 1)
+      .FlattenAsync())
+      .Where(x => x.Interaction?.Id != cmd.Id)
+      .Take(count);
     await channel.DeleteMessagesAsync(messages);
   }
 }
