@@ -27,7 +27,7 @@ public class PurgeService
 
     var messages = (await channel.GetMessagesAsync(count + 1)
       .FlattenAsync())
-      .Where(x => x.Interaction?.Id != cmd.Id)
+      .Where(x => (x as IUserMessage)?.InteractionMetadata?.Id != cmd.Id)
       .Take(count);
     await channel.DeleteMessagesAsync(messages);
   }
