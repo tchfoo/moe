@@ -41,6 +41,8 @@ DiscordService.Discord.Ready += async () =>
   var customEmbedService = new CustomEmbedService(settingsService);
   var autoroleService = new AutoroleService(settingsService);
   autoroleService.Register();
+  var embedFixerService = new EmbedFixerService();
+  var embedFixerHandler = new EmbedFixerHandler(embedFixerService);
 
   var slashCommands = new List<SlashCommandBase>
   {
@@ -164,12 +166,14 @@ DiscordService.Discord.Ready += async () =>
       await levelService.HandleMessage(msg);
 
       var prefix = await settingsService.GetCommandPrefix(guild);
-      if (!msg.Content.StartsWith(prefix))
+      if (msg.Content.StartsWith(prefix))
       {
-        return;
+        await customCommandHandler.TryHandleCommand(msg, commandName, args);
       }
-
-      await customCommandHandler.TryHandleCommand(msg, commandName, args);
+      else
+      {
+        await embedFixerHandler.TryHandleMessage(msg);
+      }
     }
   };
 };
