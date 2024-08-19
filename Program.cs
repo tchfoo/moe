@@ -64,6 +64,7 @@ DiscordService.Discord.Ready += async () =>
     new SnapshotCommand(snapshotService),
     new HumanTimeCommand(humanTimeService),
     new CustomEmbedCommand(customEmbedService),
+    new EmbedFixerCommand(embedFixerService),
 };
 
   var messageCommands = new List<MessageCommandBase>
