@@ -18,7 +18,7 @@ public class EmbedFixerHandler
     var guild = (channel as SocketGuildChannel)!.Guild;
     var content = message.Content;
 
-    var fixedContent = service.ReplaceLinks(content);
+    var fixedContent = await service.ReplaceLinks(guild.Id, content);
 
     if (content == fixedContent)
     {
