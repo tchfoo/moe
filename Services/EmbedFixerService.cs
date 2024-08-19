@@ -14,6 +14,7 @@ public class EmbedFixerService
 
   private readonly Dictionary<string, string> linkRegexes;
   private readonly SettingsService settingsService;
+  private Dictionary<ulong, List<EmbedFixerModel>> modelsCache = new();
 
   public EmbedFixerService(SettingsService settingsService)
   {
@@ -39,7 +40,7 @@ public class EmbedFixerService
 
   public async Task<string> ReplaceLinks(ulong guildId, string input)
   {
-    var models = await GetModels(guildId);
+    var models = await GetModelsFromCache(guildId);
     foreach (var model in models)
     {
       Regex regex = new Regex(model.Pattern);
@@ -58,6 +59,23 @@ public class EmbedFixerService
       Pattern = x.Item1!,
       Replacement = x.Item2!
     });
+  }
+
+  private async Task<List<EmbedFixerModel>> GetModelsFromCache(ulong guildId)
+  {
+    if (modelsCache.TryGetValue(guildId, out var models))
+    {
+      return models;
+    }
+
+    var newModels = await GetModels(guildId);
+    modelsCache.Add(guildId, newModels);
+    return newModels;
+  }
+
+  private void InvalidateModelsCache(ulong guildId)
+  {
+    modelsCache.Remove(guildId);
   }
 
   private async Task InitializeDatabase()
