@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using Discord.WebSocket;
+using Moe.Models;
 
 namespace Moe.Services;
 
@@ -11,8 +13,9 @@ public class EmbedFixerService
   private static readonly string initializedMagic = "_initialized-634761";
 
   private readonly Dictionary<string, string> linkRegexes;
+  private readonly SettingsService settingsService;
 
-  public EmbedFixerService()
+  public EmbedFixerService(SettingsService settingsService)
   {
     linkRegexes = new Dictionary<string, string>
     {
@@ -26,6 +29,12 @@ public class EmbedFixerService
     };
 
     InitializeDatabase().Wait();
+    this.settingsService = settingsService;
+  }
+
+  public bool IsAuthorized(SocketGuildUser user, out string? error)
+  {
+    return settingsService.IsAuthorized(user, ModrankLevel.Administrator, out error);
   }
 
   public string ReplaceLinks(string input)

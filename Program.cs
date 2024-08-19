@@ -41,7 +41,7 @@ DiscordService.Discord.Ready += async () =>
   var customEmbedService = new CustomEmbedService(settingsService);
   var autoroleService = new AutoroleService(settingsService);
   autoroleService.Register();
-  var embedFixerService = new EmbedFixerService();
+  var embedFixerService = new EmbedFixerService(settingsService);
   var embedFixerHandler = new EmbedFixerHandler(embedFixerService);
 
   var slashCommands = new List<SlashCommandBase>

@@ -30,5 +30,11 @@ public class EmbedFixerCommand : SlashCommandBase
 
   public override async Task Handle(SocketSlashCommand cmd)
   {
+    var user = (SocketGuildUser)cmd.User;
+    if (!service.IsAuthorized(user, out var error))
+    {
+      await cmd.RespondAsync($"{Emotes.ErrorEmote} " + error);
+      return;
+    }
   }
 }
