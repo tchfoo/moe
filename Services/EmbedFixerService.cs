@@ -37,15 +37,27 @@ public class EmbedFixerService
     return settingsService.IsAuthorized(user, ModrankLevel.Administrator, out error);
   }
 
-  public string ReplaceLinks(string input)
+  public async Task<string> ReplaceLinks(ulong guildId, string input)
   {
-    foreach (var (key, value) in linkRegexes)
+    var models = await GetModels(guildId);
+    foreach (var model in models)
     {
-      Regex regex = new Regex(key);
-      input = regex.Replace(input, value);
+      Regex regex = new Regex(model.Pattern);
+      input = regex.Replace(input, model.Replacement);
     }
 
     return input;
+  }
+
+  private async Task<List<EmbedFixerModel>> GetModels(ulong guildId)
+  {
+    var sql = "SELECT pattern, replacement FROM embed_fixer WHERE guild_id = $0 AND pattern != $1";
+    var result = await DatabaseService.Query<string, string>(sql, guildId, initializedMagic);
+    return result.ConvertAll(x => new EmbedFixerModel()
+    {
+      Pattern = x.Item1!,
+      Replacement = x.Item2!
+    });
   }
 
   private async Task InitializeDatabase()
