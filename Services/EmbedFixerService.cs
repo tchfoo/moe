@@ -61,7 +61,7 @@ public class EmbedFixerService
     });
   }
 
-  private async Task<List<EmbedFixerPattern>> GetPatternsFromCache(ulong guildId)
+  public async Task<List<EmbedFixerPattern>> GetPatternsFromCache(ulong guildId)
   {
     if (patternsCache.TryGetValue(guildId, out var patterns))
     {
