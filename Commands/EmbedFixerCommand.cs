@@ -33,7 +33,7 @@ public class EmbedFixerCommand : SlashCommandBase
     var user = (SocketGuildUser)cmd.User;
     var guild = user.Guild;
     var subcommand = cmd.GetSubcommand();
-    if (!service.IsAuthorized(user, out var error))
+    if (!Authorize(user, subcommand.Name, out var error))
     {
       await cmd.RespondAsync($"{Emotes.ErrorEmote} " + error);
       return;
@@ -47,6 +47,17 @@ public class EmbedFixerCommand : SlashCommandBase
     };
 
     await handle;
+  }
+
+  private bool Authorize(SocketGuildUser user, string subcommand, out string? error)
+  {
+    error = null;
+    if (subcommand == "list")
+    {
+      return true;
+    }
+
+    return service.IsAuthorized(user, ModrankLevel.Administrator, out error);
   }
 
   private async Task RemovePattern(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
