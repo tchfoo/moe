@@ -27,7 +27,8 @@ The bot has numerous features, many of which can be found in other bots, but the
 - Server Info: prints information about the server.
 - Timezone converter
 - Say: the bot repeats your message
-- Embed: moderators can use a built-in embed builder and send an embed using the bot
+- Custom Embed: moderators can use a built-in embed builder and send an embed using the bot
+- Embed Fixer: rewrites social media links to 3rd party websites that provide better embeds
 - Message Pinning: users can pin messages to a specified pin channel
   - Works sort of like a starboard, except the message only requires a single message command to pin
   - Note: there is no limitation on who can pin messages
