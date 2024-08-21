@@ -79,6 +79,22 @@ public class EmbedFixerService
     return patterns.Find(x => x.Pattern == pattern);
   }
 
+  public async Task<bool> HasPatternInCache(SocketGuild guild, string pattern)
+  {
+    var patterns = await GetPatternsFromCache(guild);
+    return patterns.Exists(x => x.Pattern == pattern);
+  }
+
+  public async Task AddPattern(SocketGuild guild, EmbedFixerPattern pattern)
+  {
+    InvalidatePatternsCache(guild);
+
+    await LogService.LogToFileAndConsole($"Adding embed fixer pattern {pattern.Pattern} with replacement {pattern.Replacement}", guild);
+
+    var sql = "INSERT INTO embed_fixer (guild_id, pattern, replacement) VALUES($0, $1, $2)";
+    await DatabaseService.NonQuery(sql, guild.Id, pattern.Pattern, pattern.Replacement);
+  }
+
   public async Task RemovePattern(SocketGuild guild, EmbedFixerPattern pattern)
   {
     InvalidatePatternsCache(guild);
