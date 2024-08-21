@@ -1,5 +1,3 @@
-using Discord.WebSocket;
-
 namespace Moe.Models;
 
 public class EmbedFixerPattern

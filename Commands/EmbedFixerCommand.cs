@@ -51,7 +51,7 @@ public class EmbedFixerCommand : SlashCommandBase
 
   private async Task ListPatterns(SocketSlashCommand cmd, SocketGuild guild)
   {
-    var patterns = await service.GetPatternsFromCache(guild.Id);
+    var patterns = await service.GetPatternsFromCache(guild);
     if (patterns.Count == 0)
     {
       await cmd.RespondAsync($"{Emotes.ErrorEmote} There are no embed fixer patterns");
