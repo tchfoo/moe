@@ -26,7 +26,7 @@ public class EmbedFixerService
       { @"https?://(?:www\.)?(twitter|x)\.com", @"https://fxtwitter.com" },
       { @"https?://(?:www\.)?instagram.com", @"https://ddinstagram.com" },
       { @"https?://(?:to)?github\.com/([A-Za-z0-9-]+/[A-Za-z0-9._-]+)/(?:issues|pull)/([0-9]+)([^\s]*)?", @"[$1#$2$3]($&)" },
-      { @"https?://(?:www\.)?tiktok.com", @"https://vxtiktok.com" },
+      { @"https?://([\w-]+\.)?tiktok.com", @"https://$1vxtiktok.com" },
     };
 
     InitializeDatabase().Wait();
