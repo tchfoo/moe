@@ -62,7 +62,7 @@ in
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "simple";
-        ExecStart = "${cfg.package}/bin/moe";
+        ExecStart = "${cfg.package}/bin/moe --register-commands";
         WorkingDirectory = "/var/moe";
         User = "moe";
         EnvironmentFile = cfg.credentialsFile;
