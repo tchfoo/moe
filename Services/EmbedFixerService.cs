@@ -33,9 +33,9 @@ public class EmbedFixerService
     this.settingsService = settingsService;
   }
 
-  public bool IsAuthorized(SocketGuildUser user, out string? error)
+  public bool IsAuthorized(SocketGuildUser user, ModrankLevel requiredLevel, out string? error)
   {
-    return settingsService.IsAuthorized(user, ModrankLevel.Administrator, out error);
+    return settingsService.IsAuthorized(user, requiredLevel, out error);
   }
 
   public async Task<string> ReplaceLinks(SocketGuild guild, string input)
