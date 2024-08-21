@@ -10,7 +10,7 @@
   (fetchNuGet { pname = "Discord.Net.Rest"; version = "3.15.3"; sha256 = "071wwnlzvn87s5rcbm7vrbr0p8l7wfg7qnsc3vqrqsf3f1r58kkp"; })
   (fetchNuGet { pname = "Discord.Net.Webhook"; version = "3.15.3"; sha256 = "0fkdf41w06r1wrncnvh6zyjadv9hgxf6a0jkdw506jh9d1zgk064"; })
   (fetchNuGet { pname = "Discord.Net.WebSocket"; version = "3.15.3"; sha256 = "1h4gsvh6l7xqb9rcs0r33fzzxrgw5ic7i8jizpaxdcgwdv6nsdnd"; })
-  (fetchNuGet { pname = "DotNetEnv"; version = "3.1.0"; sha256 = "1dxb1nz75y4xwpmi4hv4cbpvaan0ywcfspg7y6jzjrv7j3sl4ffj"; })
+  (fetchNuGet { pname = "DotNetEnv"; version = "3.1.1"; sha256 = "1glf47wwq34x7fs5qd9ck9fzjy89rv70jl4nywxng14yyr11yn63"; })
   (fetchNuGet { pname = "MathNet.Numerics"; version = "5.0.0"; sha256 = "0nlrl0rp7h665nafx0g42rqfxmm0pyvk3ydr2y4spilfrra44wj4"; })
   (fetchNuGet { pname = "Microsoft.Bcl.AsyncInterfaces"; version = "6.0.0"; sha256 = "15gqy2m14fdlvy1g59207h5kisznm355kbw010gy19vh47z8gpz3"; })
   (fetchNuGet { pname = "Microsoft.Data.Sqlite"; version = "8.0.8"; sha256 = "0n0p55h56by0phyxyafcm8nlszp3951wa8h2qpzdjb5lgbwffybr"; })
