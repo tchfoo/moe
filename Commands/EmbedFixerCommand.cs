@@ -41,6 +41,7 @@ public class EmbedFixerCommand : SlashCommandBase
 
     var handle = subcommand.Name switch
     {
+      "add" => AddPattern(cmd, subcommand, guild),
       "remove" => RemovePattern(cmd, subcommand, guild),
       "list" => ListPatterns(cmd, guild),
       _ => throw new InvalidOperationException($"{Emotes.ErrorEmote} Unknown subcommand {subcommand.Name}")
@@ -58,6 +59,34 @@ public class EmbedFixerCommand : SlashCommandBase
     }
 
     return service.IsAuthorized(user, ModrankLevel.Administrator, out error);
+  }
+
+  private async Task AddPattern(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
+  {
+    var modal = (SubmittableModalBuilder)new SubmittableModalBuilder()
+      .WithTitle("Add embed fixer pattern")
+      .AddTextInput("Regular expression pattern", nameof(EmbedFixerPattern.Pattern), placeholder: @"https?://(?:www\.)?instagram.com", required: true)
+      .AddTextInput("Replacement", nameof(EmbedFixerPattern.Replacement), placeholder: "https://ddinstagram.com", required: true);
+
+    modal.OnSubmitted += async submitted =>
+    {
+      var pattern = new EmbedFixerPattern()
+      {
+        Pattern = submitted.GetValue(nameof(EmbedFixerPattern.Pattern))!,
+        Replacement = submitted.GetValue(nameof(EmbedFixerPattern.Replacement))!
+      };
+
+      if (await service.HasPatternInCache(guild, pattern.Pattern))
+      {
+        await submitted.RespondAsync($"{Emotes.ErrorEmote} Pattern already exists\n> {pattern.Pattern}\n> {pattern.Replacement}");
+        return;
+      }
+
+      await service.AddPattern(guild, pattern);
+      await submitted.RespondAsync($"{Emotes.SuccessEmote} Added embed fixer pattern");
+    };
+
+    await cmd.RespondWithModalAsync(modal.Build());
   }
 
   private async Task RemovePattern(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
@@ -86,7 +115,7 @@ public class EmbedFixerCommand : SlashCommandBase
         .Where(x => submitted.Data.Values.Contains(x.Pattern))
         .ToList();
 
-      if(!patternsToRemove.Any())
+      if (!patternsToRemove.Any())
       {
         return;
       }
