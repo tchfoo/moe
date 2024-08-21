@@ -14,7 +14,7 @@ public class EmbedFixerService
 
   private readonly Dictionary<string, string> linkRegexes;
   private readonly SettingsService settingsService;
-  private Dictionary<ulong, List<EmbedFixerModel>> modelsCache = new();
+  private Dictionary<ulong, List<EmbedFixerPattern>> patternsCache = new();
 
   public EmbedFixerService(SettingsService settingsService)
   {
@@ -40,42 +40,42 @@ public class EmbedFixerService
 
   public async Task<string> ReplaceLinks(ulong guildId, string input)
   {
-    var models = await GetModelsFromCache(guildId);
-    foreach (var model in models)
+    var patterns = await GetPatternsFromCache(guildId);
+    foreach (var pattern in patterns)
     {
-      Regex regex = new Regex(model.Pattern);
-      input = regex.Replace(input, model.Replacement);
+      Regex regex = new Regex(pattern.Pattern);
+      input = regex.Replace(input, pattern.Replacement);
     }
 
     return input;
   }
 
-  private async Task<List<EmbedFixerModel>> GetModels(ulong guildId)
+  private async Task<List<EmbedFixerPattern>> GetPatterns(ulong guildId)
   {
     var sql = "SELECT pattern, replacement FROM embed_fixer WHERE guild_id = $0 AND pattern != $1";
     var result = await DatabaseService.Query<string, string>(sql, guildId, initializedMagic);
-    return result.ConvertAll(x => new EmbedFixerModel()
+    return result.ConvertAll(x => new EmbedFixerPattern()
     {
       Pattern = x.Item1!,
       Replacement = x.Item2!
     });
   }
 
-  private async Task<List<EmbedFixerModel>> GetModelsFromCache(ulong guildId)
+  private async Task<List<EmbedFixerPattern>> GetPatternsFromCache(ulong guildId)
   {
-    if (modelsCache.TryGetValue(guildId, out var models))
+    if (patternsCache.TryGetValue(guildId, out var patterns))
     {
-      return models;
+      return patterns;
     }
 
-    var newModels = await GetModels(guildId);
-    modelsCache.Add(guildId, newModels);
-    return newModels;
+    var newPatterns = await GetPatterns(guildId);
+    patternsCache.Add(guildId, newPatterns);
+    return newPatterns;
   }
 
-  private void InvalidateModelsCache(ulong guildId)
+  private void InvalidatePatternsCache(ulong guildId)
   {
-    modelsCache.Remove(guildId);
+    patternsCache.Remove(guildId);
   }
 
   private async Task InitializeDatabase()
