@@ -38,9 +38,9 @@ public class EmbedFixerService
     return settingsService.IsAuthorized(user, ModrankLevel.Administrator, out error);
   }
 
-  public async Task<string> ReplaceLinks(ulong guildId, string input)
+  public async Task<string> ReplaceLinks(SocketGuild guild, string input)
   {
-    var patterns = await GetPatternsFromCache(guildId);
+    var patterns = await GetPatternsFromCache(guild);
     foreach (var pattern in patterns)
     {
       Regex regex = new Regex(pattern.Pattern);
@@ -50,10 +50,10 @@ public class EmbedFixerService
     return input;
   }
 
-  private async Task<List<EmbedFixerPattern>> GetPatterns(ulong guildId)
+  private async Task<List<EmbedFixerPattern>> GetPatterns(SocketGuild guild)
   {
     var sql = "SELECT pattern, replacement FROM embed_fixer WHERE guild_id = $0 AND pattern != $1";
-    var result = await DatabaseService.Query<string, string>(sql, guildId, initializedMagic);
+    var result = await DatabaseService.Query<string, string>(sql, guild.Id, initializedMagic);
     return result.ConvertAll(x => new EmbedFixerPattern()
     {
       Pattern = x.Item1!,
@@ -61,21 +61,21 @@ public class EmbedFixerService
     });
   }
 
-  public async Task<List<EmbedFixerPattern>> GetPatternsFromCache(ulong guildId)
+  public async Task<List<EmbedFixerPattern>> GetPatternsFromCache(SocketGuild guild)
   {
-    if (patternsCache.TryGetValue(guildId, out var patterns))
+    if (patternsCache.TryGetValue(guild.Id, out var patterns))
     {
       return patterns;
     }
 
-    var newPatterns = await GetPatterns(guildId);
-    patternsCache.Add(guildId, newPatterns);
+    var newPatterns = await GetPatterns(guild);
+    patternsCache.Add(guild.Id, newPatterns);
     return newPatterns;
   }
 
-  private void InvalidatePatternsCache(ulong guildId)
+  private void InvalidatePatternsCache(SocketGuild guild)
   {
-    patternsCache.Remove(guildId);
+    patternsCache.Remove(guild.Id);
   }
 
   private async Task InitializeDatabase()
