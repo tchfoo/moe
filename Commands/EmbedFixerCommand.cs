@@ -25,7 +25,6 @@ public class EmbedFixerCommand : SlashCommandBase
         .WithDescription("List all regex patterns and replacements")
         .WithType(ApplicationCommandOptionType.SubCommand)
       ).WithType(ApplicationCommandOptionType.SubCommandGroup);
-      ;
     this.service = service;
   }
 
@@ -42,11 +41,57 @@ public class EmbedFixerCommand : SlashCommandBase
 
     var handle = subcommand.Name switch
     {
+      "remove" => RemovePattern(cmd, subcommand, guild),
       "list" => ListPatterns(cmd, guild),
       _ => throw new InvalidOperationException($"{Emotes.ErrorEmote} Unknown subcommand {subcommand.Name}")
     };
 
     await handle;
+  }
+
+  private async Task RemovePattern(SocketSlashCommand cmd, SocketSlashCommandDataOption subcommand, SocketGuild guild)
+  {
+    var patterns = await service.GetPatternsFromCache(guild);
+    if (patterns.Count == 0)
+    {
+      await cmd.RespondAsync($"{Emotes.ErrorEmote} There are no embed fixer patterns");
+      return;
+    }
+
+    var options = patterns.Select(x =>
+        new SelectMenuOptionBuilder(x.Pattern, x.Pattern, x.Replacement)
+      ).ToList();
+
+    var menu = (SubmittableSelectMenuBuilder)new SubmittableSelectMenuBuilder()
+      .WithPlaceholder("Choose embed fixer patterns to remove")
+      .WithOptions(options)
+      .WithMinValues(0)
+      .WithMaxValues(options.Count());
+
+    menu.OnSubmitted += async submitted =>
+    {
+      var patternsInDatabase = await service.GetPatternsFromCache(guild);
+      var patternsToRemove = patternsInDatabase
+        .Where(x => submitted.Data.Values.Contains(x.Pattern))
+        .ToList();
+
+      if(!patternsToRemove.Any())
+      {
+        return;
+      }
+
+      var removalTasks = patternsToRemove.Select(x => service.RemovePattern(guild, x));
+      await Task.WhenAll(removalTasks);
+
+      var removedPatternsMessage = string.Join('\n', patternsToRemove
+        .Select(x => $"> **{x.Pattern}**\n> {x.Replacement}")
+      );
+      await submitted.RespondAsync($"{Emotes.SuccessEmote} Removed {patternsToRemove.Count} embed fixer patterns:\n{removedPatternsMessage}");
+    };
+
+    var components = new ComponentBuilder()
+        .WithSelectMenu(menu);
+    await cmd.RespondAsync(components: components.Build(), ephemeral: true);
   }
 
   private async Task ListPatterns(SocketSlashCommand cmd, SocketGuild guild)
