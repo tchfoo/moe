@@ -1,8 +1,10 @@
 { buildDotnetModule
 , lib
+, system
 , version
 , dotnet-sdk_8
 , dotnet-runtime_8
+, nuget-packageslock2nix 
 }:
 
 buildDotnetModule {
@@ -11,8 +13,12 @@ buildDotnetModule {
 
   src = ../.;
 
-  # to update, run `nix/update.sh` from the root of this repo
-  nugetDeps = ./deps.nix;
+  nugetDeps = nuget-packageslock2nix.lib {
+    inherit system;
+    lockfiles = [
+      ../packages.lock.json
+    ];
+  };
 
   projectFile = [ "moe.csproj" ];
 
