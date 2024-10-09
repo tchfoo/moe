@@ -2,7 +2,8 @@
   description = "A multi-purpose Discord bot made using Discord.Net.";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # TODO: unpin when fixed: https://github.com/NixOS/nixpkgs/issues/347310
+    nixpkgs.url = "github:NixOS/nixpkgs/7402aa90cff52a03f14e680346fa4038a1e17e93";
     flake-utils.url = "github:numtide/flake-utils";
     nuget-packageslock2nix = {
       url = "github:mdarocha/nuget-packageslock2nix/main";
