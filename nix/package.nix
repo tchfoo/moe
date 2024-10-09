@@ -1,10 +1,11 @@
-{ buildDotnetModule
-, lib
-, system
-, version
-, dotnet-sdk_8
-, dotnet-runtime_8
-, nuget-packageslock2nix 
+{
+  buildDotnetModule,
+  lib,
+  system,
+  version,
+  dotnet-sdk_8,
+  dotnet-runtime_8,
+  nuget-packageslock2nix,
 }:
 
 buildDotnetModule {
@@ -15,9 +16,7 @@ buildDotnetModule {
 
   nugetDeps = nuget-packageslock2nix.lib {
     inherit system;
-    lockfiles = [
-      ../packages.lock.json
-    ];
+    lockfiles = [ ../packages.lock.json ];
   };
 
   projectFile = [ "moe.csproj" ];

@@ -1,5 +1,11 @@
 packages:
-{ config, pkgs, lib, specialArgs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  specialArgs,
+  ...
+}:
 
 with lib;
 with types;
@@ -71,4 +77,3 @@ in
     };
   };
 }
-

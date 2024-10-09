@@ -11,21 +11,28 @@
     };
   };
 
-  outputs = inputs: with inputs;
+  outputs =
+    inputs:
+    with inputs;
     {
       nixosModule = import ./nix/module.nix self.outputs.packages;
-    } //
-    flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system:
-      let
-        pkgs = import nixpkgs { inherit system; };
-        version = builtins.substring 0 8 self.lastModifiedDate or "dirty";
-      in
-      {
-        packages.default = pkgs.callPackage ./nix/package.nix { inherit version nuget-packageslock2nix; };
-        devShells.default = pkgs.mkShell {
-          packages = with pkgs; [
-            dotnet-sdk_8
-          ];
-        };
-      });
+    }
+    //
+      flake-utils.lib.eachSystem
+        [
+          "x86_64-linux"
+          "aarch64-linux"
+        ]
+        (
+          system:
+          let
+            pkgs = import nixpkgs { inherit system; };
+            version = builtins.substring 0 8 self.lastModifiedDate or "dirty";
+          in
+          {
+            packages.default = pkgs.callPackage ./nix/package.nix { inherit version nuget-packageslock2nix; };
+            devShells.default = pkgs.mkShell { packages = with pkgs; [ dotnet-sdk_8 ]; };
+            formatter = pkgs.nixfmt-rfc-style;
+          }
+        );
 }
