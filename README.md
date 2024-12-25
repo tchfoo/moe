@@ -76,7 +76,7 @@ For more information, see [Configuration in detail](#configuration-in-detail).
 
 ## Run Moe with dotnet
 
-Install [.NET 6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0).
+Install [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0).
 
 Run the command in a command prompt or terminal for starting the bot:
 
