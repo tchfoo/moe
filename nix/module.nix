@@ -20,7 +20,7 @@ let
     package
     ;
 
-  dataDir = "/var/moe";
+  dataDir = "/var/lib/moe";
   user = "moe";
   cfg = config.moe;
 in
