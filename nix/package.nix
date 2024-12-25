@@ -26,12 +26,12 @@ buildDotnetModule {
 
   executables = [ "moe" ];
 
-  meta = with lib; {
+  meta = {
     description = "A multi-purpose Discord bot made using Discord.Net";
     homepage = "https://github.com/ymstnt/moe/";
-    license = licenses.gpl3;
-    maintainers = with maintainers; [ gepbird ];
-    platforms = platforms.all;
+    license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ gepbird ];
+    platforms = lib.platforms.all;
     mainProgram = "moe";
   };
 }

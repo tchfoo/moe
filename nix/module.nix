@@ -3,13 +3,23 @@ packages:
   config,
   pkgs,
   lib,
-  specialArgs,
   ...
 }:
 
-with lib;
-with types;
 let
+  inherit (lib)
+    mkEnableOption
+    mkOption
+    mkIf
+    ;
+  inherit (lib.types)
+    bool
+    port
+    path
+    str
+    package
+    ;
+
   cfg = config.moe;
 in
 {
@@ -42,8 +52,8 @@ in
       };
     };
     credentialsFile = mkOption {
-      type = types.path;
-      description = lib.mdDoc ''
+      type = path;
+      description = ''
         Path to a key-value pair file to be merged with the settings.
         Useful to merge a file which is better kept out of the Nix store
         to set secret config parameters like `token` and `owners`.
