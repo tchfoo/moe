@@ -20,6 +20,8 @@ let
     package
     ;
 
+  dataDir = "/var/moe";
+  user = "moe";
   cfg = config.moe;
 in
 {
@@ -66,7 +68,7 @@ in
   config = mkIf cfg.enable {
     users.users.moe = {
       isSystemUser = true;
-      home = "/var/moe";
+      home = dataDir;
       createHome = true;
       group = cfg.group;
     };
@@ -79,8 +81,9 @@ in
       serviceConfig = {
         Type = "simple";
         ExecStart = "${cfg.package}/bin/moe --register-commands";
-        WorkingDirectory = "/var/moe";
-        User = "moe";
+        WorkingDirectory = dataDir;
+        User = user;
+        Group = cfg.group;
         EnvironmentFile = cfg.credentialsFile;
         Environment = "STATUS_PORT=${toString cfg.settings.status-port}";
       };
