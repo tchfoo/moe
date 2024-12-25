@@ -75,6 +75,10 @@ in
 
     networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall [ cfg.settings.status-port ];
 
+    systemd.tmpfiles.rules = [
+      "d ${dataDir} 0750 ${user} ${cfg.group}"
+    ];
+
     systemd.services.moe = {
       description = "Moe, a multi-purpose Discord bot made using Discord.Net.";
       wantedBy = [ "multi-user.target" ];
