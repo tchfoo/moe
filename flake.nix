@@ -15,7 +15,7 @@
     inputs:
     with inputs;
     {
-      nixosModule = import ./nix/module.nix self.outputs.packages;
+      nixosModules.default = import ./nix/module.nix self.outputs.packages;
     }
     //
       flake-utils.lib.eachSystem
