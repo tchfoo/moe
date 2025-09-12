@@ -91,8 +91,8 @@ public class EmbedFixerService
 
     await LogService.LogToFileAndConsole($"Removing embed fixer pattern {pattern.Pattern} with replacement {pattern.Replacement}", guild);
 
-    var sql = "DELETE FROM embed_fixer WHERE guild_id = $0 AND pattern = $1";
-    await DatabaseService.NonQuery(sql, guild.Id, pattern.Pattern);
+    var sql = "DELETE FROM embed_fixer WHERE guild_id = $0 AND pattern = $1 AND replacement = $2";
+    await DatabaseService.NonQuery(sql, guild.Id, pattern.Pattern, pattern.Replacement);
   }
 
   private void InvalidatePatternsCache(SocketGuild guild)
