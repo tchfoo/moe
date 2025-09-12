@@ -30,7 +30,12 @@
           in
           {
             packages.default = pkgs.callPackage ./nix/package.nix { inherit version nuget-packageslock2nix; };
-            devShells.default = pkgs.mkShell { packages = with pkgs; [ dotnet-sdk_8 ]; };
+            devShells.default = pkgs.mkShell {
+              packages = with pkgs; [
+                dotnet-sdk_8
+                omnisharp-roslyn
+              ];
+            };
             formatter = pkgs.nixfmt-rfc-style;
           }
         );
