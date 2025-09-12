@@ -12,21 +12,21 @@ public class EmbedFixerService
   // Should be hidden from the user
   private static readonly string initializedMagic = "_initialized-634761";
 
-  private readonly Dictionary<string, string> linkRegexes;
+  private readonly List<EmbedFixerPattern> initialPatterns;
   private readonly SettingsService settingsService;
   private Dictionary<ulong, List<EmbedFixerPattern>> patternsCache = new();
 
   public EmbedFixerService(SettingsService settingsService)
   {
-    linkRegexes = new Dictionary<string, string>
+    initialPatterns = new List<EmbedFixerPattern>
     {
-      { @"https?://(?:clips\.twitch\.tv|(?:www\.)?twitch\.tv/\w+\/clip)\/([A-Za-z0-9-_]+)", @"https://clips.fxtwitch.tv/$1"},
-      { @"https?://(?:[\w-]+?\.)?reddit\.com", @"https://rxddit.com" },
-      { @"https?://(?:www\.)?threads\.net", @"https://fixthreads.net" },
-      { @"https?://(?:www\.)?(twitter|x)\.com", @"https://fxtwitter.com" },
-      { @"https?://(?:www\.)?instagram.com", @"https://ddinstagram.com" },
-      { @"https?://(?:to)?github\.com/([A-Za-z0-9-]+/[A-Za-z0-9._-]+)/(?:issues|pull)/([0-9]+)([^\s]*)?", @"[$1#$2$3]($&)" },
-      { @"https?://([\w-]+\.)?tiktok.com", @"https://$1vxtiktok.com" },
+      new(@"https?://(?:clips\.twitch\.tv|(?:www\.)?twitch\.tv/\w+\/clip)\/([A-Za-z0-9-_]+)", @"https://clips.fxtwitch.tv/$1"),
+      new(@"https?://(?:[\w-]+?\.)?reddit\.com", @"https://rxddit.com"),
+      new(@"https?://(?:www\.)?threads\.net", @"https://fixthreads.net"),
+      new(@"https?://(?:www\.)?(twitter|x)\.com", @"https://fxtwitter.com"),
+      new(@"https?://(?:www\.)?instagram.com", @"https://ddinstagram.com"),
+      new(@"https?://(?:to)?github\.com/([A-Za-z0-9-]+/[A-Za-z0-9._-]+)/(?:issues|pull)/([0-9]+)([^\s]*)?", @"[$1#$2$3]($&)"),
+      new(@"https?://([\w-]+\.)?tiktok.com", @"https://$1vxtiktok.com"),
     };
 
     InitializeDatabase().Wait();
@@ -54,11 +54,7 @@ public class EmbedFixerService
   {
     var sql = "SELECT pattern, replacement FROM embed_fixer WHERE guild_id = $0 AND pattern != $1";
     var result = await DatabaseService.Query<string, string>(sql, guild.Id, initializedMagic);
-    return result.ConvertAll(x => new EmbedFixerPattern()
-    {
-      Pattern = x.Item1!,
-      Replacement = x.Item2!
-    });
+    return result.ConvertAll(x => new EmbedFixerPattern(x.Item1!, x.Item2!));
   }
 
   public async Task<List<EmbedFixerPattern>> GetPatternsFromCache(SocketGuild guild)
@@ -156,9 +152,9 @@ public class EmbedFixerService
 
     await DatabaseService.NonQuery(sql, guildId, initializedMagic, string.Empty);
 
-    foreach (var (pattern, replacement) in linkRegexes)
+    foreach (var pattern in initialPatterns)
     {
-      await DatabaseService.NonQuery(sql, guildId, pattern, replacement);
+      await DatabaseService.NonQuery(sql, guildId, pattern.Pattern, pattern.Replacement);
     }
   }
 }

@@ -70,11 +70,10 @@ public class EmbedFixerCommand : SlashCommandBase
 
     modal.OnSubmitted += async submitted =>
     {
-      var pattern = new EmbedFixerPattern()
-      {
-        Pattern = submitted.GetValue(nameof(EmbedFixerPattern.Pattern))!,
-        Replacement = submitted.GetValue(nameof(EmbedFixerPattern.Replacement))!
-      };
+      var pattern = new EmbedFixerPattern(
+        submitted.GetValue(nameof(EmbedFixerPattern.Pattern))!,
+        submitted.GetValue(nameof(EmbedFixerPattern.Replacement))!
+      );
 
       if (await service.HasPatternInCache(guild, pattern.Pattern))
       {
