@@ -69,12 +69,6 @@ public class EmbedFixerService
     return newPatterns;
   }
 
-  public async Task<EmbedFixerPattern?> GetPatternFromCache(SocketGuild guild, string pattern)
-  {
-    var patterns = await GetPatternsFromCache(guild);
-    return patterns.Find(x => x.Pattern == pattern);
-  }
-
   public async Task<bool> HasPatternInCache(SocketGuild guild, string pattern)
   {
     var patterns = await GetPatternsFromCache(guild);
