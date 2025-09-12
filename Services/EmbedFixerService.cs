@@ -25,6 +25,9 @@ public class EmbedFixerService
       new(@"https?://(?:www\.)?threads\.net", @"https://fixthreads.net"),
       new(@"https?://(?:www\.)?(twitter|x)\.com", @"https://fxtwitter.com"),
       new(@"https?://(?:www\.)?instagram.com", @"https://ddinstagram.com"),
+      new(@"https?://(?:www\.)?instagram.com", @"https://kkinstagram.com"),
+      new(@"https?://(?:www\.)?instagram.com", @"https://vxinstagram.com"),
+      new(@"https?://(?:www\.)?instagram.com", @"https://uuinstagram.com"),
       new(@"https?://(?:to)?github\.com/([A-Za-z0-9-]+/[A-Za-z0-9._-]+)/(?:issues|pull)/([0-9]+)([^\s]*)?", @"[$1#$2$3]($&)"),
       new(@"https?://([\w-]+\.)?tiktok.com", @"https://$1vxtiktok.com"),
     };
@@ -41,10 +44,45 @@ public class EmbedFixerService
   public async Task<string> ReplaceLinks(SocketGuild guild, string input)
   {
     var patterns = await GetPatternsFromCache(guild);
+
     foreach (var pattern in patterns)
     {
-      Regex regex = new Regex(pattern.Pattern);
-      input = regex.Replace(input, pattern.Replacement);
+      var patternRegex = new Regex(pattern.Pattern);
+
+      var match = patternRegex.Match(input);
+      if (!match.Success)
+      {
+        continue;
+      }
+
+      var newInput = patternRegex.Replace(input, pattern.Replacement);
+
+      var linkOnlyRegex = new Regex(@"https?://[\S]*");
+      var linkOnly = linkOnlyRegex.Match(newInput);
+      var link = linkOnly.Value;
+
+      using (HttpClient client = new HttpClient())
+      {
+        try
+        {
+          // fixes getting Forbidden for kkinstagram.com
+          client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36");
+
+          var response = await client.GetAsync(link);
+
+          if (!response.IsSuccessStatusCode) {
+            await LogService.LogToFileAndConsole($"Unsuccessful look up of an embed fixed link '{link}': {response.StatusCode}", guild);
+            continue;
+          }
+        }
+        catch (HttpRequestException e)
+        {
+          await LogService.LogToFileAndConsole($"Error while looking up an embed fixed link '{link}': {e.Message}", guild);
+          continue;
+        }
+      }
+
+      input = newInput;
     }
 
     return input;
