@@ -107,10 +107,10 @@ public class EmbedFixerService
     return newPatterns;
   }
 
-  public async Task<bool> HasPatternInCache(SocketGuild guild, string pattern)
+  public async Task<bool> HasPatternInCache(SocketGuild guild, EmbedFixerPattern pattern)
   {
     var patterns = await GetPatternsFromCache(guild);
-    return patterns.Exists(x => x.Pattern == pattern);
+    return patterns.Exists(x => x.Pattern == pattern.Pattern && x.Replacement == pattern.Replacement);
   }
 
   public async Task AddPattern(SocketGuild guild, EmbedFixerPattern pattern)

@@ -75,7 +75,7 @@ public class EmbedFixerCommand : SlashCommandBase
         submitted.GetValue(nameof(EmbedFixerPattern.Replacement))!
       );
 
-      if (await service.HasPatternInCache(guild, pattern.Pattern))
+      if (await service.HasPatternInCache(guild, pattern))
       {
         await submitted.RespondAsync($"{Emotes.ErrorEmote} Pattern already exists\n> {pattern.Pattern}\n> {pattern.Replacement}");
         return;
