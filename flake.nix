@@ -3,7 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
     # imports nixpkgs which is bad for performance
     # uses lib, fetchurl, dotnetCorePackages, zip
     nuget-packageslock2nix = {
@@ -15,6 +14,23 @@
   outputs =
     inputs:
     with inputs;
+    let
+      supportedSystems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+      withPkgs =
+        f:
+        nixpkgs.lib.genAttrs supportedSystems (
+          system:
+          f (
+            import nixpkgs {
+              inherit system;
+              overlays = [ self.outputs.overlays.default ];
+            }
+          )
+        );
+    in
     {
       nixosModules.default = import ./nix/module.nix self.outputs.overlays.default;
 
@@ -24,30 +40,18 @@
           version = builtins.substring 0 8 self.lastModifiedDate or "dirty";
         };
       };
-    }
-    //
-      flake-utils.lib.eachSystem
-        [
-          "x86_64-linux"
-          "aarch64-linux"
-        ]
-        (
-          system:
-          let
-            pkgs = import nixpkgs {
-              inherit system;
-              overlays = [ self.outputs.overlays.default ];
-            };
-          in
-          {
-            packages.default = pkgs.moe-dotnet;
-            devShells.default = pkgs.mkShell {
-              packages = with pkgs; [
-                dotnet-sdk_8
-                omnisharp-roslyn
-              ];
-            };
-            formatter = pkgs.nixfmt-rfc-style;
-          }
-        );
+
+      packages = withPkgs (pkgs: {
+        default = pkgs.moe-dotnet;
+      });
+
+      devShells = withPkgs (pkgs: {
+        default = pkgs.mkShell {
+          packages = with pkgs; [
+            dotnet-sdk_8
+            omnisharp-roslyn
+          ];
+        };
+      });
+    };
 }
