@@ -1,15 +1,16 @@
 {
-  buildDotnetModule,
   lib,
+  buildDotnetModule,
   system,
-  version,
   dotnet-sdk_8,
   dotnet-runtime_8,
+
   nuget-packageslock2nix,
+  version,
 }:
 
 buildDotnetModule {
-  pname = "moe";
+  pname = "moe-dotnet";
   inherit version;
 
   src = ../.;
@@ -28,7 +29,7 @@ buildDotnetModule {
 
   meta = {
     description = "A multi-purpose Discord bot made using Discord.Net";
-    homepage = "https://github.com/ymstnt/moe/";
+    homepage = "https://github.com/ymstnt-com/moe";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ gepbird ];
     platforms = lib.platforms.all;
