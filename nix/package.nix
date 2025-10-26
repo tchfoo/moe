@@ -29,7 +29,7 @@ buildDotnetModule {
 
   meta = {
     description = "A multi-purpose Discord bot made using Discord.Net";
-    homepage = "https://github.com/ymstnt-com/moe";
+    homepage = "https://github.com/tchfoo/moe";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ gepbird ];
     platforms = lib.platforms.all;
