@@ -4,6 +4,8 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    # imports nixpkgs which is bad for performance
+    # uses lib, fetchurl, dotnetCorePackages, zip
     nuget-packageslock2nix = {
       url = "github:mdarocha/nuget-packageslock2nix/main";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -14,7 +16,7 @@
     inputs:
     with inputs;
     {
-      nixosModules.default = import ./nix/module.nix self.outputs.packages;
+      nixosModules.default = import ./nix/module.nix self.outputs.overlays.default;
 
       overlays.default = final: prev: {
         moe-dotnet = prev.callPackage ./nix/package.nix {

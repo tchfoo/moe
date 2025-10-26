@@ -1,4 +1,4 @@
-packages:
+overlay:
 {
   config,
   pkgs,
@@ -9,6 +9,7 @@ packages:
 let
   inherit (lib)
     mkEnableOption
+    mkPackageOption
     mkOption
     mkIf
     ;
@@ -17,7 +18,6 @@ let
     port
     path
     str
-    package
     ;
 
   dataDir = "/var/lib/moe";
@@ -27,10 +27,7 @@ in
 {
   options.moe = {
     enable = mkEnableOption "Enable the moe service";
-    package = mkOption {
-      type = package;
-      default = packages.${pkgs.system}.default;
-    };
+    package = mkPackageOption pkgs "moe-dotnet" { };
     group = mkOption {
       type = str;
       description = ''
@@ -66,6 +63,10 @@ in
   };
 
   config = mkIf cfg.enable {
+    nixpkgs.overlays = [
+      overlay
+    ];
+
     users.users.moe = {
       isSystemUser = true;
       home = dataDir;
