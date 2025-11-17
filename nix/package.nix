@@ -2,8 +2,8 @@
   lib,
   buildDotnetModule,
   stdenv,
-  dotnet-sdk_8,
-  dotnet-runtime_8,
+  dotnet-sdk_10,
+  dotnet-runtime_10,
 
   nuget-packageslock2nix,
   version,
@@ -22,8 +22,8 @@ buildDotnetModule {
 
   projectFile = [ "moe.csproj" ];
 
-  dotnet-sdk = dotnet-sdk_8;
-  dotnet-runtime = dotnet-runtime_8;
+  dotnet-sdk = dotnet-sdk_10;
+  dotnet-runtime = dotnet-runtime_10;
 
   executables = [ "moe" ];
 

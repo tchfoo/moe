@@ -48,7 +48,7 @@
       devShells = withPkgs (pkgs: {
         default = pkgs.mkShell {
           packages = with pkgs; [
-            dotnet-sdk_8
+            dotnet-sdk_10
             omnisharp-roslyn
           ];
         };
