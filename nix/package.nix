@@ -1,7 +1,7 @@
 {
   lib,
   buildDotnetModule,
-  system,
+  stdenv,
   dotnet-sdk_8,
   dotnet-runtime_8,
 
@@ -16,7 +16,7 @@ buildDotnetModule {
   src = ../.;
 
   nugetDeps = nuget-packageslock2nix.lib {
-    inherit system;
+    inherit (stdenv.hostPlatform) system;
     lockfiles = [ ../packages.lock.json ];
   };
 
